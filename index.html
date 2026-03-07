@@ -344,10 +344,14 @@
   </div>
 
   <div class="range-btns">
-    <button class="range-btn" onclick="setRange(30)">1M</button>
-    <button class="range-btn active" onclick="setRange(90)">3M</button>
-    <button class="range-btn" onclick="setRange(180)">6M</button>
-    <button class="range-btn" onclick="setRange(365)">1J</button>
+    <button class="range-btn" data-range="live" onclick="setRange('live')">Live</button>
+    <button class="range-btn" data-range="1m"   onclick="setRange('1m')">1M</button>
+    <button class="range-btn active" data-range="3m" onclick="setRange('3m')">3M</button>
+    <button class="range-btn" data-range="6m"   onclick="setRange('6m')">6M</button>
+    <button class="range-btn" data-range="ytd"  onclick="setRange('ytd')">YTD</button>
+    <button class="range-btn" data-range="1j"   onclick="setRange('1j')">1J</button>
+    <button class="range-btn" data-range="5j"   onclick="setRange('5j')">5J</button>
+    <button class="range-btn" data-range="max"  onclick="setRange('max')">Max</button>
   </div>
 
   <!-- ⑤ TECHNISCHE INDIKATOREN -->
@@ -536,11 +540,15 @@
   const TICKER = 'VWCE.DE';
   const PROXY  = 'https://corsproxy.io/?';
 
-  let allTimestamps = [];
-  let allCloses     = [];
-  let chartInstance = null;
-  let currentRange  = 90;
-  let currentPrice  = 0;
+  let allTimestamps      = [];
+  let allCloses          = [];
+  let intradayTimestamps = [];
+  let intradayCloses     = [];
+  let extTimestamps      = {};
+  let extCloses          = {};
+  let chartInstance      = null;
+  let currentRange       = '3m';
+  let currentPrice       = 0;
 
   // ── Helpers ────────────────────────────────────────────────
 
@@ -663,23 +671,55 @@
 
   // ── Chart ──────────────────────────────────────────────────
 
-  function renderChart(rangeDays) {
-    const idx    = Math.max(0, allTimestamps.length - rangeDays);
-    const labels = allTimestamps.slice(idx).map(ts =>
-      new Date(ts * 1000).toLocaleDateString('de-DE', { day: '2-digit', month: 'short' })
-    );
-    const prices  = allCloses.slice(idx);
-    const maSlice = calcMALine(allCloses, 200).slice(idx);
-    const bb      = calcBollingerLines(allCloses, 20);
-    const bbUpper = bb.slice(idx).map(b => b.upper);
-    const bbLower = bb.slice(idx).map(b => b.lower);
+  function renderChart(range) {
+    let labels, prices, maLine, bbUpper, bbLower;
+
+    if (range === 'live') {
+      if (!intradayCloses.length) return;
+      labels  = intradayTimestamps.map(ts =>
+        new Date(ts * 1000).toLocaleTimeString('de-DE', { hour: '2-digit', minute: '2-digit' })
+      );
+      prices  = intradayCloses;
+      maLine  = prices.map(() => null);
+      bbUpper = prices.map(() => null);
+      bbLower = prices.map(() => null);
+    } else if (range === '5j' || range === 'max') {
+      if (!extCloses[range] || !extCloses[range].length) return;
+      labels  = extTimestamps[range].map(ts =>
+        new Date(ts * 1000).toLocaleDateString('de-DE', { month: 'short', year: '2-digit' })
+      );
+      prices  = extCloses[range];
+      const maPer = range === '5j' ? 40 : 12;
+      maLine  = calcMALine(prices, maPer);
+      const bb = calcBollingerLines(prices, 20);
+      bbUpper = bb.map(b => b.upper);
+      bbLower = bb.map(b => b.lower);
+    } else {
+      const dayMap = { '1m': 30, '3m': 90, '6m': 180, '1j': 365 };
+      let idx;
+      if (range === 'ytd') {
+        const jan1 = new Date(new Date().getFullYear(), 0, 1).getTime() / 1000;
+        idx = allTimestamps.findIndex(ts => ts >= jan1);
+        if (idx < 0) idx = 0;
+      } else {
+        idx = Math.max(0, allTimestamps.length - (dayMap[range] || 90));
+      }
+      labels  = allTimestamps.slice(idx).map(ts =>
+        new Date(ts * 1000).toLocaleDateString('de-DE', { day: '2-digit', month: 'short' })
+      );
+      prices  = allCloses.slice(idx);
+      maLine  = calcMALine(allCloses, 200).slice(idx);
+      const bb = calcBollingerLines(allCloses, 20);
+      bbUpper = bb.slice(idx).map(b => b.upper);
+      bbLower = bb.slice(idx).map(b => b.lower);
+    }
 
     if (chartInstance) {
-      chartInstance.data.labels              = labels;
-      chartInstance.data.datasets[0].data    = prices;
-      chartInstance.data.datasets[1].data    = maSlice;
-      chartInstance.data.datasets[2].data    = bbUpper;
-      chartInstance.data.datasets[3].data    = bbLower;
+      chartInstance.data.labels           = labels;
+      chartInstance.data.datasets[0].data = prices;
+      chartInstance.data.datasets[1].data = maLine;
+      chartInstance.data.datasets[2].data = bbUpper;
+      chartInstance.data.datasets[3].data = bbLower;
       chartInstance.update('none');
       return;
     }
@@ -690,7 +730,7 @@
         labels,
         datasets: [
           { label: 'Kurs',    data: prices,   borderColor: '#ffffff', borderWidth: 1.5, pointRadius: 0, tension: 0.3, fill: { target: 'origin', above: 'rgba(255,255,255,0.04)' } },
-          { label: 'MA 200',  data: maSlice,  borderColor: '#3b82f6', borderWidth: 1.2, borderDash: [4,3], pointRadius: 0, tension: 0.3, fill: false },
+          { label: 'MA 200',  data: maLine,   borderColor: '#3b82f6', borderWidth: 1.2, borderDash: [4,3], pointRadius: 0, tension: 0.3, fill: false },
           { label: 'BB Oben', data: bbUpper,  borderColor: 'rgba(168,85,247,0.45)', borderWidth: 1, borderDash: [2,2], pointRadius: 0, tension: 0.3, fill: '+1', backgroundColor: 'rgba(168,85,247,0.06)' },
           { label: 'BB Unten',data: bbLower,  borderColor: 'rgba(168,85,247,0.45)', borderWidth: 1, borderDash: [2,2], pointRadius: 0, tension: 0.3, fill: false },
         ]
@@ -715,13 +755,23 @@
     });
   }
 
-  function setRange(days) {
-    currentRange = days;
-    document.querySelectorAll('.range-btn').forEach(b => {
-      const map = { '1M': 30, '3M': 90, '6M': 180, '1J': 365 };
-      b.classList.toggle('active', map[b.textContent] === days);
-    });
-    if (allCloses.length) renderChart(days);
+  function setRange(range) {
+    currentRange = range;
+    document.querySelectorAll('.range-btn').forEach(b =>
+      b.classList.toggle('active', b.dataset.range === range)
+    );
+    if (range === 'live') {
+      if (intradayCloses.length) renderChart('live');
+      else loadIntraday();
+    } else if (range === '5j') {
+      if (extCloses['5j'] && extCloses['5j'].length) renderChart('5j');
+      else loadExtended('5y', '1wk', '5j');
+    } else if (range === 'max') {
+      if (extCloses['max'] && extCloses['max'].length) renderChart('max');
+      else loadExtended('max', '1mo', 'max');
+    } else {
+      if (allCloses.length) renderChart(range);
+    }
   }
 
   // ── ATH ────────────────────────────────────────────────────
@@ -848,6 +898,28 @@
   }
 
   // ── API Fetches ────────────────────────────────────────────
+
+  async function loadIntraday() {
+    try {
+      const result = await fetchYahoo(TICKER, '1d', '5m');
+      const raw    = result.indicators.quote[0];
+      const pairs  = result.timestamp.map((t, i) => ({ t, c: raw.close[i] })).filter(p => p.c != null);
+      intradayTimestamps = pairs.map(p => p.t);
+      intradayCloses     = pairs.map(p => p.c);
+      if (currentRange === 'live') renderChart('live');
+    } catch (err) { console.error('Intraday:', err); }
+  }
+
+  async function loadExtended(yahooRange, interval, key) {
+    try {
+      const result = await fetchYahoo(TICKER, yahooRange, interval);
+      const raw    = result.indicators.quote[0];
+      const pairs  = result.timestamp.map((t, i) => ({ t, c: raw.close[i] })).filter(p => p.c != null);
+      extTimestamps[key] = pairs.map(p => p.t);
+      extCloses[key]     = pairs.map(p => p.c);
+      if (currentRange === key) renderChart(key);
+    } catch (err) { console.error(`Extended (${key}):`, err); }
+  }
 
   async function load() {
     try {
@@ -1044,6 +1116,7 @@
   setInterval(loadValuation, 10 * 60 * 1000);
   setInterval(loadVIX,        5 * 60 * 1000);
   setInterval(loadEURUSD,     5 * 60 * 1000);
+  setInterval(() => { if (currentRange === 'live') loadIntraday(); }, 30 * 1000);
 </script>
 </body>
 </html>
