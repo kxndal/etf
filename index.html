@@ -538,7 +538,7 @@
       <div class="calc-result-item"><div class="calc-result-label">Eingezahlt</div>    <div class="calc-result-value" id="sp-invested">—</div></div>
       <div class="calc-result-item"><div class="calc-result-label">Endwert</div>       <div class="calc-result-value" id="sp-endvalue">—</div></div>
       <div class="calc-result-item"><div class="calc-result-label">Gewinn</div>        <div class="calc-result-value green" id="sp-gain">—</div></div>
-      <div class="calc-result-item"><div class="calc-result-label">Rendite gesamt</div><div class="calc-result-value green" id="sp-gainpct">—</div></div>
+      <div class="calc-result-item"><div class="calc-result-label">Entnahme/Monat (4%)</div><div class="calc-result-value green" id="sp-gainpct">—</div></div>
     </div>
   </div>
 
@@ -861,7 +861,7 @@
     document.getElementById('sp-invested').textContent = fmt(invested);
     document.getElementById('sp-endvalue').textContent = fmt(endValue);
     document.getElementById('sp-gain').textContent     = fmt(gain);
-    document.getElementById('sp-gainpct').textContent  = `+${invested > 0 ? ((gain / invested) * 100).toFixed(0) : 0}%`;
+    document.getElementById('sp-gainpct').textContent  = fmt(endValue * 0.04 / 12);
   }
 
   // ── Portfolio ──────────────────────────────────────────────
