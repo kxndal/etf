@@ -1089,11 +1089,11 @@
     loadFearGreed();
     loadValuation();
 
-    // Auto-Refresh: Preis/MA/RSI alle 2 Min, langsame Daten seltener
-    setInterval(load,           2 * 60 * 1000);   // 2 Minuten
-    setInterval(loadWeeklyRSI, 15 * 60 * 1000);   // 15 Minuten
-    setInterval(loadFearGreed, 10 * 60 * 1000);   // 10 Minuten
-    setInterval(loadValuation, 30 * 60 * 1000);   // 30 Minuten
+    // Auto-Refresh
+    setInterval(load,           15 * 1000);        // 15 Sekunden
+    setInterval(loadWeeklyRSI,  3 * 60 * 1000);   // 3 Minuten
+    setInterval(loadFearGreed,  2 * 60 * 1000);   // 2 Minuten
+    setInterval(loadValuation, 10 * 60 * 1000);   // 10 Minuten
   </script>
 </body>
 </html>
