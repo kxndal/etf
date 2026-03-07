@@ -222,6 +222,11 @@
     .calc-input::-webkit-outer-spin-button,
     .calc-input::-webkit-inner-spin-button { -webkit-appearance: none; }
     .calc-input:focus { border-color: #2563eb; }
+    .calc-input-static {
+      background: #1a1a1a; border: 1px solid #222; border-radius: 8px;
+      color: #60a5fa; font-size: 16px; font-weight: 600;
+      padding: 8px 10px; width: 100%; cursor: default; user-select: none;
+    }
     .calc-results {
       display: grid; grid-template-columns: 1fr 1fr; gap: 10px;
       border-top: 1px solid #1e1e1e; padding-top: 14px;
@@ -521,8 +526,8 @@
         <input class="calc-input" type="number" id="sp-years" value="30" min="1" max="50" oninput="calcSparplan()">
       </div>
       <div class="calc-field">
-        <label>Rendite p.a. (%)</label>
-        <input class="calc-input" type="number" id="sp-rate" value="7" min="0" max="30" step="0.1" oninput="calcSparplan()">
+        <label>Ø Rendite p.a. (VWCE)</label>
+        <div class="calc-input-static" id="sp-rate-display">—</div>
       </div>
     </div>
     <div class="calc-results">
@@ -808,10 +813,22 @@
 
   // ── Sparplan ───────────────────────────────────────────────
 
+  let spRate = 7; // wird nach dem Laden der Kursdaten automatisch berechnet
+
+  function calcHistoricalReturn() {
+    if (allCloses.length < 50) return;
+    const years = (allTimestamps[allTimestamps.length - 1] - allTimestamps[0]) / (365.25 * 86400);
+    const cagr  = (Math.pow(allCloses[allCloses.length - 1] / allCloses[0], 1 / years) - 1) * 100;
+    spRate = parseFloat(Math.max(0, cagr).toFixed(1));
+    const el = document.getElementById('sp-rate-display');
+    if (el) el.textContent = `${spRate.toFixed(1)} %`;
+    calcSparplan();
+  }
+
   function calcSparplan() {
     const monthly = parseFloat(document.getElementById('sp-monthly').value) || 0;
     const years   = parseFloat(document.getElementById('sp-years').value)   || 0;
-    const rate    = parseFloat(document.getElementById('sp-rate').value)     || 0;
+    const rate    = spRate;
     const n = years * 12, r = rate / 100 / 12;
     const invested = monthly * n;
     const endValue = r === 0 ? invested : monthly * ((Math.pow(1 + r, n) - 1) / r) * (1 + r);
@@ -978,6 +995,7 @@
 
       updateATH(price, allCloses);
       update52Week(price, allCloses);
+      calcHistoricalReturn();
       renderChart(currentRange);
       calcPortfolio();
       checkPriceAlert(price);
