@@ -297,13 +297,23 @@
 
   <div id="error-box" class="error-msg" style="display:none;"></div>
 
+  <!-- ① KURS -->
   <div class="price-section">
     <div class="price-label">Aktueller Preis</div>
     <div class="price" id="price"><span class="loading-shimmer">€000.00</span></div>
     <div class="price-change" id="price-change"></div>
   </div>
 
-  <!-- 52-Wochen Range -->
+  <!-- ② GESAMTSIGNAL (direkt nach Preis – schnelle Orientierung) -->
+  <div class="signal-box loading" id="signal-box" style="margin-bottom:16px;">
+    <div class="signal-dot"></div>
+    <div class="signal-text">
+      <div class="signal-title" id="signal-title">Daten werden geladen...</div>
+      <div class="signal-desc"  id="signal-desc">Bitte warten</div>
+    </div>
+  </div>
+
+  <!-- ③ 52-WOCHEN RANGE -->
   <div class="week52-section">
     <div class="week52-header">
       <span>52-Wochen-Tief</span>
@@ -311,7 +321,7 @@
       <span>52-Wochen-Hoch</span>
     </div>
     <div class="week52-track">
-      <div class="week52-fill"  id="week52-fill"   style="width:0%"></div>
+      <div class="week52-fill"   id="week52-fill"   style="width:0%"></div>
       <div class="week52-marker" id="week52-marker" style="left:0%"></div>
     </div>
     <div class="week52-footer">
@@ -320,7 +330,7 @@
     </div>
   </div>
 
-  <!-- Chart -->
+  <!-- ④ CHART -->
   <div class="chart-section">
     <div class="chart-header">
       <div class="chart-title">Kursverlauf</div>
@@ -340,7 +350,7 @@
     <button class="range-btn" onclick="setRange(365)">1J</button>
   </div>
 
-  <!-- Indicators: 2 rows × 3 cols -->
+  <!-- ⑤ TECHNISCHE INDIKATOREN -->
   <div class="indicators">
     <div class="indicator-box">
       <div class="ind-label">200-Tage MA</div>
@@ -374,7 +384,7 @@
     </div>
   </div>
 
-  <!-- RSI-Matrix -->
+  <!-- ⑥ RSI-MATRIX (direkt nach RSI-Indikatoren) -->
   <div class="section-label">RSI-Matrix (Wochen-RSI)</div>
   <div class="ath-box" style="margin-bottom:20px;">
     <table class="ath-table" id="rsi-table">
@@ -401,7 +411,7 @@
     </table>
   </div>
 
-  <!-- ATH -->
+  <!-- ⑦ ATH-ABSTAND -->
   <div class="section-label">ATH-Abstand &amp; Strategie</div>
   <div class="ath-box">
     <div class="ath-top">
@@ -416,23 +426,7 @@
     </table>
   </div>
 
-  <!-- CAPE -->
-  <div class="section-label">Shiller CAPE (Bewertungsfilter)</div>
-  <div class="fg-box">
-    <div class="fg-top">
-      <div class="fg-score loading-shimmer" id="pe-value">--</div>
-      <div class="fg-meta">Welt-Markt KGV · <span id="pe-source">wird geladen...</span></div>
-    </div>
-    <div id="pe-deviation" style="font-size:18px;font-weight:600;color:#555;margin-bottom:14px;">—</div>
-    <table class="ath-table" id="cape-table">
-      <tr data-cmin="25"   data-cmax="999"><td><span class="ath-row-dot" style="background:#ef4444"></span>&gt; +25% (überbewertet)</td>      <td>Nur Basis-Sparplan; Zusatzkäufe erst bei ≥ −20% Drawdown</td></tr>
-      <tr data-cmin="0"    data-cmax="25"> <td><span class="ath-row-dot" style="background:#f97316"></span>+0% bis +25% (fair/leicht teuer)</td><td>Sparplan; bei −5% kleine Tranche, −10% normale Tranche</td></tr>
-      <tr data-cmin="-10"  data-cmax="0">  <td><span class="ath-row-dot" style="background:#86efac"></span>−10% bis 0% (fair/leicht günstig)</td><td>Basis + bei −5% normale Tranche</td></tr>
-      <tr data-cmin="-999" data-cmax="-10"><td><span class="ath-row-dot" style="background:#22c55e"></span>&lt; −10% (günstig)</td>            <td>Erhöhe Zusatzbeiträge (z.B. 1,5×); bei −20% große Tranche</td></tr>
-    </table>
-  </div>
-
-  <!-- Fear & Greed -->
+  <!-- ⑧ MARKT-SENTIMENT (Fear & Greed vor CAPE – intuitiver) -->
   <div class="section-label">Markt-Sentiment</div>
   <div class="fg-box">
     <div class="fg-top">
@@ -456,7 +450,61 @@
     </table>
   </div>
 
-  <!-- Sparplan-Rechner -->
+  <!-- ⑨ BEWERTUNG (CAPE nach Sentiment) -->
+  <div class="section-label">Shiller CAPE (Bewertungsfilter)</div>
+  <div class="fg-box">
+    <div class="fg-top">
+      <div class="fg-score loading-shimmer" id="pe-value">--</div>
+      <div class="fg-meta">Welt-Markt KGV · <span id="pe-source">wird geladen...</span></div>
+    </div>
+    <div id="pe-deviation" style="font-size:18px;font-weight:600;color:#555;margin-bottom:14px;">—</div>
+    <table class="ath-table" id="cape-table">
+      <tr data-cmin="25"   data-cmax="999"><td><span class="ath-row-dot" style="background:#ef4444"></span>&gt; +25% (überbewertet)</td>      <td>Nur Basis-Sparplan; Zusatzkäufe erst bei ≥ −20% Drawdown</td></tr>
+      <tr data-cmin="0"    data-cmax="25"> <td><span class="ath-row-dot" style="background:#f97316"></span>+0% bis +25% (fair/leicht teuer)</td><td>Sparplan; bei −5% kleine Tranche, −10% normale Tranche</td></tr>
+      <tr data-cmin="-10"  data-cmax="0">  <td><span class="ath-row-dot" style="background:#86efac"></span>−10% bis 0% (fair/leicht günstig)</td><td>Basis + bei −5% normale Tranche</td></tr>
+      <tr data-cmin="-999" data-cmax="-10"><td><span class="ath-row-dot" style="background:#22c55e"></span>&lt; −10% (günstig)</td>            <td>Erhöhe Zusatzbeiträge (z.B. 1,5×); bei −20% große Tranche</td></tr>
+    </table>
+  </div>
+
+  <!-- ⑩ MEIN PORTFOLIO -->
+  <div class="section-label">Mein Portfolio</div>
+  <div class="calc-box">
+    <div class="calc-grid-2">
+      <div class="calc-field">
+        <label>Anzahl Anteile</label>
+        <input class="calc-input" type="number" id="pt-shares" placeholder="z.B. 50" min="0" step="0.001" oninput="calcPortfolio()">
+      </div>
+      <div class="calc-field">
+        <label>Ø Kaufpreis (€)</label>
+        <input class="calc-input" type="number" id="pt-avgprice" placeholder="z.B. 120.00" min="0" step="0.01" oninput="calcPortfolio()">
+      </div>
+    </div>
+    <div class="calc-results">
+      <div class="calc-result-item"><div class="calc-result-label">Investiert</div>       <div class="calc-result-value" id="pt-invested">—</div></div>
+      <div class="calc-result-item"><div class="calc-result-label">Aktueller Wert</div>  <div class="calc-result-value" id="pt-currentval">—</div></div>
+      <div class="calc-result-item"><div class="calc-result-label">Gewinn / Verlust</div><div class="calc-result-value" id="pt-gain">—</div></div>
+      <div class="calc-result-item"><div class="calc-result-label">Performance</div>      <div class="calc-result-value" id="pt-gainpct">—</div></div>
+    </div>
+  </div>
+
+  <!-- ⑪ PREISALARM -->
+  <div class="section-label">Preisalarm</div>
+  <div class="calc-box">
+    <div class="alert-grid">
+      <div class="calc-field">
+        <label>Alarm über (€)</label>
+        <input class="calc-input" type="number" id="alert-above" placeholder="z.B. 160.00" min="0" step="0.01">
+      </div>
+      <div class="calc-field">
+        <label>Alarm unter (€)</label>
+        <input class="calc-input" type="number" id="alert-below" placeholder="z.B. 130.00" min="0" step="0.01">
+      </div>
+    </div>
+    <button class="alert-btn" onclick="activateAlert()">Alarm aktivieren</button>
+    <div class="alert-status" id="alert-status">Preise eingeben und "Alarm aktivieren" klicken</div>
+  </div>
+
+  <!-- ⑫ SPARPLAN-RECHNER (Planung – ganz am Ende) -->
   <div class="section-label">Sparplan-Rechner</div>
   <div class="calc-box">
     <div class="calc-grid">
@@ -478,53 +526,6 @@
       <div class="calc-result-item"><div class="calc-result-label">Endwert</div>       <div class="calc-result-value" id="sp-endvalue">—</div></div>
       <div class="calc-result-item"><div class="calc-result-label">Gewinn</div>        <div class="calc-result-value green" id="sp-gain">—</div></div>
       <div class="calc-result-item"><div class="calc-result-label">Rendite gesamt</div><div class="calc-result-value green" id="sp-gainpct">—</div></div>
-    </div>
-  </div>
-
-  <!-- Portfolio-Tracker -->
-  <div class="section-label">Mein Portfolio</div>
-  <div class="calc-box">
-    <div class="calc-grid-2">
-      <div class="calc-field">
-        <label>Anzahl Anteile</label>
-        <input class="calc-input" type="number" id="pt-shares" placeholder="z.B. 50" min="0" step="0.001" oninput="calcPortfolio()">
-      </div>
-      <div class="calc-field">
-        <label>Ø Kaufpreis (€)</label>
-        <input class="calc-input" type="number" id="pt-avgprice" placeholder="z.B. 120.00" min="0" step="0.01" oninput="calcPortfolio()">
-      </div>
-    </div>
-    <div class="calc-results">
-      <div class="calc-result-item"><div class="calc-result-label">Investiert</div>       <div class="calc-result-value" id="pt-invested">—</div></div>
-      <div class="calc-result-item"><div class="calc-result-label">Aktueller Wert</div>  <div class="calc-result-value" id="pt-currentval">—</div></div>
-      <div class="calc-result-item"><div class="calc-result-label">Gewinn / Verlust</div><div class="calc-result-value" id="pt-gain">—</div></div>
-      <div class="calc-result-item"><div class="calc-result-label">Performance</div>      <div class="calc-result-value" id="pt-gainpct">—</div></div>
-    </div>
-  </div>
-
-  <!-- Preisalarm -->
-  <div class="section-label">Preisalarm</div>
-  <div class="calc-box">
-    <div class="alert-grid">
-      <div class="calc-field">
-        <label>Alarm über (€)</label>
-        <input class="calc-input" type="number" id="alert-above" placeholder="z.B. 160.00" min="0" step="0.01">
-      </div>
-      <div class="calc-field">
-        <label>Alarm unter (€)</label>
-        <input class="calc-input" type="number" id="alert-below" placeholder="z.B. 130.00" min="0" step="0.01">
-      </div>
-    </div>
-    <button class="alert-btn" onclick="activateAlert()">Alarm aktivieren</button>
-    <div class="alert-status" id="alert-status">Preise eingeben und "Alarm aktivieren" klicken</div>
-  </div>
-
-  <!-- GD200 Signal -->
-  <div class="signal-box loading" id="signal-box">
-    <div class="signal-dot"></div>
-    <div class="signal-text">
-      <div class="signal-title" id="signal-title">Daten werden geladen...</div>
-      <div class="signal-desc"  id="signal-desc">Bitte warten</div>
     </div>
   </div>
 
