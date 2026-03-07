@@ -41,387 +41,219 @@
     }
 
     .etf-icon {
-      width: 54px;
-      height: 54px;
+      width: 54px; height: 54px;
       background: #2563eb;
       border-radius: 12px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-weight: 700;
-      font-size: 13px;
-      color: white;
-      letter-spacing: 0.3px;
+      display: flex; align-items: center; justify-content: center;
+      font-weight: 700; font-size: 13px; color: white; letter-spacing: 0.3px;
     }
 
-    .etf-name h1 {
-      font-size: 24px;
-      font-weight: 700;
-      color: #ffffff;
-    }
+    .etf-name h1 { font-size: 24px; font-weight: 700; color: #fff; }
+    .etf-name p  { font-size: 13px; color: #555; margin-top: 3px; }
 
-    .etf-name p {
-      font-size: 13px;
-      color: #555;
-      margin-top: 3px;
-    }
-
-    .price-section {
-      margin-bottom: 24px;
-    }
-
-    .price-label {
-      font-size: 11px;
-      color: #555;
-      text-transform: uppercase;
-      letter-spacing: 1.2px;
-      margin-bottom: 6px;
-    }
-
-    .price {
-      font-size: 64px;
-      font-weight: 700;
-      color: #ffffff;
-      line-height: 1;
-    }
-
-    .price-change {
-      margin-top: 8px;
-      font-size: 18px;
-      font-weight: 500;
-    }
-
+    .price-section { margin-bottom: 16px; }
+    .price-label { font-size: 11px; color: #555; text-transform: uppercase; letter-spacing: 1.2px; margin-bottom: 6px; }
+    .price { font-size: 64px; font-weight: 700; color: #fff; line-height: 1; }
+    .price-change { margin-top: 8px; font-size: 18px; font-weight: 500; }
     .price-change.up   { color: #22c55e; }
     .price-change.down { color: #ef4444; }
 
+    /* 52-Wochen Range */
+    .week52-section {
+      background: #0a0a0a; border-radius: 10px;
+      padding: 12px 16px; border: 1px solid #1e1e1e; margin-bottom: 16px;
+    }
+    .week52-header {
+      display: flex; justify-content: space-between;
+      font-size: 11px; color: #555; margin-bottom: 8px;
+    }
+    .week52-track {
+      position: relative; height: 5px;
+      background: #1e1e1e; border-radius: 3px; margin-bottom: 6px;
+    }
+    .week52-fill {
+      position: absolute; height: 100%; left: 0;
+      background: linear-gradient(to right, #22c55e, #eab308, #ef4444);
+      border-radius: 3px;
+    }
+    .week52-marker {
+      position: absolute; top: -5px; width: 3px; height: 15px;
+      background: #fff; border-radius: 2px; transform: translateX(-50%);
+      box-shadow: 0 0 5px rgba(255,255,255,0.6); transition: left 0.5s ease;
+    }
+    .week52-footer { display: flex; justify-content: space-between; font-size: 10px; color: #444; }
+
     /* Chart */
     .chart-section {
-      background: #0a0a0a;
-      border-radius: 12px;
-      padding: 16px;
-      border: 1px solid #1e1e1e;
-      margin-bottom: 20px;
+      background: #0a0a0a; border-radius: 12px;
+      padding: 16px; border: 1px solid #1e1e1e; margin-bottom: 20px;
     }
-
     .chart-header {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      margin-bottom: 12px;
+      display: flex; align-items: center;
+      justify-content: space-between; margin-bottom: 12px;
     }
-
-    .chart-title {
-      font-size: 11px;
-      color: #555;
-      text-transform: uppercase;
-      letter-spacing: 1px;
-    }
-
-    .chart-legend {
-      display: flex;
-      gap: 14px;
-    }
-
-    .legend-item {
-      display: flex;
-      align-items: center;
-      gap: 5px;
-      font-size: 10px;
-      color: #555;
-    }
-
-    .legend-dot {
-      width: 8px;
-      height: 2px;
-      border-radius: 1px;
-    }
-
-    .chart-wrap {
-      position: relative;
-      height: 220px;
-    }
+    .chart-title { font-size: 11px; color: #555; text-transform: uppercase; letter-spacing: 1px; }
+    .chart-legend { display: flex; gap: 14px; }
+    .legend-item { display: flex; align-items: center; gap: 5px; font-size: 10px; color: #555; }
+    .legend-dot  { width: 8px; height: 2px; border-radius: 1px; }
+    .chart-wrap  { position: relative; height: 220px; }
 
     /* Range buttons */
-    .range-btns {
-      display: flex;
-      gap: 6px;
-      margin-bottom: 20px;
-    }
-
+    .range-btns { display: flex; gap: 6px; margin-bottom: 20px; }
     .range-btn {
-      background: #1a1a1a;
-      border: 1px solid #222;
-      border-radius: 6px;
-      color: #555;
-      font-size: 11px;
-      padding: 5px 10px;
-      cursor: pointer;
-      transition: all 0.15s;
-      font-family: inherit;
+      background: #1a1a1a; border: 1px solid #222; border-radius: 6px;
+      color: #555; font-size: 11px; padding: 5px 10px;
+      cursor: pointer; transition: all 0.15s; font-family: inherit;
     }
-
-    .range-btn:hover { color: #aaa; border-color: #333; }
+    .range-btn:hover  { color: #aaa; border-color: #333; }
     .range-btn.active { background: #1e293b; border-color: #2563eb; color: #60a5fa; }
 
     /* Indicators */
     .indicators {
-      display: grid;
-      grid-template-columns: 1fr 1fr 1fr;
-      gap: 10px;
-      margin-bottom: 20px;
+      display: grid; grid-template-columns: 1fr 1fr 1fr;
+      gap: 10px; margin-bottom: 20px;
     }
-
     .indicator-box {
-      background: #0a0a0a;
-      border-radius: 10px;
-      padding: 14px 16px;
-      border: 1px solid #1e1e1e;
+      background: #0a0a0a; border-radius: 10px;
+      padding: 14px 16px; border: 1px solid #1e1e1e;
     }
-
-    .ind-label {
-      font-size: 11px;
-      color: #555;
-      text-transform: uppercase;
-      letter-spacing: 1px;
-      margin-bottom: 8px;
-    }
-
-    .ind-value {
-      font-size: 28px;
-      font-weight: 600;
-      color: #ffffff;
-    }
-
-    .ind-sub {
-      font-size: 13px;
-      color: #555;
-      margin-top: 4px;
-    }
+    .ind-label { font-size: 11px; color: #555; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 8px; }
+    .ind-value { font-size: 28px; font-weight: 600; color: #fff; }
+    .ind-sub   { font-size: 13px; color: #555; margin-top: 4px; }
 
     /* Signal */
     .signal-box {
-      border-radius: 12px;
-      padding: 18px 22px;
-      display: flex;
-      align-items: center;
-      gap: 14px;
+      border-radius: 12px; padding: 18px 22px;
+      display: flex; align-items: center; gap: 14px;
       border: 1px solid transparent;
     }
-
     .signal-box.green   { background: #031a0d; border-color: #166534; }
     .signal-box.yellow  { background: #1a1500; border-color: #854d0e; }
     .signal-box.red     { background: #1a0303; border-color: #991b1b; }
     .signal-box.loading { background: #0a0a0a; border-color: #1e1e1e; }
-
-    .signal-dot {
-      width: 14px;
-      height: 14px;
-      border-radius: 50%;
-      flex-shrink: 0;
-    }
-
+    .signal-dot { width: 14px; height: 14px; border-radius: 50%; flex-shrink: 0; }
     .signal-box.green   .signal-dot { background: #22c55e; box-shadow: 0 0 8px #22c55e66; }
     .signal-box.yellow  .signal-dot { background: #eab308; box-shadow: 0 0 8px #eab30866; }
     .signal-box.red     .signal-dot { background: #ef4444; box-shadow: 0 0 8px #ef444466; }
     .signal-box.loading .signal-dot { background: #333; }
-
     .signal-title { font-size: 18px; font-weight: 600; }
     .signal-box.green   .signal-title { color: #22c55e; }
     .signal-box.yellow  .signal-title { color: #eab308; }
     .signal-box.red     .signal-title { color: #ef4444; }
     .signal-box.loading .signal-title { color: #555; }
-
     .signal-desc { font-size: 12px; color: #555; margin-top: 3px; }
 
     /* Section label */
     .section-label {
-      font-size: 11px;
-      color: #555;
-      text-transform: uppercase;
-      letter-spacing: 1px;
-      margin-bottom: 10px;
-      margin-top: 20px;
+      font-size: 11px; color: #555; text-transform: uppercase;
+      letter-spacing: 1px; margin-bottom: 10px; margin-top: 20px;
     }
 
-
-    /* ATH Drawdown */
+    /* ATH / generic box */
     .ath-box {
-      background: #0a0a0a;
-      border-radius: 12px;
-      padding: 20px 22px;
-      border: 1px solid #1e1e1e;
-      margin-bottom: 20px;
+      background: #0a0a0a; border-radius: 12px;
+      padding: 20px 22px; border: 1px solid #1e1e1e; margin-bottom: 20px;
     }
-
-    .ath-top {
-      display: flex;
-      align-items: baseline;
-      gap: 16px;
-      margin-bottom: 16px;
-    }
-
-    .ath-drawdown {
-      font-size: 40px;
-      font-weight: 700;
-    }
-
+    .ath-top { display: flex; align-items: baseline; gap: 16px; margin-bottom: 16px; }
+    .ath-drawdown { font-size: 40px; font-weight: 700; }
     .ath-drawdown.green  { color: #22c55e; }
     .ath-drawdown.yellow { color: #eab308; }
     .ath-drawdown.orange { color: #f97316; }
     .ath-drawdown.red    { color: #ef4444; }
-
-    .ath-meta { font-size: 13px; color: #555; }
+    .ath-meta      { font-size: 13px; color: #555; }
     .ath-meta span { color: #888; }
-
-    .ath-table { width: 100%; border-collapse: collapse; }
-    .ath-table tr { border-top: 1px solid #1e1e1e; }
-    .ath-table tr.active-row { background: #1a1a1a; border-radius: 6px; }
-    .ath-table td { padding: 8px 10px; font-size: 13px; color: #555; }
+    .ath-table     { width: 100%; border-collapse: collapse; }
+    .ath-table tr  { border-top: 1px solid #1e1e1e; }
+    .ath-table tr.active-row { background: #1a1a1a; }
+    .ath-table td  { padding: 8px 10px; font-size: 13px; color: #555; }
     .ath-table td:first-child { white-space: nowrap; }
-    .ath-table td:last-child { color: #888; }
-    .ath-table tr.active-row td { color: #ffffff; }
-    .ath-table tr.active-row td:last-child { color: #ffffff; font-weight: 600; }
-    .ath-row-dot { display: inline-block; width: 7px; height: 7px; border-radius: 50%; margin-right: 7px; vertical-align: middle; }
-
-    .footer {
-      margin-top: 18px;
-      font-size: 10px;
-      color: #333;
-      text-align: right;
+    .ath-table td:last-child  { color: #888; }
+    .ath-table tr.active-row td              { color: #fff; }
+    .ath-table tr.active-row td:last-child   { color: #fff; font-weight: 600; }
+    .ath-row-dot {
+      display: inline-block; width: 7px; height: 7px;
+      border-radius: 50%; margin-right: 7px; vertical-align: middle;
     }
 
-    .loading-shimmer {
-      background: linear-gradient(90deg, #111 25%, #1e1e1e 50%, #111 75%);
-      background-size: 200% 100%;
-      animation: shimmer 1.5s infinite;
-      border-radius: 4px;
-      display: inline-block;
-      color: transparent;
-    }
-
-    @keyframes shimmer {
-      0%   { background-position: 200% 0; }
-      100% { background-position: -200% 0; }
-    }
-
-    .error-msg {
-      background: #1a0303;
-      border: 1px solid #991b1b;
-      border-radius: 10px;
-      padding: 12px 16px;
-      font-size: 13px;
-      color: #fca5a5;
-      margin-bottom: 16px;
-    }
-
-    /* Fear & Greed */
+    /* Fear & Greed / fg-box */
     .fg-box {
-      background: #0a0a0a;
-      border-radius: 12px;
-      padding: 20px 22px;
-      border: 1px solid #1e1e1e;
-      margin-bottom: 20px;
+      background: #0a0a0a; border-radius: 12px;
+      padding: 20px 22px; border: 1px solid #1e1e1e; margin-bottom: 20px;
     }
-
-    .fg-top {
-      display: flex;
-      align-items: baseline;
-      gap: 16px;
-      margin-bottom: 14px;
-    }
-
-    .fg-score {
-      font-size: 40px;
-      font-weight: 700;
-    }
-
+    .fg-top { display: flex; align-items: baseline; gap: 16px; margin-bottom: 14px; }
+    .fg-score { font-size: 40px; font-weight: 700; }
     .fg-score.fear-extreme  { color: #22c55e; }
     .fg-score.fear          { color: #86efac; }
     .fg-score.neutral       { color: #eab308; }
     .fg-score.greed         { color: #f97316; }
     .fg-score.greed-extreme { color: #ef4444; }
-
-    .fg-meta { font-size: 13px; color: #555; }
+    .fg-meta      { font-size: 13px; color: #555; }
     .fg-meta span { color: #888; }
-
-    .fg-bar-wrap { margin-bottom: 14px; }
-
+    .fg-bar-wrap  { margin-bottom: 14px; }
     .fg-bar-track {
-      position: relative;
-      height: 6px;
+      position: relative; height: 6px;
       background: linear-gradient(to right, #22c55e 0%, #86efac 25%, #eab308 50%, #f97316 75%, #ef4444 100%);
-      border-radius: 3px;
-      margin-bottom: 5px;
+      border-radius: 3px; margin-bottom: 5px;
     }
-
     .fg-bar-marker {
-      position: absolute;
-      top: -5px;
-      width: 3px;
-      height: 16px;
-      background: #ffffff;
-      border-radius: 2px;
-      transform: translateX(-50%);
-      transition: left 0.6s ease;
-      box-shadow: 0 0 6px rgba(255,255,255,0.5);
+      position: absolute; top: -5px; width: 3px; height: 16px;
+      background: #fff; border-radius: 2px; transform: translateX(-50%);
+      transition: left 0.6s ease; box-shadow: 0 0 6px rgba(255,255,255,0.5);
     }
+    .fg-bar-labels { display: flex; justify-content: space-between; font-size: 9px; color: #333; }
 
-    .fg-bar-labels {
-      display: flex;
-      justify-content: space-between;
-      font-size: 9px;
-      color: #333;
+    /* Calc boxes (Sparplan + Portfolio) */
+    .calc-box {
+      background: #0a0a0a; border-radius: 12px;
+      padding: 20px 22px; border: 1px solid #1e1e1e; margin-bottom: 20px;
     }
-
-    /* CAPE */
-    .cape-input-row {
-      display: flex;
-      align-items: center;
-      gap: 16px;
-      margin-bottom: 14px;
-      flex-wrap: wrap;
+    .calc-grid   { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; margin-bottom: 16px; }
+    .calc-grid-2 { display: grid; grid-template-columns: 1fr 1fr;     gap: 10px; margin-bottom: 16px; }
+    .calc-field  { display: flex; flex-direction: column; gap: 6px; }
+    .calc-field label { font-size: 11px; color: #555; text-transform: uppercase; letter-spacing: 0.8px; }
+    .calc-input {
+      background: #1a1a1a; border: 1px solid #333; border-radius: 8px;
+      color: #fff; font-size: 16px; font-weight: 600; font-family: inherit;
+      padding: 8px 10px; width: 100%; outline: none; -moz-appearance: textfield;
     }
-
-    .cape-input-group {
-      display: flex;
-      align-items: center;
-      gap: 10px;
-      flex: 1;
+    .calc-input::-webkit-outer-spin-button,
+    .calc-input::-webkit-inner-spin-button { -webkit-appearance: none; }
+    .calc-input:focus { border-color: #2563eb; }
+    .calc-results {
+      display: grid; grid-template-columns: 1fr 1fr; gap: 10px;
+      border-top: 1px solid #1e1e1e; padding-top: 14px;
     }
+    .calc-result-item   { display: flex; flex-direction: column; gap: 4px; }
+    .calc-result-label  { font-size: 11px; color: #555; text-transform: uppercase; letter-spacing: 0.8px; }
+    .calc-result-value  { font-size: 22px; font-weight: 700; color: #fff; }
+    .calc-result-value.green { color: #22c55e; }
+    .calc-result-value.red   { color: #ef4444; }
 
-    .cape-input-group label {
-      font-size: 13px;
-      color: #555;
-      white-space: nowrap;
+    /* Preisalarm */
+    .alert-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 12px; }
+    .alert-btn {
+      background: #1e293b; border: 1px solid #2563eb; border-radius: 8px;
+      color: #60a5fa; font-size: 13px; font-family: inherit;
+      padding: 9px 16px; cursor: pointer; transition: all 0.15s; width: 100%;
     }
+    .alert-btn:hover { background: #2563eb; color: #fff; }
+    .alert-status { font-size: 12px; color: #555; margin-top: 10px; }
+    .alert-status.active { color: #22c55e; }
 
-    .cape-input-field {
-      background: #1a1a1a;
-      border: 1px solid #333;
-      border-radius: 6px;
-      color: #fff;
-      font-size: 20px;
-      font-weight: 600;
-      font-family: inherit;
-      padding: 6px 10px;
-      width: 80px;
-      text-align: center;
-      outline: none;
-      -moz-appearance: textfield;
+    .footer { margin-top: 18px; font-size: 10px; color: #333; text-align: right; }
+
+    .loading-shimmer {
+      background: linear-gradient(90deg, #111 25%, #1e1e1e 50%, #111 75%);
+      background-size: 200% 100%; animation: shimmer 1.5s infinite;
+      border-radius: 4px; display: inline-block; color: transparent;
     }
+    @keyframes shimmer { 0% { background-position: 200% 0; } 100% { background-position: -200% 0; } }
 
-    .cape-input-field::-webkit-outer-spin-button,
-    .cape-input-field::-webkit-inner-spin-button { -webkit-appearance: none; }
-
-    .cape-input-field:focus { border-color: #2563eb; }
-
-    .cape-ref { font-size: 11px; color: #444; }
-
-    .cape-deviation { font-size: 22px; font-weight: 700; }
-    .cape-deviation.overvalued    { color: #ef4444; }
-    .cape-deviation.slightly-high { color: #f97316; }
-    .cape-deviation.fair          { color: #86efac; }
-    .cape-deviation.cheap         { color: #22c55e; }
+    .error-msg {
+      background: #1a0303; border: 1px solid #991b1b;
+      border-radius: 10px; padding: 12px 16px;
+      font-size: 13px; color: #fca5a5; margin-bottom: 16px;
+    }
 
     /* Responsive */
     @media (max-width: 640px) {
@@ -437,663 +269,777 @@
       .etf-name h1 { font-size: 20px; }
       .etf-icon { width: 44px; height: 44px; font-size: 11px; }
       .fg-bar-labels { font-size: 8px; }
+      .calc-grid   { grid-template-columns: 1fr; }
+      .calc-grid-2 { grid-template-columns: 1fr; }
+      .alert-grid  { grid-template-columns: 1fr; }
     }
-
     @media (min-width: 641px) and (max-width: 900px) {
       body { padding: 20px 16px; }
       .card { padding: 36px 36px; }
       .indicators { grid-template-columns: 1fr 1fr; }
+      .calc-grid  { grid-template-columns: 1fr 1fr; }
     }
   </style>
 </head>
 <body>
-  <div class="card">
-    <div class="header">
-      <div class="etf-icon">VWCE</div>
-      <div class="etf-name">
-        <h1>VWCE</h1>
-        <p>Vanguard FTSE All-World UCITS ETF</p>
-      </div>
+<div class="card">
+
+  <div class="header">
+    <div class="etf-icon">VWCE</div>
+    <div class="etf-name">
+      <h1>VWCE</h1>
+      <p>Vanguard FTSE All-World UCITS ETF</p>
     </div>
-
-    <div id="error-box" class="error-msg" style="display:none;"></div>
-
-    <div class="price-section">
-      <div class="price-label">Aktueller Preis</div>
-      <div class="price" id="price"><span class="loading-shimmer">€000.00</span></div>
-      <div class="price-change" id="price-change"></div>
-    </div>
-
-    <!-- Chart -->
-    <div class="chart-section">
-      <div class="chart-header">
-        <div class="chart-title">Kursverlauf</div>
-        <div class="chart-legend">
-          <div class="legend-item">
-            <div class="legend-dot" style="background:#ffffff;"></div>
-            <span>Kurs</span>
-          </div>
-          <div class="legend-item">
-            <div class="legend-dot" style="background:#3b82f6;"></div>
-            <span>MA200</span>
-          </div>
-        </div>
-      </div>
-      <div class="chart-wrap">
-        <canvas id="priceChart"></canvas>
-      </div>
-    </div>
-
-    <div class="range-btns">
-      <button class="range-btn" onclick="setRange(30)">1M</button>
-      <button class="range-btn active" onclick="setRange(90)">3M</button>
-      <button class="range-btn" onclick="setRange(180)">6M</button>
-      <button class="range-btn" onclick="setRange(365)">1J</button>
-    </div>
-
-    <div class="indicators">
-      <div class="indicator-box">
-        <div class="ind-label">200-Tage MA</div>
-        <div class="ind-value" id="ma200"><span class="loading-shimmer">€000</span></div>
-        <div class="ind-sub" id="ma200-sub"></div>
-      </div>
-      <div class="indicator-box">
-        <div class="ind-label">RSI – Täglich</div>
-        <div class="ind-value" id="rsi"><span class="loading-shimmer">00.0</span></div>
-        <div class="ind-sub" id="rsi-sub"></div>
-      </div>
-      <div class="indicator-box">
-        <div class="ind-label">RSI – Wöchentlich</div>
-        <div class="ind-value" id="wrsi"><span class="loading-shimmer">00.0</span></div>
-        <div class="ind-sub" id="wrsi-sub"></div>
-      </div>
-    </div>
-
-    <div class="section-label">RSI-Matrix (Wochen-RSI)</div>
-    <div class="ath-box" style="margin-bottom:20px;">
-      <table class="ath-table" id="rsi-table">
-        <tr data-rsimin="70" data-rsimax="200">
-          <td><span class="ath-row-dot" style="background:#ef4444"></span>Über 70 – Überkauft (Euphorie)</td>
-          <td>Sparplan laufen lassen. Keine großen Einmalsummen.</td>
-        </tr>
-        <tr data-rsimin="50" data-rsimax="70">
-          <td><span class="ath-row-dot" style="background:#ffffff"></span>50–70 – Bullisch / Neutral</td>
-          <td>Business as usual. Sparplan läuft.</td>
-        </tr>
-        <tr data-rsimin="40" data-rsimax="50">
-          <td><span class="ath-row-dot" style="background:#86efac"></span>40–50 – Leichte Abkühlung</td>
-          <td>Kleine Extra-Beträge nachschießen.</td>
-        </tr>
-        <tr data-rsimin="30" data-rsimax="40">
-          <td><span class="ath-row-dot" style="background:#22c55e"></span>30–40 – Angst im Markt</td>
-          <td>Kaufsignal. Sparplan aufstocken oder Tranche nachkaufen.</td>
-        </tr>
-        <tr data-rsimin="0" data-rsimax="30">
-          <td><span class="ath-row-dot" style="background:#22c55e"></span>Unter 30 – Panik (Oversold)</td>
-          <td>Starkes Kaufsignal. Historisch beste Einstiegszeitpunkte.</td>
-        </tr>
-      </table>
-    </div>
-
-    <div class="section-label">ATH-Abstand &amp; Strategie</div>
-    <div class="ath-box">
-      <div class="ath-top">
-        <div class="ath-drawdown loading-shimmer" id="ath-drawdown">-0.0%</div>
-        <div class="ath-meta">vom ATH <span id="ath-value">€—</span></div>
-      </div>
-      <table class="ath-table" id="ath-table">
-        <tr data-min="0" data-max="5">
-          <td><span class="ath-row-dot" style="background:#22c55e"></span>0% bis -5%</td>
-          <td>Nichts tun / Sparplan</td>
-        </tr>
-        <tr data-min="5" data-max="10">
-          <td><span class="ath-row-dot" style="background:#eab308"></span>-5% bis -10%</td>
-          <td>Erste Tranche nachkaufen</td>
-        </tr>
-        <tr data-min="10" data-max="20">
-          <td><span class="ath-row-dot" style="background:#f97316"></span>-10% bis -20%</td>
-          <td>Größere Tranche nachkaufen</td>
-        </tr>
-        <tr data-min="20" data-max="100">
-          <td><span class="ath-row-dot" style="background:#ef4444"></span>&gt; -20%</td>
-          <td>Aggressiv nachkaufen</td>
-        </tr>
-      </table>
-    </div>
-
-    <div class="section-label">Shiller CAPE (Bewertungsfilter)</div>
-    <div class="fg-box">
-      <div class="fg-top">
-        <div class="fg-score loading-shimmer" id="pe-value">--</div>
-        <div class="fg-meta">Welt-Markt KGV · <span id="pe-source">wird geladen...</span></div>
-      </div>
-      <div id="pe-deviation" style="font-size:18px;font-weight:600;color:#555;margin-bottom:14px;">—</div>
-      <table class="ath-table" id="cape-table">
-        <tr data-cmin="25" data-cmax="999">
-          <td><span class="ath-row-dot" style="background:#ef4444"></span>&gt; +25% (überbewertet)</td>
-          <td>Nur Basis-Sparplan; Zusatzkäufe erst bei ≥ −20% Drawdown</td>
-        </tr>
-        <tr data-cmin="0" data-cmax="25">
-          <td><span class="ath-row-dot" style="background:#f97316"></span>+0% bis +25% (fair/leicht teuer)</td>
-          <td>Sparplan; bei −5% kleine Tranche, −10% normale Tranche</td>
-        </tr>
-        <tr data-cmin="-10" data-cmax="0">
-          <td><span class="ath-row-dot" style="background:#86efac"></span>−10% bis 0% (fair/leicht günstig)</td>
-          <td>Basis + bei −5% normale Tranche</td>
-        </tr>
-        <tr data-cmin="-999" data-cmax="-10">
-          <td><span class="ath-row-dot" style="background:#22c55e"></span>&lt; −10% (günstig)</td>
-          <td>Erhöhe Zusatzbeiträge (z.B. 1,5×); bei −20% große Tranche</td>
-        </tr>
-      </table>
-    </div>
-
-    <div class="section-label">Markt-Sentiment</div>
-    <div class="fg-box">
-      <div class="fg-top">
-        <div class="fg-score loading-shimmer" id="fg-score">50</div>
-        <div class="fg-meta">CNN Fear &amp; Greed · <span id="fg-label">Wird geladen...</span></div>
-      </div>
-      <div class="fg-bar-wrap">
-        <div class="fg-bar-track">
-          <div class="fg-bar-marker" id="fg-marker" style="left:50%"></div>
-        </div>
-        <div class="fg-bar-labels">
-          <span>Extreme Angst</span>
-          <span></span>
-          <span>Neutral</span>
-          <span></span>
-          <span>Extreme Gier</span>
-        </div>
-      </div>
-      <table class="ath-table" id="fg-table">
-        <tr data-fgmin="75" data-fgmax="101">
-          <td><span class="ath-row-dot" style="background:#ef4444"></span>Extreme Gier (75–100)</td>
-          <td>Füße stillhalten – nicht investieren</td>
-        </tr>
-        <tr data-fgmin="55" data-fgmax="75">
-          <td><span class="ath-row-dot" style="background:#f97316"></span>Gier (55–74)</td>
-          <td>Vorsicht – nur Sparplan weiterführen</td>
-        </tr>
-        <tr data-fgmin="45" data-fgmax="55">
-          <td><span class="ath-row-dot" style="background:#eab308"></span>Neutral (45–54)</td>
-          <td>Normal – Sparplan weiterlaufen lassen</td>
-        </tr>
-        <tr data-fgmin="25" data-fgmax="45">
-          <td><span class="ath-row-dot" style="background:#86efac"></span>Angst (25–44)</td>
-          <td>Erste Tranche nachkaufen</td>
-        </tr>
-        <tr data-fgmin="0" data-fgmax="25">
-          <td><span class="ath-row-dot" style="background:#22c55e"></span>Extreme Angst (0–24)</td>
-          <td>Aggressiv nachkaufen – Angst der Masse nutzen</td>
-        </tr>
-      </table>
-    </div>
-
-    <div class="signal-box loading" id="signal-box">
-      <div class="signal-dot"></div>
-      <div class="signal-text">
-        <div class="signal-title" id="signal-title">Daten werden geladen...</div>
-        <div class="signal-desc" id="signal-desc">Bitte warten</div>
-      </div>
-    </div>
-
-    <div class="footer" id="footer">Letzte Aktualisierung: —</div>
   </div>
 
-  <script>
-    const TICKER = 'VWCE.DE';
-    const PROXY  = 'https://corsproxy.io/?';
+  <div id="error-box" class="error-msg" style="display:none;"></div>
 
-    let allTimestamps = [];
-    let allCloses     = [];
-    let chartInstance = null;
-    let currentRange  = 90;
+  <div class="price-section">
+    <div class="price-label">Aktueller Preis</div>
+    <div class="price" id="price"><span class="loading-shimmer">€000.00</span></div>
+    <div class="price-change" id="price-change"></div>
+  </div>
 
-    async function fetchYahoo(range, interval) {
-      const url = `https://query1.finance.yahoo.com/v8/finance/chart/${TICKER}?range=${range}&interval=${interval}&includePrePost=false`;
-      const res = await fetch(PROXY + encodeURIComponent(url));
+  <!-- 52-Wochen Range -->
+  <div class="week52-section">
+    <div class="week52-header">
+      <span>52-Wochen-Tief</span>
+      <span style="color:#555;font-size:10px;" id="week52-pct">—</span>
+      <span>52-Wochen-Hoch</span>
+    </div>
+    <div class="week52-track">
+      <div class="week52-fill"  id="week52-fill"   style="width:0%"></div>
+      <div class="week52-marker" id="week52-marker" style="left:0%"></div>
+    </div>
+    <div class="week52-footer">
+      <span id="week52-low">—</span>
+      <span id="week52-high">—</span>
+    </div>
+  </div>
+
+  <!-- Chart -->
+  <div class="chart-section">
+    <div class="chart-header">
+      <div class="chart-title">Kursverlauf</div>
+      <div class="chart-legend">
+        <div class="legend-item"><div class="legend-dot" style="background:#fff;"></div><span>Kurs</span></div>
+        <div class="legend-item"><div class="legend-dot" style="background:#3b82f6;"></div><span>MA200</span></div>
+        <div class="legend-item"><div class="legend-dot" style="background:#a855f7;"></div><span>BB</span></div>
+      </div>
+    </div>
+    <div class="chart-wrap"><canvas id="priceChart"></canvas></div>
+  </div>
+
+  <div class="range-btns">
+    <button class="range-btn" onclick="setRange(30)">1M</button>
+    <button class="range-btn active" onclick="setRange(90)">3M</button>
+    <button class="range-btn" onclick="setRange(180)">6M</button>
+    <button class="range-btn" onclick="setRange(365)">1J</button>
+  </div>
+
+  <!-- Indicators: 2 rows × 3 cols -->
+  <div class="indicators">
+    <div class="indicator-box">
+      <div class="ind-label">200-Tage MA</div>
+      <div class="ind-value" id="ma200"><span class="loading-shimmer">€000</span></div>
+      <div class="ind-sub"   id="ma200-sub"></div>
+    </div>
+    <div class="indicator-box">
+      <div class="ind-label">RSI – Täglich</div>
+      <div class="ind-value" id="rsi"><span class="loading-shimmer">00.0</span></div>
+      <div class="ind-sub"   id="rsi-sub"></div>
+    </div>
+    <div class="indicator-box">
+      <div class="ind-label">RSI – Wöchentlich</div>
+      <div class="ind-value" id="wrsi"><span class="loading-shimmer">00.0</span></div>
+      <div class="ind-sub"   id="wrsi-sub"></div>
+    </div>
+    <div class="indicator-box">
+      <div class="ind-label">VIX</div>
+      <div class="ind-value" id="vix-value"><span class="loading-shimmer">00.0</span></div>
+      <div class="ind-sub"   id="vix-sub">Volatilität</div>
+    </div>
+    <div class="indicator-box">
+      <div class="ind-label">EUR / USD</div>
+      <div class="ind-value" id="eurusd-value" style="font-size:22px;"><span class="loading-shimmer">0.0000</span></div>
+      <div class="ind-sub"   id="eurusd-sub">Wechselkurs</div>
+    </div>
+    <div class="indicator-box">
+      <div class="ind-label">MACD</div>
+      <div class="ind-value" id="macd-value"><span class="loading-shimmer">0.00</span></div>
+      <div class="ind-sub"   id="macd-sub">wird berechnet...</div>
+    </div>
+  </div>
+
+  <!-- RSI-Matrix -->
+  <div class="section-label">RSI-Matrix (Wochen-RSI)</div>
+  <div class="ath-box" style="margin-bottom:20px;">
+    <table class="ath-table" id="rsi-table">
+      <tr data-rsimin="70" data-rsimax="200">
+        <td><span class="ath-row-dot" style="background:#ef4444"></span>Über 70 – Überkauft (Euphorie)</td>
+        <td>Sparplan laufen lassen. Keine großen Einmalsummen.</td>
+      </tr>
+      <tr data-rsimin="50" data-rsimax="70">
+        <td><span class="ath-row-dot" style="background:#fff"></span>50–70 – Bullisch / Neutral</td>
+        <td>Business as usual. Sparplan läuft.</td>
+      </tr>
+      <tr data-rsimin="40" data-rsimax="50">
+        <td><span class="ath-row-dot" style="background:#86efac"></span>40–50 – Leichte Abkühlung</td>
+        <td>Kleine Extra-Beträge nachschießen.</td>
+      </tr>
+      <tr data-rsimin="30" data-rsimax="40">
+        <td><span class="ath-row-dot" style="background:#22c55e"></span>30–40 – Angst im Markt</td>
+        <td>Kaufsignal. Sparplan aufstocken oder Tranche nachkaufen.</td>
+      </tr>
+      <tr data-rsimin="0" data-rsimax="30">
+        <td><span class="ath-row-dot" style="background:#22c55e"></span>Unter 30 – Panik (Oversold)</td>
+        <td>Starkes Kaufsignal. Historisch beste Einstiegszeitpunkte.</td>
+      </tr>
+    </table>
+  </div>
+
+  <!-- ATH -->
+  <div class="section-label">ATH-Abstand &amp; Strategie</div>
+  <div class="ath-box">
+    <div class="ath-top">
+      <div class="ath-drawdown loading-shimmer" id="ath-drawdown">-0.0%</div>
+      <div class="ath-meta">vom ATH <span id="ath-value">€—</span></div>
+    </div>
+    <table class="ath-table" id="ath-table">
+      <tr data-min="0"  data-max="5">  <td><span class="ath-row-dot" style="background:#22c55e"></span>0% bis -5%</td>   <td>Nichts tun / Sparplan</td></tr>
+      <tr data-min="5"  data-max="10"> <td><span class="ath-row-dot" style="background:#eab308"></span>-5% bis -10%</td>  <td>Erste Tranche nachkaufen</td></tr>
+      <tr data-min="10" data-max="20"> <td><span class="ath-row-dot" style="background:#f97316"></span>-10% bis -20%</td> <td>Größere Tranche nachkaufen</td></tr>
+      <tr data-min="20" data-max="100"><td><span class="ath-row-dot" style="background:#ef4444"></span>&gt; -20%</td>     <td>Aggressiv nachkaufen</td></tr>
+    </table>
+  </div>
+
+  <!-- CAPE -->
+  <div class="section-label">Shiller CAPE (Bewertungsfilter)</div>
+  <div class="fg-box">
+    <div class="fg-top">
+      <div class="fg-score loading-shimmer" id="pe-value">--</div>
+      <div class="fg-meta">Welt-Markt KGV · <span id="pe-source">wird geladen...</span></div>
+    </div>
+    <div id="pe-deviation" style="font-size:18px;font-weight:600;color:#555;margin-bottom:14px;">—</div>
+    <table class="ath-table" id="cape-table">
+      <tr data-cmin="25"   data-cmax="999"><td><span class="ath-row-dot" style="background:#ef4444"></span>&gt; +25% (überbewertet)</td>      <td>Nur Basis-Sparplan; Zusatzkäufe erst bei ≥ −20% Drawdown</td></tr>
+      <tr data-cmin="0"    data-cmax="25"> <td><span class="ath-row-dot" style="background:#f97316"></span>+0% bis +25% (fair/leicht teuer)</td><td>Sparplan; bei −5% kleine Tranche, −10% normale Tranche</td></tr>
+      <tr data-cmin="-10"  data-cmax="0">  <td><span class="ath-row-dot" style="background:#86efac"></span>−10% bis 0% (fair/leicht günstig)</td><td>Basis + bei −5% normale Tranche</td></tr>
+      <tr data-cmin="-999" data-cmax="-10"><td><span class="ath-row-dot" style="background:#22c55e"></span>&lt; −10% (günstig)</td>            <td>Erhöhe Zusatzbeiträge (z.B. 1,5×); bei −20% große Tranche</td></tr>
+    </table>
+  </div>
+
+  <!-- Fear & Greed -->
+  <div class="section-label">Markt-Sentiment</div>
+  <div class="fg-box">
+    <div class="fg-top">
+      <div class="fg-score loading-shimmer" id="fg-score">50</div>
+      <div class="fg-meta">CNN Fear &amp; Greed · <span id="fg-label">Wird geladen...</span></div>
+    </div>
+    <div class="fg-bar-wrap">
+      <div class="fg-bar-track">
+        <div class="fg-bar-marker" id="fg-marker" style="left:50%"></div>
+      </div>
+      <div class="fg-bar-labels">
+        <span>Extreme Angst</span><span></span><span>Neutral</span><span></span><span>Extreme Gier</span>
+      </div>
+    </div>
+    <table class="ath-table" id="fg-table">
+      <tr data-fgmin="75" data-fgmax="101"><td><span class="ath-row-dot" style="background:#ef4444"></span>Extreme Gier (75–100)</td><td>Füße stillhalten – nicht investieren</td></tr>
+      <tr data-fgmin="55" data-fgmax="75"> <td><span class="ath-row-dot" style="background:#f97316"></span>Gier (55–74)</td>          <td>Vorsicht – nur Sparplan weiterführen</td></tr>
+      <tr data-fgmin="45" data-fgmax="55"> <td><span class="ath-row-dot" style="background:#eab308"></span>Neutral (45–54)</td>       <td>Normal – Sparplan weiterlaufen lassen</td></tr>
+      <tr data-fgmin="25" data-fgmax="45"> <td><span class="ath-row-dot" style="background:#86efac"></span>Angst (25–44)</td>         <td>Erste Tranche nachkaufen</td></tr>
+      <tr data-fgmin="0"  data-fgmax="25"> <td><span class="ath-row-dot" style="background:#22c55e"></span>Extreme Angst (0–24)</td>  <td>Aggressiv nachkaufen – Angst der Masse nutzen</td></tr>
+    </table>
+  </div>
+
+  <!-- Sparplan-Rechner -->
+  <div class="section-label">Sparplan-Rechner</div>
+  <div class="calc-box">
+    <div class="calc-grid">
+      <div class="calc-field">
+        <label>Monatliche Rate (€)</label>
+        <input class="calc-input" type="number" id="sp-monthly" value="500" min="1" oninput="calcSparplan()">
+      </div>
+      <div class="calc-field">
+        <label>Laufzeit (Jahre)</label>
+        <input class="calc-input" type="number" id="sp-years" value="30" min="1" max="50" oninput="calcSparplan()">
+      </div>
+      <div class="calc-field">
+        <label>Rendite p.a. (%)</label>
+        <input class="calc-input" type="number" id="sp-rate" value="7" min="0" max="30" step="0.1" oninput="calcSparplan()">
+      </div>
+    </div>
+    <div class="calc-results">
+      <div class="calc-result-item"><div class="calc-result-label">Eingezahlt</div>    <div class="calc-result-value" id="sp-invested">—</div></div>
+      <div class="calc-result-item"><div class="calc-result-label">Endwert</div>       <div class="calc-result-value" id="sp-endvalue">—</div></div>
+      <div class="calc-result-item"><div class="calc-result-label">Gewinn</div>        <div class="calc-result-value green" id="sp-gain">—</div></div>
+      <div class="calc-result-item"><div class="calc-result-label">Rendite gesamt</div><div class="calc-result-value green" id="sp-gainpct">—</div></div>
+    </div>
+  </div>
+
+  <!-- Portfolio-Tracker -->
+  <div class="section-label">Mein Portfolio</div>
+  <div class="calc-box">
+    <div class="calc-grid-2">
+      <div class="calc-field">
+        <label>Anzahl Anteile</label>
+        <input class="calc-input" type="number" id="pt-shares" placeholder="z.B. 50" min="0" step="0.001" oninput="calcPortfolio()">
+      </div>
+      <div class="calc-field">
+        <label>Ø Kaufpreis (€)</label>
+        <input class="calc-input" type="number" id="pt-avgprice" placeholder="z.B. 120.00" min="0" step="0.01" oninput="calcPortfolio()">
+      </div>
+    </div>
+    <div class="calc-results">
+      <div class="calc-result-item"><div class="calc-result-label">Investiert</div>       <div class="calc-result-value" id="pt-invested">—</div></div>
+      <div class="calc-result-item"><div class="calc-result-label">Aktueller Wert</div>  <div class="calc-result-value" id="pt-currentval">—</div></div>
+      <div class="calc-result-item"><div class="calc-result-label">Gewinn / Verlust</div><div class="calc-result-value" id="pt-gain">—</div></div>
+      <div class="calc-result-item"><div class="calc-result-label">Performance</div>      <div class="calc-result-value" id="pt-gainpct">—</div></div>
+    </div>
+  </div>
+
+  <!-- Preisalarm -->
+  <div class="section-label">Preisalarm</div>
+  <div class="calc-box">
+    <div class="alert-grid">
+      <div class="calc-field">
+        <label>Alarm über (€)</label>
+        <input class="calc-input" type="number" id="alert-above" placeholder="z.B. 160.00" min="0" step="0.01">
+      </div>
+      <div class="calc-field">
+        <label>Alarm unter (€)</label>
+        <input class="calc-input" type="number" id="alert-below" placeholder="z.B. 130.00" min="0" step="0.01">
+      </div>
+    </div>
+    <button class="alert-btn" onclick="activateAlert()">Alarm aktivieren</button>
+    <div class="alert-status" id="alert-status">Preise eingeben und "Alarm aktivieren" klicken</div>
+  </div>
+
+  <!-- GD200 Signal -->
+  <div class="signal-box loading" id="signal-box">
+    <div class="signal-dot"></div>
+    <div class="signal-text">
+      <div class="signal-title" id="signal-title">Daten werden geladen...</div>
+      <div class="signal-desc"  id="signal-desc">Bitte warten</div>
+    </div>
+  </div>
+
+  <div class="footer" id="footer">Letzte Aktualisierung: —</div>
+</div>
+
+<script>
+  const TICKER = 'VWCE.DE';
+  const PROXY  = 'https://corsproxy.io/?';
+
+  let allTimestamps = [];
+  let allCloses     = [];
+  let chartInstance = null;
+  let currentRange  = 90;
+  let currentPrice  = 0;
+
+  // ── Helpers ────────────────────────────────────────────────
+
+  async function fetchYahoo(ticker, range, interval) {
+    const url = `https://query1.finance.yahoo.com/v8/finance/chart/${ticker}?range=${range}&interval=${interval}&includePrePost=false`;
+    const res = await fetch(PROXY + encodeURIComponent(url));
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    const data = await res.json();
+    const result = data.chart.result[0];
+    if (!result) throw new Error('Keine Daten');
+    return result;
+  }
+
+  // ── Technische Indikatoren ─────────────────────────────────
+
+  function calcMA(closes, period) {
+    if (closes.length < period) return null;
+    return closes.slice(-period).reduce((a, b) => a + b, 0) / period;
+  }
+
+  function calcMALine(closes, period) {
+    return closes.map((_, i) => {
+      if (i < period - 1) return null;
+      return closes.slice(i - period + 1, i + 1).reduce((a, b) => a + b, 0) / period;
+    });
+  }
+
+  function calcEMALine(closes, period) {
+    const k = 2 / (period + 1);
+    const result = new Array(closes.length).fill(null);
+    if (closes.length < period) return result;
+    let ema = closes.slice(0, period).reduce((a, b) => a + b, 0) / period;
+    result[period - 1] = ema;
+    for (let i = period; i < closes.length; i++) {
+      ema = closes[i] * k + ema * (1 - k);
+      result[i] = ema;
+    }
+    return result;
+  }
+
+  function calcRSI(closes, period = 14) {
+    if (closes.length < period + 1) return null;
+    const changes = [];
+    for (let i = 1; i < closes.length; i++) changes.push(closes[i] - closes[i - 1]);
+    const recent = changes.slice(-period);
+    let gains = 0, losses = 0;
+    for (const c of recent) { if (c > 0) gains += c; else losses -= c; }
+    const avgLoss = losses / period;
+    if (avgLoss === 0) return 100;
+    return 100 - (100 / (1 + (gains / period) / avgLoss));
+  }
+
+  function calcMACDIndicator(closes) {
+    const ema12 = calcEMALine(closes, 12);
+    const ema26 = calcEMALine(closes, 26);
+    const macdVals = closes
+      .map((_, i) => (ema12[i] !== null && ema26[i] !== null) ? ema12[i] - ema26[i] : null)
+      .filter(v => v !== null);
+    if (macdVals.length < 9) return { lastMacd: null, lastSignal: null };
+    const k = 2 / 10;
+    let sig = macdVals.slice(0, 9).reduce((a, b) => a + b, 0) / 9;
+    for (let i = 9; i < macdVals.length; i++) sig = macdVals[i] * k + sig * (1 - k);
+    return { lastMacd: macdVals[macdVals.length - 1], lastSignal: sig };
+  }
+
+  function calcBollingerLines(closes, period = 20, mult = 2) {
+    return closes.map((_, i) => {
+      if (i < period - 1) return { upper: null, lower: null };
+      const slice = closes.slice(i - period + 1, i + 1);
+      const mean  = slice.reduce((a, b) => a + b, 0) / period;
+      const std   = Math.sqrt(slice.reduce((a, b) => a + (b - mean) ** 2, 0) / period);
+      return { upper: mean + mult * std, lower: mean - mult * std };
+    });
+  }
+
+  function getRSIZone(rsi) {
+    if (rsi >= 70) return 'Überkauft (Euphorie)';
+    if (rsi >= 50) return 'Bullisch / Neutral';
+    if (rsi >= 40) return 'Leichte Abkühlung';
+    if (rsi >= 30) return 'Angst im Markt';
+    return 'Panik (Oversold)';
+  }
+
+  function applyRSIZone(el, subEl, rsi) {
+    const zones = [
+      { min: 70,  color: '#ef4444', label: 'Überkauft (Euphorie)' },
+      { min: 50,  color: '#ffffff', label: 'Bullisch / Neutral' },
+      { min: 40,  color: '#86efac', label: 'Leichte Abkühlung' },
+      { min: 30,  color: '#22c55e', label: 'Angst im Markt' },
+      { min: -Infinity, color: '#22c55e', label: 'Panik (Oversold)' },
+    ];
+    const z = zones.find(z => rsi >= z.min);
+    el.style.color = z.color;
+    subEl.textContent = z.label;
+  }
+
+  function getSignal(price, ma200, rsi) {
+    const diff = ((price - ma200) / ma200) * 100;
+    const zone = getRSIZone(rsi);
+    if (diff < 0)  return { level: 'green',  title: '✓ Szenario C – Günstig',          desc: `Kurs ${diff.toFixed(1)}% unter GD200 · RSI ${rsi.toFixed(1)} – ${zone}` };
+    if (diff < 5)  return { level: 'green',  title: '✓ Szenario B – Guter Kaufmoment', desc: `Kurs berührt GD200 (+${diff.toFixed(1)}%) · RSI ${rsi.toFixed(1)} – ${zone}` };
+    if (diff < 10) return { level: 'yellow', title: '~ Neutral – Leicht erhöht',        desc: `Kurs +${diff.toFixed(1)}% über GD200 · RSI ${rsi.toFixed(1)} – ${zone}` };
+    return           { level: 'red',    title: '✕ Szenario A – Markt überhitzt',    desc: `Kurs +${diff.toFixed(1)}% über GD200 · RSI ${rsi.toFixed(1)} – ${zone}` };
+  }
+
+  // ── 52-Wochen ──────────────────────────────────────────────
+
+  function update52Week(price, closes) {
+    const year = closes.slice(-252);
+    const high = Math.max(...year);
+    const low  = Math.min(...year);
+    const pct  = ((price - low) / (high - low)) * 100;
+    const c    = Math.min(100, Math.max(0, pct));
+    document.getElementById('week52-low').textContent   = `€${low.toFixed(2)}`;
+    document.getElementById('week52-high').textContent  = `€${high.toFixed(2)}`;
+    document.getElementById('week52-fill').style.width  = `${c}%`;
+    document.getElementById('week52-marker').style.left = `${c}%`;
+    document.getElementById('week52-pct').textContent   = `${pct.toFixed(0)}% des Jahresbereichs`;
+  }
+
+  // ── Chart ──────────────────────────────────────────────────
+
+  function renderChart(rangeDays) {
+    const idx    = Math.max(0, allTimestamps.length - rangeDays);
+    const labels = allTimestamps.slice(idx).map(ts =>
+      new Date(ts * 1000).toLocaleDateString('de-DE', { day: '2-digit', month: 'short' })
+    );
+    const prices  = allCloses.slice(idx);
+    const maSlice = calcMALine(allCloses, 200).slice(idx);
+    const bb      = calcBollingerLines(allCloses, 20);
+    const bbUpper = bb.slice(idx).map(b => b.upper);
+    const bbLower = bb.slice(idx).map(b => b.lower);
+
+    if (chartInstance) {
+      chartInstance.data.labels              = labels;
+      chartInstance.data.datasets[0].data    = prices;
+      chartInstance.data.datasets[1].data    = maSlice;
+      chartInstance.data.datasets[2].data    = bbUpper;
+      chartInstance.data.datasets[3].data    = bbLower;
+      chartInstance.update('none');
+      return;
+    }
+
+    chartInstance = new Chart(document.getElementById('priceChart').getContext('2d'), {
+      type: 'line',
+      data: {
+        labels,
+        datasets: [
+          { label: 'Kurs',    data: prices,   borderColor: '#ffffff', borderWidth: 1.5, pointRadius: 0, tension: 0.3, fill: { target: 'origin', above: 'rgba(255,255,255,0.04)' } },
+          { label: 'MA 200',  data: maSlice,  borderColor: '#3b82f6', borderWidth: 1.2, borderDash: [4,3], pointRadius: 0, tension: 0.3, fill: false },
+          { label: 'BB Oben', data: bbUpper,  borderColor: 'rgba(168,85,247,0.45)', borderWidth: 1, borderDash: [2,2], pointRadius: 0, tension: 0.3, fill: '+1', backgroundColor: 'rgba(168,85,247,0.06)' },
+          { label: 'BB Unten',data: bbLower,  borderColor: 'rgba(168,85,247,0.45)', borderWidth: 1, borderDash: [2,2], pointRadius: 0, tension: 0.3, fill: false },
+        ]
+      },
+      options: {
+        responsive: true, maintainAspectRatio: false,
+        interaction: { mode: 'index', intersect: false },
+        plugins: {
+          legend: { display: false },
+          tooltip: {
+            backgroundColor: '#1a1a1a', borderColor: '#333', borderWidth: 1,
+            titleColor: '#888', bodyColor: '#fff', padding: 10,
+            filter: item => ['Kurs', 'MA 200'].includes(item.dataset.label),
+            callbacks: { label: ctx => `${ctx.dataset.label}: €${ctx.parsed.y?.toFixed(2) ?? '—'}` }
+          }
+        },
+        scales: {
+          x: { grid: { color: '#1a1a1a' }, ticks: { color: '#444', maxTicksLimit: 6, maxRotation: 0, font: { size: 10 } } },
+          y: { grid: { color: '#1a1a1a' }, ticks: { color: '#444', font: { size: 10 }, callback: v => `€${v.toFixed(0)}` }, position: 'right' }
+        }
+      }
+    });
+  }
+
+  function setRange(days) {
+    currentRange = days;
+    document.querySelectorAll('.range-btn').forEach(b => {
+      const map = { '1M': 30, '3M': 90, '6M': 180, '1J': 365 };
+      b.classList.toggle('active', map[b.textContent] === days);
+    });
+    if (allCloses.length) renderChart(days);
+  }
+
+  // ── ATH ────────────────────────────────────────────────────
+
+  function updateATH(price, closes) {
+    const ath     = Math.max(...closes);
+    const drawPct = ((price - ath) / ath) * 100;
+    const absPct  = Math.abs(drawPct);
+    const el = document.getElementById('ath-drawdown');
+    el.textContent = `${drawPct.toFixed(1)}%`;
+    el.classList.remove('loading-shimmer');
+    el.className = 'ath-drawdown ' + (absPct < 5 ? 'green' : absPct < 10 ? 'yellow' : absPct < 20 ? 'orange' : 'red');
+    document.getElementById('ath-value').textContent = `€${ath.toFixed(2)}`;
+    document.querySelectorAll('#ath-table tr').forEach(row => {
+      row.classList.toggle('active-row', absPct >= +row.dataset.min && absPct < +row.dataset.max);
+    });
+  }
+
+  // ── Fear & Greed ───────────────────────────────────────────
+
+  function updateFearGreed(score, rating) {
+    const el = document.getElementById('fg-score');
+    el.textContent = Math.round(score);
+    el.classList.remove('loading-shimmer');
+    const cls = score >= 75 ? 'greed-extreme' : score >= 55 ? 'greed' : score >= 45 ? 'neutral' : score >= 25 ? 'fear' : 'fear-extreme';
+    el.className = `fg-score ${cls}`;
+    const map = { 'extreme fear': 'Extreme Angst', 'fear': 'Angst', 'neutral': 'Neutral', 'greed': 'Gier', 'extreme greed': 'Extreme Gier' };
+    document.getElementById('fg-label').textContent = map[rating.toLowerCase()] || rating;
+    document.getElementById('fg-marker').style.left = `${score}%`;
+    document.querySelectorAll('#fg-table tr').forEach(row => {
+      row.classList.toggle('active-row', score >= +row.dataset.fgmin && score < +row.dataset.fgmax);
+    });
+  }
+
+  // ── Sparplan ───────────────────────────────────────────────
+
+  function calcSparplan() {
+    const monthly = parseFloat(document.getElementById('sp-monthly').value) || 0;
+    const years   = parseFloat(document.getElementById('sp-years').value)   || 0;
+    const rate    = parseFloat(document.getElementById('sp-rate').value)     || 0;
+    const n = years * 12, r = rate / 100 / 12;
+    const invested = monthly * n;
+    const endValue = r === 0 ? invested : monthly * ((Math.pow(1 + r, n) - 1) / r) * (1 + r);
+    const gain     = endValue - invested;
+    const fmt = v => `€${Math.round(v).toLocaleString('de-DE')}`;
+    document.getElementById('sp-invested').textContent = fmt(invested);
+    document.getElementById('sp-endvalue').textContent = fmt(endValue);
+    document.getElementById('sp-gain').textContent     = fmt(gain);
+    document.getElementById('sp-gainpct').textContent  = `+${invested > 0 ? ((gain / invested) * 100).toFixed(0) : 0}%`;
+  }
+
+  // ── Portfolio ──────────────────────────────────────────────
+
+  function calcPortfolio() {
+    const shares   = parseFloat(document.getElementById('pt-shares').value)   || 0;
+    const avgPrice = parseFloat(document.getElementById('pt-avgprice').value) || 0;
+    localStorage.setItem('pt-shares',   shares);
+    localStorage.setItem('pt-avgprice', avgPrice);
+    if (!shares || !avgPrice || !currentPrice) return;
+    const invested   = shares * avgPrice;
+    const currentVal = shares * currentPrice;
+    const gain       = currentVal - invested;
+    const gainPct    = (gain / invested) * 100;
+    const fmtE = v => `€${Math.abs(v).toLocaleString('de-DE', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+    document.getElementById('pt-invested').textContent   = fmtE(invested);
+    document.getElementById('pt-currentval').textContent = fmtE(currentVal);
+    const gainEl    = document.getElementById('pt-gain');
+    const gainPctEl = document.getElementById('pt-gainpct');
+    gainEl.textContent    = `${gain >= 0 ? '+' : '-'}${fmtE(gain)}`;
+    gainEl.className      = `calc-result-value ${gain >= 0 ? 'green' : 'red'}`;
+    gainPctEl.textContent = `${gainPct >= 0 ? '+' : ''}${gainPct.toFixed(2)}%`;
+    gainPctEl.className   = `calc-result-value ${gainPct >= 0 ? 'green' : 'red'}`;
+  }
+
+  // ── Preisalarm ─────────────────────────────────────────────
+
+  let alertAbove = parseFloat(localStorage.getItem('alertAbove')) || null;
+  let alertBelow = parseFloat(localStorage.getItem('alertBelow')) || null;
+
+  function updateAlertStatus() {
+    const el = document.getElementById('alert-status');
+    if (!('Notification' in window)) { el.textContent = 'Browser unterstützt keine Benachrichtigungen'; return; }
+    if (Notification.permission === 'granted') {
+      const parts = [];
+      if (alertAbove) parts.push(`über €${alertAbove.toFixed(2)}`);
+      if (alertBelow) parts.push(`unter €${alertBelow.toFixed(2)}`);
+      if (parts.length) { el.textContent = `Aktiv: Alarm ${parts.join(' · ')}`; el.className = 'alert-status active'; }
+      else              { el.textContent = 'Kein Alarm gesetzt. Preise eingeben und speichern.'; el.className = 'alert-status'; }
+    } else if (Notification.permission === 'denied') {
+      el.textContent = 'Benachrichtigungen blockiert – bitte in Browser-Einstellungen erlauben';
+      el.className = 'alert-status';
+    } else {
+      el.textContent = 'Klicke "Alarm aktivieren" um Benachrichtigungen zu erlauben';
+      el.className = 'alert-status';
+    }
+  }
+
+  async function activateAlert() {
+    if (!('Notification' in window)) return;
+    if (Notification.permission !== 'granted') await Notification.requestPermission();
+    const above = parseFloat(document.getElementById('alert-above').value);
+    const below = parseFloat(document.getElementById('alert-below').value);
+    if (!isNaN(above) && above > 0) { alertAbove = above; localStorage.setItem('alertAbove', above); }
+    else { alertAbove = null; localStorage.removeItem('alertAbove'); }
+    if (!isNaN(below) && below > 0) { alertBelow = below; localStorage.setItem('alertBelow', below); }
+    else { alertBelow = null; localStorage.removeItem('alertBelow'); }
+    updateAlertStatus();
+  }
+
+  function checkPriceAlert(price) {
+    if (Notification.permission !== 'granted') return;
+    if (alertAbove && price >= alertAbove) {
+      new Notification('VWCE Preisalarm', { body: `Kurs €${price.toFixed(2)} hat €${alertAbove.toFixed(2)} überschritten` });
+      alertAbove = null; localStorage.removeItem('alertAbove');
+      document.getElementById('alert-above').value = '';
+      updateAlertStatus();
+    }
+    if (alertBelow && price <= alertBelow) {
+      new Notification('VWCE Preisalarm', { body: `Kurs €${price.toFixed(2)} ist unter €${alertBelow.toFixed(2)} gefallen` });
+      alertBelow = null; localStorage.removeItem('alertBelow');
+      document.getElementById('alert-below').value = '';
+      updateAlertStatus();
+    }
+  }
+
+  // ── API Fetches ────────────────────────────────────────────
+
+  async function load() {
+    try {
+      const result = await fetchYahoo(TICKER, '2y', '1d');
+      const raw    = result.indicators.quote[0];
+      const pairs  = result.timestamp.map((t, i) => ({ t, c: raw.close[i] })).filter(p => p.c != null);
+      allTimestamps = pairs.map(p => p.t);
+      allCloses     = pairs.map(p => p.c);
+
+      const price     = result.meta.regularMarketPrice;
+      currentPrice    = price;
+      const prevClose = allCloses.length >= 2 ? allCloses[allCloses.length - 2] : price;
+      const change    = price - prevClose;
+      const changePct = (change / prevClose) * 100;
+
+      document.getElementById('price').textContent = `€${price.toFixed(2)}`;
+      const changeEl = document.getElementById('price-change');
+      changeEl.textContent = `${change >= 0 ? '+' : ''}${change.toFixed(2)} (${changePct >= 0 ? '+' : ''}${changePct.toFixed(2)}%) heute`;
+      changeEl.className = 'price-change ' + (change >= 0 ? 'up' : 'down');
+
+      const ma200 = calcMA(allCloses, 200);
+      const rsi   = calcRSI(allCloses, 14);
+
+      if (ma200 !== null) {
+        document.getElementById('ma200').textContent = `€${ma200.toFixed(2)}`;
+        const diff = ((price - ma200) / ma200) * 100;
+        const sub  = document.getElementById('ma200-sub');
+        sub.textContent = `Kurs ${diff >= 0 ? '+' : ''}${diff.toFixed(1)}% vs MA`;
+        sub.style.color = diff >= 0 ? '#ef4444' : '#22c55e';
+      }
+
+      if (rsi !== null) {
+        const rsiEl = document.getElementById('rsi');
+        rsiEl.textContent = rsi.toFixed(1);
+        applyRSIZone(rsiEl, document.getElementById('rsi-sub'), rsi);
+      }
+
+      // MACD
+      const macd = calcMACDIndicator(allCloses);
+      if (macd.lastMacd !== null) {
+        const el = document.getElementById('macd-value');
+        el.textContent = macd.lastMacd.toFixed(2);
+        el.classList.remove('loading-shimmer');
+        const bull = macd.lastMacd > (macd.lastSignal ?? 0);
+        el.style.color = bull ? '#22c55e' : '#ef4444';
+        document.getElementById('macd-sub').textContent = bull ? '↑ Bullisch' : '↓ Bärisch';
+      }
+
+      if (ma200 !== null && rsi !== null) {
+        const sig = getSignal(price, ma200, rsi);
+        const box = document.getElementById('signal-box');
+        box.className = `signal-box ${sig.level}`;
+        document.getElementById('signal-title').textContent = sig.title;
+        document.getElementById('signal-desc').textContent  = sig.desc;
+      }
+
+      updateATH(price, allCloses);
+      update52Week(price, allCloses);
+      renderChart(currentRange);
+      calcPortfolio();
+      checkPriceAlert(price);
+
+      document.getElementById('footer').textContent =
+        `Letzte Aktualisierung: ${new Date().toLocaleTimeString('de-DE')} · Quelle: Yahoo Finance`;
+
+    } catch (err) {
+      console.error(err);
+      const box = document.getElementById('error-box');
+      box.style.display = 'block';
+      box.textContent = `Fehler beim Laden: ${err.message}`;
+    }
+  }
+
+  async function loadWeeklyRSI() {
+    try {
+      const result = await fetchYahoo(TICKER, '2y', '1wk');
+      const raw    = result.indicators.quote[0];
+      const pairs  = result.timestamp.map((t, i) => ({ t, c: raw.close[i] })).filter(p => p.c != null);
+      const closes = pairs.map(p => p.c);
+      const wrsi   = calcRSI(closes, 14);
+      if (wrsi !== null) {
+        const el = document.getElementById('wrsi');
+        el.textContent = wrsi.toFixed(1);
+        el.classList.remove('loading-shimmer');
+        applyRSIZone(el, document.getElementById('wrsi-sub'), wrsi);
+        document.querySelectorAll('#rsi-table tr').forEach(row => {
+          row.classList.toggle('active-row', wrsi >= +row.dataset.rsimin && wrsi < +row.dataset.rsimax);
+        });
+      }
+    } catch (err) {
+      document.getElementById('wrsi').textContent = '—';
+      document.getElementById('wrsi').classList.remove('loading-shimmer');
+      document.getElementById('wrsi-sub').textContent = 'Nicht verfügbar';
+    }
+  }
+
+  async function loadFearGreed() {
+    try {
+      const res  = await fetch(PROXY + encodeURIComponent('https://production.dataviz.cnn.io/index/fearandgreed/graphdata'));
       if (!res.ok) throw new Error(`HTTP ${res.status}`);
       const data = await res.json();
-      const result = data.chart.result[0];
-      if (!result) throw new Error('Keine Daten gefunden');
-      return result;
+      updateFearGreed(data.fear_and_greed.score, data.fear_and_greed.rating);
+    } catch (err) {
+      document.getElementById('fg-score').textContent = '—';
+      document.getElementById('fg-score').classList.remove('loading-shimmer');
+      document.getElementById('fg-label').textContent = 'Nicht verfügbar';
     }
+  }
 
-    function calcMA(closes, period) {
-      if (closes.length < period) return null;
-      const slice = closes.slice(-period);
-      return slice.reduce((a, b) => a + b, 0) / period;
-    }
-
-    // Returns array of MA values (one per close, null until enough data)
-    function calcMALine(closes, period) {
-      return closes.map((_, i) => {
-        if (i < period - 1) return null;
-        const slice = closes.slice(i - period + 1, i + 1);
-        return slice.reduce((a, b) => a + b, 0) / period;
+  const PE_AVG = 17;
+  async function loadValuation() {
+    try {
+      const res  = await fetch(PROXY + encodeURIComponent('https://www.multpl.com/shiller-pe/'));
+      if (!res.ok) throw new Error(`HTTP ${res.status}`);
+      const html  = await res.text();
+      const match = html.match(/Current Shiller PE Ratio is ([\d.]+)/);
+      if (!match) throw new Error('Wert nicht gefunden');
+      const pe  = parseFloat(match[1]);
+      if (isNaN(pe) || pe < 5 || pe > 100) throw new Error('ungültiger Wert');
+      const dev = ((pe - PE_AVG) / PE_AVG) * 100;
+      const peEl = document.getElementById('pe-value');
+      peEl.textContent = pe.toFixed(1);
+      peEl.classList.remove('loading-shimmer');
+      const devEl = document.getElementById('pe-deviation');
+      devEl.textContent = `${dev >= 0 ? '+' : ''}${dev.toFixed(1)}% vs. Ø ${PE_AVG}`;
+      devEl.style.color = dev > 25 ? '#ef4444' : dev >= 0 ? '#f97316' : dev >= -10 ? '#86efac' : '#22c55e';
+      document.getElementById('pe-source').textContent = 'S&P 500 Shiller CAPE · multpl.com';
+      document.querySelectorAll('#cape-table tr').forEach(row => {
+        row.classList.toggle('active-row', dev >= +row.dataset.cmin && dev < +row.dataset.cmax);
       });
+    } catch (err) {
+      document.getElementById('pe-value').textContent = '—';
+      document.getElementById('pe-value').classList.remove('loading-shimmer');
+      document.getElementById('pe-source').textContent = 'Nicht verfügbar';
     }
+  }
 
-    function calcRSI(closes, period = 14) {
-      if (closes.length < period + 1) return null;
-      const changes = [];
-      for (let i = 1; i < closes.length; i++) changes.push(closes[i] - closes[i - 1]);
-      const recent = changes.slice(-period);
-      let gains = 0, losses = 0;
-      for (const c of recent) { if (c > 0) gains += c; else losses -= c; }
-      const avgGain = gains / period;
-      const avgLoss = losses / period;
-      if (avgLoss === 0) return 100;
-      return 100 - (100 / (1 + avgGain / avgLoss));
-    }
-
-    function getRSIZone(rsi) {
-      if (rsi >= 70) return 'Überkauft (Euphorie)';
-      if (rsi >= 50) return 'Bullisch / Neutral';
-      if (rsi >= 40) return 'Leichte Abkühlung';
-      if (rsi >= 30) return 'Angst im Markt';
-      return 'Panik (Oversold)';
-    }
-
-    function getSignal(price, ma200, rsi) {
-      const diff = ((price - ma200) / ma200) * 100; // % above/below MA200
-      const rsiZone = getRSIZone(rsi);
-
-      // Szenario C: Kurs unter GD200 → günstig
-      if (diff < 0) return {
-        level: 'green',
-        title: '✓ Szenario C – Günstig',
-        desc: `Kurs ${diff.toFixed(1)}% unter GD200 · RSI ${rsi.toFixed(1)} – ${rsiZone}`
-      };
-
-      // Szenario B: Kurs nah an GD200 (0–5% drüber) → guter Kaufmoment
-      if (diff < 5) return {
-        level: 'green',
-        title: '✓ Szenario B – Guter Kaufmoment',
-        desc: `Kurs berührt GD200 (+${diff.toFixed(1)}%) · RSI ${rsi.toFixed(1)} – ${rsiZone}`
-      };
-
-      // Übergang: 5–10% über GD200 → neutral
-      if (diff < 10) return {
-        level: 'yellow',
-        title: '~ Neutral – Leicht erhöht',
-        desc: `Kurs +${diff.toFixed(1)}% über GD200 · RSI ${rsi.toFixed(1)} – ${rsiZone}`
-      };
-
-      // Szenario A: Kurs weit über GD200 (>10%) → teuer/überhitzt
-      return {
-        level: 'red',
-        title: '✕ Szenario A – Markt überhitzt',
-        desc: `Kurs +${diff.toFixed(1)}% über GD200 · RSI ${rsi.toFixed(1)} – ${rsiZone}`
-      };
-    }
-
-    function renderChart(rangeDays) {
-      const cutoff = allTimestamps.length - rangeDays;
-      const idx    = Math.max(0, cutoff);
-
-      const labels   = allTimestamps.slice(idx).map(ts => {
-        const d = new Date(ts * 1000);
-        return d.toLocaleDateString('de-DE', { day: '2-digit', month: 'short' });
-      });
-      const prices  = allCloses.slice(idx);
-      const maFull  = calcMALine(allCloses, 200);
-      const maSlice = maFull.slice(idx);
-
-      if (chartInstance) {
-        chartInstance.data.labels           = labels;
-        chartInstance.data.datasets[0].data = prices;
-        chartInstance.data.datasets[1].data = maSlice;
-        chartInstance.update('none');
-        return;
-      }
-
-      const ctx = document.getElementById('priceChart').getContext('2d');
-      chartInstance = new Chart(ctx, {
-        type: 'line',
-        data: {
-          labels,
-          datasets: [
-            {
-              label: 'Kurs',
-              data: prices,
-              borderColor: '#ffffff',
-              borderWidth: 1.5,
-              pointRadius: 0,
-              tension: 0.3,
-              fill: {
-                target: 'origin',
-                above: 'rgba(255,255,255,0.04)',
-              },
-            },
-            {
-              label: 'MA 200',
-              data: maSlice,
-              borderColor: '#3b82f6',
-              borderWidth: 1.2,
-              borderDash: [4, 3],
-              pointRadius: 0,
-              tension: 0.3,
-              fill: false,
-            }
-          ]
-        },
-        options: {
-          responsive: true,
-          maintainAspectRatio: false,
-          interaction: { mode: 'index', intersect: false },
-          plugins: {
-            legend: { display: false },
-            tooltip: {
-              backgroundColor: '#1a1a1a',
-              borderColor: '#333',
-              borderWidth: 1,
-              titleColor: '#888',
-              bodyColor: '#fff',
-              padding: 10,
-              callbacks: {
-                label: ctx => `${ctx.dataset.label}: €${ctx.parsed.y?.toFixed(2) ?? '—'}`
-              }
-            }
-          },
-          scales: {
-            x: {
-              grid: { color: '#1a1a1a' },
-              ticks: {
-                color: '#444',
-                maxTicksLimit: 6,
-                maxRotation: 0,
-                font: { size: 10 }
-              }
-            },
-            y: {
-              grid: { color: '#1a1a1a' },
-              ticks: {
-                color: '#444',
-                font: { size: 10 },
-                callback: v => `€${v.toFixed(0)}`
-              },
-              position: 'right'
-            }
-          }
-        }
-      });
-    }
-
-    function setRange(days) {
-      currentRange = days;
-      document.querySelectorAll('.range-btn').forEach(b => {
-        b.classList.toggle('active', parseInt(b.textContent) === (
-          days === 30 ? 30 : days === 90 ? 90 : days === 180 ? 180 : 365
-        ));
-      });
-      // match by label text
-      document.querySelectorAll('.range-btn').forEach(b => {
-        const map = { '1M': 30, '3M': 90, '6M': 180, '1J': 365 };
-        b.classList.toggle('active', map[b.textContent] === days);
-      });
-      if (allCloses.length) renderChart(days);
-    }
-
-    function updateATH(price, closes) {
-      const ath        = Math.max(...closes);
-      const drawdownPct = ((price - ath) / ath) * 100; // negative number
-      const absPct     = Math.abs(drawdownPct);
-
-      const el = document.getElementById('ath-drawdown');
-      el.textContent = `${drawdownPct.toFixed(1)}%`;
+  async function loadVIX() {
+    try {
+      const result = await fetchYahoo('^VIX', '1d', '1d');
+      const vix    = result.meta.regularMarketPrice;
+      const el     = document.getElementById('vix-value');
+      el.textContent = vix.toFixed(1);
       el.classList.remove('loading-shimmer');
-
-      if (absPct < 5)       { el.className = 'ath-drawdown green'; }
-      else if (absPct < 10) { el.className = 'ath-drawdown yellow'; }
-      else if (absPct < 20) { el.className = 'ath-drawdown orange'; }
-      else                  { el.className = 'ath-drawdown red'; }
-
-      document.getElementById('ath-value').textContent = `€${ath.toFixed(2)}`;
-
-      // Highlight active row
-      document.querySelectorAll('#ath-table tr').forEach(row => {
-        const min = parseFloat(row.dataset.min);
-        const max = parseFloat(row.dataset.max);
-        row.classList.toggle('active-row', absPct >= min && absPct < max);
-      });
+      if      (vix < 15) { el.style.color = '#22c55e'; document.getElementById('vix-sub').textContent = 'Ruhig'; }
+      else if (vix < 20) { el.style.color = '#86efac'; document.getElementById('vix-sub').textContent = 'Normal'; }
+      else if (vix < 30) { el.style.color = '#f97316'; document.getElementById('vix-sub').textContent = 'Erhöht'; }
+      else               { el.style.color = '#ef4444'; document.getElementById('vix-sub').textContent = 'Panik'; }
+    } catch (err) {
+      document.getElementById('vix-value').textContent = '—';
+      document.getElementById('vix-value').classList.remove('loading-shimmer');
     }
+  }
 
-    function getFGClass(score) {
-      if (score >= 75) return 'greed-extreme';
-      if (score >= 55) return 'greed';
-      if (score >= 45) return 'neutral';
-      if (score >= 25) return 'fear';
-      return 'fear-extreme';
+  async function loadEURUSD() {
+    try {
+      const result = await fetchYahoo('EURUSD=X', '1d', '1d');
+      const rate   = result.meta.regularMarketPrice;
+      const el     = document.getElementById('eurusd-value');
+      el.textContent = rate.toFixed(4);
+      el.classList.remove('loading-shimmer');
+      document.getElementById('eurusd-sub').textContent = 'EUR/USD';
+    } catch (err) {
+      document.getElementById('eurusd-value').textContent = '—';
+      document.getElementById('eurusd-value').classList.remove('loading-shimmer');
     }
+  }
 
-    function updateFearGreed(score, rating) {
-      const scoreEl = document.getElementById('fg-score');
-      scoreEl.textContent = Math.round(score);
-      scoreEl.classList.remove('loading-shimmer');
-      scoreEl.className = `fg-score ${getFGClass(score)}`;
+  // ── Init ───────────────────────────────────────────────────
 
-      const labelMap = {
-        'extreme fear': 'Extreme Angst',
-        'fear': 'Angst',
-        'neutral': 'Neutral',
-        'greed': 'Gier',
-        'extreme greed': 'Extreme Gier'
-      };
-      document.getElementById('fg-label').textContent = labelMap[rating.toLowerCase()] || rating;
-      document.getElementById('fg-marker').style.left = `${score}%`;
+  // Restore saved values
+  const savedShares = localStorage.getItem('pt-shares');
+  const savedAvg    = localStorage.getItem('pt-avgprice');
+  if (savedShares) document.getElementById('pt-shares').value   = savedShares;
+  if (savedAvg)    document.getElementById('pt-avgprice').value = savedAvg;
+  if (alertAbove)  document.getElementById('alert-above').value = alertAbove;
+  if (alertBelow)  document.getElementById('alert-below').value = alertBelow;
 
-      document.querySelectorAll('#fg-table tr').forEach(row => {
-        const min = parseFloat(row.dataset.fgmin);
-        const max = parseFloat(row.dataset.fgmax);
-        row.classList.toggle('active-row', score >= min && score < max);
-      });
-    }
+  updateAlertStatus();
+  calcSparplan();
 
-    function applyRSIZone(el, subEl, rsiVal) {
-      let color, zone;
-      if (rsiVal >= 70)      { color = '#ef4444'; zone = 'Überkauft (Euphorie)'; }
-      else if (rsiVal >= 50) { color = '#ffffff'; zone = 'Bullisch / Neutral'; }
-      else if (rsiVal >= 40) { color = '#86efac'; zone = 'Leichte Abkühlung'; }
-      else if (rsiVal >= 30) { color = '#22c55e'; zone = 'Angst im Markt'; }
-      else                   { color = '#22c55e'; zone = 'Panik (Oversold)'; }
-      el.style.color = color;
-      subEl.textContent = zone;
-      return rsiVal;
-    }
+  // Initial loads (staggered to avoid simultaneous proxy requests)
+  load();
+  setTimeout(loadWeeklyRSI,  500);
+  setTimeout(loadFearGreed,  1000);
+  setTimeout(loadValuation,  1500);
+  setTimeout(loadVIX,        2000);
+  setTimeout(loadEURUSD,     2500);
 
-    async function loadWeeklyRSI() {
-      try {
-        const result = await fetchYahoo('2y', '1wk');
-        const raw  = result.indicators.quote[0];
-        const ts   = result.timestamp;
-        const pairs = ts.map((t, i) => ({ t, c: raw.close[i] })).filter(p => p.c != null);
-        const closes = pairs.map(p => p.c);
-        const wrsi = calcRSI(closes, 14);
-
-        if (wrsi !== null) {
-          const el    = document.getElementById('wrsi');
-          const subEl = document.getElementById('wrsi-sub');
-          el.textContent = wrsi.toFixed(1);
-          el.classList.remove('loading-shimmer');
-          applyRSIZone(el, subEl, wrsi);
-
-          // RSI-Matrix Tabelle → Wochen-RSI ist maßgeblich
-          document.querySelectorAll('#rsi-table tr').forEach(row => {
-            const min = parseFloat(row.dataset.rsimin);
-            const max = parseFloat(row.dataset.rsimax);
-            row.classList.toggle('active-row', wrsi >= min && wrsi < max);
-          });
-        }
-      } catch (err) {
-        console.error('Weekly RSI error:', err);
-        const el = document.getElementById('wrsi');
-        el.textContent = '—';
-        el.classList.remove('loading-shimmer');
-        document.getElementById('wrsi-sub').textContent = 'Nicht verfügbar';
-      }
-    }
-
-    async function loadFearGreed() {
-      try {
-        const url = 'https://production.dataviz.cnn.io/index/fearandgreed/graphdata';
-        const res = await fetch(PROXY + encodeURIComponent(url));
-        if (!res.ok) throw new Error(`HTTP ${res.status}`);
-        const data = await res.json();
-        const fg = data.fear_and_greed;
-        updateFearGreed(fg.score, fg.rating);
-      } catch (err) {
-        console.error('Fear & Greed error:', err);
-        const scoreEl = document.getElementById('fg-score');
-        scoreEl.textContent = '—';
-        scoreEl.classList.remove('loading-shimmer');
-        document.getElementById('fg-label').textContent = 'Nicht verfügbar';
-      }
-    }
-
-    async function load() {
-      try {
-        const result = await fetchYahoo('2y', '1d');
-        const raw    = result.indicators.quote[0];
-        const ts     = result.timestamp;
-
-        // Filter nulls
-        const pairs = ts.map((t, i) => ({ t, c: raw.close[i] }))
-                        .filter(p => p.c != null);
-        allTimestamps = pairs.map(p => p.t);
-        allCloses     = pairs.map(p => p.c);
-
-        const meta      = result.meta;
-        const price     = meta.regularMarketPrice;
-        // Use last two historical closes for accurate daily change
-        const prevClose = allCloses.length >= 2 ? allCloses[allCloses.length - 2] : price;
-        const change    = price - prevClose;
-        const changePct = (change / prevClose) * 100;
-        const symbol    = '€';
-
-        // Preis
-        document.getElementById('price').textContent = `${symbol}${price.toFixed(2)}`;
-        const changeEl = document.getElementById('price-change');
-        changeEl.textContent = `${change >= 0 ? '+' : ''}${change.toFixed(2)} (${changePct >= 0 ? '+' : ''}${changePct.toFixed(2)}%) heute`;
-        changeEl.className = 'price-change ' + (change >= 0 ? 'up' : 'down');
-
-        const ma200 = calcMA(allCloses, 200);
-        const rsi   = calcRSI(allCloses, 14);
-
-        // MA200
-        if (ma200 !== null) {
-          document.getElementById('ma200').textContent = `${symbol}${ma200.toFixed(2)}`;
-          const diff = ((price - ma200) / ma200) * 100;
-          const sub  = document.getElementById('ma200-sub');
-          sub.textContent = `Kurs ${diff >= 0 ? '+' : ''}${diff.toFixed(1)}% vs MA`;
-          sub.style.color = diff >= 0 ? '#ef4444' : '#22c55e';
-        }
-
-        // RSI – 5-Zonen-Matrix (täglich)
-        if (rsi !== null) {
-          const rsiEl = document.getElementById('rsi');
-          rsiEl.textContent = rsi.toFixed(1);
-
-          let rsiColor, rsiZone;
-          if (rsi >= 70)      { rsiColor = '#ef4444'; rsiZone = 'Überkauft (Euphorie)'; }
-          else if (rsi >= 50) { rsiColor = '#ffffff'; rsiZone = 'Bullisch / Neutral'; }
-          else if (rsi >= 40) { rsiColor = '#86efac'; rsiZone = 'Leichte Abkühlung'; }
-          else if (rsi >= 30) { rsiColor = '#22c55e'; rsiZone = 'Angst im Markt'; }
-          else                { rsiColor = '#22c55e'; rsiZone = 'Panik (Oversold)'; }
-
-          rsiEl.style.color = rsiColor;
-          document.getElementById('rsi-sub').textContent = rsiZone;
-        }
-
-        // Signal
-        if (ma200 !== null && rsi !== null) {
-          const sig = getSignal(price, ma200, rsi);
-          const box = document.getElementById('signal-box');
-          box.className = `signal-box ${sig.level}`;
-          document.getElementById('signal-title').textContent = sig.title;
-          document.getElementById('signal-desc').textContent  = sig.desc;
-        }
-
-        // ATH Drawdown
-        updateATH(price, allCloses);
-
-        // Chart
-        renderChart(currentRange);
-
-        // Footer
-        const now = new Date();
-        document.getElementById('footer').textContent =
-          `Letzte Aktualisierung: ${now.toLocaleTimeString('de-DE')} · Quelle: Yahoo Finance`;
-
-      } catch (err) {
-        console.error(err);
-        const box = document.getElementById('error-box');
-        box.style.display = 'block';
-        box.textContent = `Fehler beim Laden: ${err.message}. Bitte Seite neu laden.`;
-      }
-    }
-
-    // KGV Bewertungsfilter (Shiller CAPE via multpl.com)
-    const PE_AVG = 17; // Shiller CAPE Langfrist-Mittel (S&P 500)
-
-    async function loadValuation() {
-      try {
-        // Shiller CAPE (S&P 500) von multpl.com als Welt-Proxy
-        const url = 'https://www.multpl.com/shiller-pe/';
-        const res = await fetch(PROXY + encodeURIComponent(url));
-        if (!res.ok) throw new Error(`HTTP ${res.status}`);
-        const html = await res.text();
-
-        // Wert aus Meta-Description parsen (zuverlässig server-seitig)
-        const match = html.match(/Current Shiller PE Ratio is ([\d.]+)/);
-        if (!match) throw new Error('Wert nicht gefunden');
-        const pe = parseFloat(match[1]);
-        if (isNaN(pe) || pe < 5 || pe > 100) throw new Error('ungültiger Wert');
-
-        const peEl = document.getElementById('pe-value');
-        peEl.textContent = pe.toFixed(1);
-        peEl.classList.remove('loading-shimmer');
-
-        const dev = ((pe - PE_AVG) / PE_AVG) * 100;
-        const devEl = document.getElementById('pe-deviation');
-        devEl.textContent = `${dev >= 0 ? '+' : ''}${dev.toFixed(1)}% vs. Ø ${PE_AVG}`;
-
-        let devColor;
-        if (dev > 25)        devColor = '#ef4444';
-        else if (dev >= 0)   devColor = '#f97316';
-        else if (dev >= -10) devColor = '#86efac';
-        else                 devColor = '#22c55e';
-        devEl.style.color = devColor;
-
-        document.getElementById('pe-source').textContent = 'S&P 500 Shiller CAPE · multpl.com';
-
-        document.querySelectorAll('#cape-table tr').forEach(row => {
-          const min = parseFloat(row.dataset.cmin);
-          const max = parseFloat(row.dataset.cmax);
-          row.classList.toggle('active-row', dev >= min && dev < max);
-        });
-      } catch (err) {
-        console.error('KGV error:', err);
-        const peEl = document.getElementById('pe-value');
-        peEl.textContent = '—';
-        peEl.classList.remove('loading-shimmer');
-        document.getElementById('pe-source').textContent = 'Nicht verfügbar';
-        document.getElementById('pe-deviation').textContent = '';
-      }
-    }
-
-    // Initialer Load
-    load();
-    loadWeeklyRSI();
-    loadFearGreed();
-    loadValuation();
-
-    // Auto-Refresh
-    setInterval(load,           15 * 1000);        // 15 Sekunden
-    setInterval(loadWeeklyRSI,  3 * 60 * 1000);   // 3 Minuten
-    setInterval(loadFearGreed,  2 * 60 * 1000);   // 2 Minuten
-    setInterval(loadValuation, 10 * 60 * 1000);   // 10 Minuten
-  </script>
+  // Auto-Refresh
+  setInterval(load,           15 * 1000);
+  setInterval(loadWeeklyRSI,  3 * 60 * 1000);
+  setInterval(loadFearGreed,  2 * 60 * 1000);
+  setInterval(loadValuation, 10 * 60 * 1000);
+  setInterval(loadVIX,        5 * 60 * 1000);
+  setInterval(loadEURUSD,     5 * 60 * 1000);
+</script>
 </body>
 </html>
