@@ -813,17 +813,7 @@
 
   // ── Sparplan ───────────────────────────────────────────────
 
-  let spRate = 7; // wird nach dem Laden der Kursdaten automatisch berechnet
-
-  function calcHistoricalReturn() {
-    if (allCloses.length < 50) return;
-    const years = (allTimestamps[allTimestamps.length - 1] - allTimestamps[0]) / (365.25 * 86400);
-    const cagr  = (Math.pow(allCloses[allCloses.length - 1] / allCloses[0], 1 / years) - 1) * 100;
-    spRate = parseFloat(Math.max(0, cagr).toFixed(1));
-    const el = document.getElementById('sp-rate-display');
-    if (el) el.textContent = `${spRate.toFixed(1)} %`;
-    calcSparplan();
-  }
+  let spRate = 7; // wird aus 10J-Monatsdaten automatisch berechnet
 
   function calcSparplan() {
     const monthly = parseFloat(document.getElementById('sp-monthly').value) || 0;
@@ -916,6 +906,23 @@
 
   // ── API Fetches ────────────────────────────────────────────
 
+  async function loadLongTermReturn() {
+    try {
+      const result = await fetchYahoo(TICKER, '10y', '1mo');
+      const raw    = result.indicators.quote[0];
+      const pairs  = result.timestamp.map((t, i) => ({ t, c: raw.close[i] })).filter(p => p.c != null);
+      if (pairs.length < 12) return;
+      const ts    = pairs.map(p => p.t);
+      const cls   = pairs.map(p => p.c);
+      const years = (ts[ts.length - 1] - ts[0]) / (365.25 * 86400);
+      const cagr  = (Math.pow(cls[cls.length - 1] / cls[0], 1 / years) - 1) * 100;
+      spRate = parseFloat(Math.max(0, cagr).toFixed(1));
+      const el = document.getElementById('sp-rate-display');
+      if (el) el.textContent = `${spRate.toFixed(1)} %`;
+      calcSparplan();
+    } catch (err) { console.error('LongTermReturn:', err); }
+  }
+
   async function loadIntraday() {
     try {
       const result = await fetchYahoo(TICKER, '1d', '5m');
@@ -995,7 +1002,6 @@
 
       updateATH(price, allCloses);
       update52Week(price, allCloses);
-      calcHistoricalReturn();
       renderChart(currentRange);
       calcPortfolio();
       checkPriceAlert(price);
@@ -1135,6 +1141,8 @@
   setInterval(loadVIX,        5 * 60 * 1000);
   setInterval(loadEURUSD,     5 * 60 * 1000);
   setInterval(() => { if (currentRange === 'live') loadIntraday(); }, 30 * 1000);
+  setTimeout(loadLongTermReturn, 3000);
+  setInterval(loadLongTermReturn, 30 * 24 * 60 * 60 * 1000);
 </script>
 </body>
 </html>
