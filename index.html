@@ -1,0 +1,1099 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>VWCE ETF Dashboard</title>
+  <link rel="preconnect" href="https://query1.finance.yahoo.com">
+  <link rel="preconnect" href="https://corsproxy.io">
+  <link rel="dns-prefetch" href="https://production.dataviz.cnn.io">
+  <link rel="dns-prefetch" href="https://www.multpl.com">
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: 'Segoe UI', sans-serif;
+      background: #0a0a0a;
+      color: #e1e4e8;
+      min-height: 100vh;
+      display: flex;
+      align-items: flex-start;
+      justify-content: center;
+      padding: 40px 32px;
+    }
+
+    .card {
+      background: #111111;
+      border-radius: 20px;
+      padding: 48px 56px;
+      max-width: 780px;
+      width: 100%;
+      box-shadow: 0 12px 48px rgba(0,0,0,0.7);
+      border: 1px solid #222;
+    }
+
+    .header {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 28px;
+    }
+
+    .etf-icon {
+      width: 54px;
+      height: 54px;
+      background: #2563eb;
+      border-radius: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 700;
+      font-size: 13px;
+      color: white;
+      letter-spacing: 0.3px;
+    }
+
+    .etf-name h1 {
+      font-size: 24px;
+      font-weight: 700;
+      color: #ffffff;
+    }
+
+    .etf-name p {
+      font-size: 13px;
+      color: #555;
+      margin-top: 3px;
+    }
+
+    .price-section {
+      margin-bottom: 24px;
+    }
+
+    .price-label {
+      font-size: 11px;
+      color: #555;
+      text-transform: uppercase;
+      letter-spacing: 1.2px;
+      margin-bottom: 6px;
+    }
+
+    .price {
+      font-size: 64px;
+      font-weight: 700;
+      color: #ffffff;
+      line-height: 1;
+    }
+
+    .price-change {
+      margin-top: 8px;
+      font-size: 18px;
+      font-weight: 500;
+    }
+
+    .price-change.up   { color: #22c55e; }
+    .price-change.down { color: #ef4444; }
+
+    /* Chart */
+    .chart-section {
+      background: #0a0a0a;
+      border-radius: 12px;
+      padding: 16px;
+      border: 1px solid #1e1e1e;
+      margin-bottom: 20px;
+    }
+
+    .chart-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 12px;
+    }
+
+    .chart-title {
+      font-size: 11px;
+      color: #555;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+    }
+
+    .chart-legend {
+      display: flex;
+      gap: 14px;
+    }
+
+    .legend-item {
+      display: flex;
+      align-items: center;
+      gap: 5px;
+      font-size: 10px;
+      color: #555;
+    }
+
+    .legend-dot {
+      width: 8px;
+      height: 2px;
+      border-radius: 1px;
+    }
+
+    .chart-wrap {
+      position: relative;
+      height: 220px;
+    }
+
+    /* Range buttons */
+    .range-btns {
+      display: flex;
+      gap: 6px;
+      margin-bottom: 20px;
+    }
+
+    .range-btn {
+      background: #1a1a1a;
+      border: 1px solid #222;
+      border-radius: 6px;
+      color: #555;
+      font-size: 11px;
+      padding: 5px 10px;
+      cursor: pointer;
+      transition: all 0.15s;
+      font-family: inherit;
+    }
+
+    .range-btn:hover { color: #aaa; border-color: #333; }
+    .range-btn.active { background: #1e293b; border-color: #2563eb; color: #60a5fa; }
+
+    /* Indicators */
+    .indicators {
+      display: grid;
+      grid-template-columns: 1fr 1fr 1fr;
+      gap: 10px;
+      margin-bottom: 20px;
+    }
+
+    .indicator-box {
+      background: #0a0a0a;
+      border-radius: 10px;
+      padding: 14px 16px;
+      border: 1px solid #1e1e1e;
+    }
+
+    .ind-label {
+      font-size: 11px;
+      color: #555;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      margin-bottom: 8px;
+    }
+
+    .ind-value {
+      font-size: 28px;
+      font-weight: 600;
+      color: #ffffff;
+    }
+
+    .ind-sub {
+      font-size: 13px;
+      color: #555;
+      margin-top: 4px;
+    }
+
+    /* Signal */
+    .signal-box {
+      border-radius: 12px;
+      padding: 18px 22px;
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      border: 1px solid transparent;
+    }
+
+    .signal-box.green   { background: #031a0d; border-color: #166534; }
+    .signal-box.yellow  { background: #1a1500; border-color: #854d0e; }
+    .signal-box.red     { background: #1a0303; border-color: #991b1b; }
+    .signal-box.loading { background: #0a0a0a; border-color: #1e1e1e; }
+
+    .signal-dot {
+      width: 14px;
+      height: 14px;
+      border-radius: 50%;
+      flex-shrink: 0;
+    }
+
+    .signal-box.green   .signal-dot { background: #22c55e; box-shadow: 0 0 8px #22c55e66; }
+    .signal-box.yellow  .signal-dot { background: #eab308; box-shadow: 0 0 8px #eab30866; }
+    .signal-box.red     .signal-dot { background: #ef4444; box-shadow: 0 0 8px #ef444466; }
+    .signal-box.loading .signal-dot { background: #333; }
+
+    .signal-title { font-size: 18px; font-weight: 600; }
+    .signal-box.green   .signal-title { color: #22c55e; }
+    .signal-box.yellow  .signal-title { color: #eab308; }
+    .signal-box.red     .signal-title { color: #ef4444; }
+    .signal-box.loading .signal-title { color: #555; }
+
+    .signal-desc { font-size: 12px; color: #555; margin-top: 3px; }
+
+    /* Section label */
+    .section-label {
+      font-size: 11px;
+      color: #555;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      margin-bottom: 10px;
+      margin-top: 20px;
+    }
+
+
+    /* ATH Drawdown */
+    .ath-box {
+      background: #0a0a0a;
+      border-radius: 12px;
+      padding: 20px 22px;
+      border: 1px solid #1e1e1e;
+      margin-bottom: 20px;
+    }
+
+    .ath-top {
+      display: flex;
+      align-items: baseline;
+      gap: 16px;
+      margin-bottom: 16px;
+    }
+
+    .ath-drawdown {
+      font-size: 40px;
+      font-weight: 700;
+    }
+
+    .ath-drawdown.green  { color: #22c55e; }
+    .ath-drawdown.yellow { color: #eab308; }
+    .ath-drawdown.orange { color: #f97316; }
+    .ath-drawdown.red    { color: #ef4444; }
+
+    .ath-meta { font-size: 13px; color: #555; }
+    .ath-meta span { color: #888; }
+
+    .ath-table { width: 100%; border-collapse: collapse; }
+    .ath-table tr { border-top: 1px solid #1e1e1e; }
+    .ath-table tr.active-row { background: #1a1a1a; border-radius: 6px; }
+    .ath-table td { padding: 8px 10px; font-size: 13px; color: #555; }
+    .ath-table td:first-child { white-space: nowrap; }
+    .ath-table td:last-child { color: #888; }
+    .ath-table tr.active-row td { color: #ffffff; }
+    .ath-table tr.active-row td:last-child { color: #ffffff; font-weight: 600; }
+    .ath-row-dot { display: inline-block; width: 7px; height: 7px; border-radius: 50%; margin-right: 7px; vertical-align: middle; }
+
+    .footer {
+      margin-top: 18px;
+      font-size: 10px;
+      color: #333;
+      text-align: right;
+    }
+
+    .loading-shimmer {
+      background: linear-gradient(90deg, #111 25%, #1e1e1e 50%, #111 75%);
+      background-size: 200% 100%;
+      animation: shimmer 1.5s infinite;
+      border-radius: 4px;
+      display: inline-block;
+      color: transparent;
+    }
+
+    @keyframes shimmer {
+      0%   { background-position: 200% 0; }
+      100% { background-position: -200% 0; }
+    }
+
+    .error-msg {
+      background: #1a0303;
+      border: 1px solid #991b1b;
+      border-radius: 10px;
+      padding: 12px 16px;
+      font-size: 13px;
+      color: #fca5a5;
+      margin-bottom: 16px;
+    }
+
+    /* Fear & Greed */
+    .fg-box {
+      background: #0a0a0a;
+      border-radius: 12px;
+      padding: 20px 22px;
+      border: 1px solid #1e1e1e;
+      margin-bottom: 20px;
+    }
+
+    .fg-top {
+      display: flex;
+      align-items: baseline;
+      gap: 16px;
+      margin-bottom: 14px;
+    }
+
+    .fg-score {
+      font-size: 40px;
+      font-weight: 700;
+    }
+
+    .fg-score.fear-extreme  { color: #22c55e; }
+    .fg-score.fear          { color: #86efac; }
+    .fg-score.neutral       { color: #eab308; }
+    .fg-score.greed         { color: #f97316; }
+    .fg-score.greed-extreme { color: #ef4444; }
+
+    .fg-meta { font-size: 13px; color: #555; }
+    .fg-meta span { color: #888; }
+
+    .fg-bar-wrap { margin-bottom: 14px; }
+
+    .fg-bar-track {
+      position: relative;
+      height: 6px;
+      background: linear-gradient(to right, #22c55e 0%, #86efac 25%, #eab308 50%, #f97316 75%, #ef4444 100%);
+      border-radius: 3px;
+      margin-bottom: 5px;
+    }
+
+    .fg-bar-marker {
+      position: absolute;
+      top: -5px;
+      width: 3px;
+      height: 16px;
+      background: #ffffff;
+      border-radius: 2px;
+      transform: translateX(-50%);
+      transition: left 0.6s ease;
+      box-shadow: 0 0 6px rgba(255,255,255,0.5);
+    }
+
+    .fg-bar-labels {
+      display: flex;
+      justify-content: space-between;
+      font-size: 9px;
+      color: #333;
+    }
+
+    /* CAPE */
+    .cape-input-row {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      margin-bottom: 14px;
+      flex-wrap: wrap;
+    }
+
+    .cape-input-group {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      flex: 1;
+    }
+
+    .cape-input-group label {
+      font-size: 13px;
+      color: #555;
+      white-space: nowrap;
+    }
+
+    .cape-input-field {
+      background: #1a1a1a;
+      border: 1px solid #333;
+      border-radius: 6px;
+      color: #fff;
+      font-size: 20px;
+      font-weight: 600;
+      font-family: inherit;
+      padding: 6px 10px;
+      width: 80px;
+      text-align: center;
+      outline: none;
+      -moz-appearance: textfield;
+    }
+
+    .cape-input-field::-webkit-outer-spin-button,
+    .cape-input-field::-webkit-inner-spin-button { -webkit-appearance: none; }
+
+    .cape-input-field:focus { border-color: #2563eb; }
+
+    .cape-ref { font-size: 11px; color: #444; }
+
+    .cape-deviation { font-size: 22px; font-weight: 700; }
+    .cape-deviation.overvalued    { color: #ef4444; }
+    .cape-deviation.slightly-high { color: #f97316; }
+    .cape-deviation.fair          { color: #86efac; }
+    .cape-deviation.cheap         { color: #22c55e; }
+
+    /* Responsive */
+    @media (max-width: 640px) {
+      body { padding: 0; align-items: stretch; }
+      .card { border-radius: 0; padding: 28px 20px; box-shadow: none; border-left: none; border-right: none; }
+      .price { font-size: 48px; }
+      .indicators { grid-template-columns: 1fr 1fr; }
+      .chart-wrap { height: 170px; }
+      .ath-drawdown { font-size: 32px; }
+      .fg-score { font-size: 30px; }
+      .ath-table td { font-size: 11px; padding: 7px 8px; }
+      .signal-title { font-size: 15px; }
+      .etf-name h1 { font-size: 20px; }
+      .etf-icon { width: 44px; height: 44px; font-size: 11px; }
+      .fg-bar-labels { font-size: 8px; }
+    }
+
+    @media (min-width: 641px) and (max-width: 900px) {
+      body { padding: 20px 16px; }
+      .card { padding: 36px 36px; }
+      .indicators { grid-template-columns: 1fr 1fr; }
+    }
+  </style>
+</head>
+<body>
+  <div class="card">
+    <div class="header">
+      <div class="etf-icon">VWCE</div>
+      <div class="etf-name">
+        <h1>VWCE</h1>
+        <p>Vanguard FTSE All-World UCITS ETF</p>
+      </div>
+    </div>
+
+    <div id="error-box" class="error-msg" style="display:none;"></div>
+
+    <div class="price-section">
+      <div class="price-label">Aktueller Preis</div>
+      <div class="price" id="price"><span class="loading-shimmer">€000.00</span></div>
+      <div class="price-change" id="price-change"></div>
+    </div>
+
+    <!-- Chart -->
+    <div class="chart-section">
+      <div class="chart-header">
+        <div class="chart-title">Kursverlauf</div>
+        <div class="chart-legend">
+          <div class="legend-item">
+            <div class="legend-dot" style="background:#ffffff;"></div>
+            <span>Kurs</span>
+          </div>
+          <div class="legend-item">
+            <div class="legend-dot" style="background:#3b82f6;"></div>
+            <span>MA200</span>
+          </div>
+        </div>
+      </div>
+      <div class="chart-wrap">
+        <canvas id="priceChart"></canvas>
+      </div>
+    </div>
+
+    <div class="range-btns">
+      <button class="range-btn" onclick="setRange(30)">1M</button>
+      <button class="range-btn active" onclick="setRange(90)">3M</button>
+      <button class="range-btn" onclick="setRange(180)">6M</button>
+      <button class="range-btn" onclick="setRange(365)">1J</button>
+    </div>
+
+    <div class="indicators">
+      <div class="indicator-box">
+        <div class="ind-label">200-Tage MA</div>
+        <div class="ind-value" id="ma200"><span class="loading-shimmer">€000</span></div>
+        <div class="ind-sub" id="ma200-sub"></div>
+      </div>
+      <div class="indicator-box">
+        <div class="ind-label">RSI – Täglich</div>
+        <div class="ind-value" id="rsi"><span class="loading-shimmer">00.0</span></div>
+        <div class="ind-sub" id="rsi-sub"></div>
+      </div>
+      <div class="indicator-box">
+        <div class="ind-label">RSI – Wöchentlich</div>
+        <div class="ind-value" id="wrsi"><span class="loading-shimmer">00.0</span></div>
+        <div class="ind-sub" id="wrsi-sub"></div>
+      </div>
+    </div>
+
+    <div class="section-label">RSI-Matrix (Wochen-RSI)</div>
+    <div class="ath-box" style="margin-bottom:20px;">
+      <table class="ath-table" id="rsi-table">
+        <tr data-rsimin="70" data-rsimax="200">
+          <td><span class="ath-row-dot" style="background:#ef4444"></span>Über 70 – Überkauft (Euphorie)</td>
+          <td>Sparplan laufen lassen. Keine großen Einmalsummen.</td>
+        </tr>
+        <tr data-rsimin="50" data-rsimax="70">
+          <td><span class="ath-row-dot" style="background:#ffffff"></span>50–70 – Bullisch / Neutral</td>
+          <td>Business as usual. Sparplan läuft.</td>
+        </tr>
+        <tr data-rsimin="40" data-rsimax="50">
+          <td><span class="ath-row-dot" style="background:#86efac"></span>40–50 – Leichte Abkühlung</td>
+          <td>Kleine Extra-Beträge nachschießen.</td>
+        </tr>
+        <tr data-rsimin="30" data-rsimax="40">
+          <td><span class="ath-row-dot" style="background:#22c55e"></span>30–40 – Angst im Markt</td>
+          <td>Kaufsignal. Sparplan aufstocken oder Tranche nachkaufen.</td>
+        </tr>
+        <tr data-rsimin="0" data-rsimax="30">
+          <td><span class="ath-row-dot" style="background:#22c55e"></span>Unter 30 – Panik (Oversold)</td>
+          <td>Starkes Kaufsignal. Historisch beste Einstiegszeitpunkte.</td>
+        </tr>
+      </table>
+    </div>
+
+    <div class="section-label">ATH-Abstand &amp; Strategie</div>
+    <div class="ath-box">
+      <div class="ath-top">
+        <div class="ath-drawdown loading-shimmer" id="ath-drawdown">-0.0%</div>
+        <div class="ath-meta">vom ATH <span id="ath-value">€—</span></div>
+      </div>
+      <table class="ath-table" id="ath-table">
+        <tr data-min="0" data-max="5">
+          <td><span class="ath-row-dot" style="background:#22c55e"></span>0% bis -5%</td>
+          <td>Nichts tun / Sparplan</td>
+        </tr>
+        <tr data-min="5" data-max="10">
+          <td><span class="ath-row-dot" style="background:#eab308"></span>-5% bis -10%</td>
+          <td>Erste Tranche nachkaufen</td>
+        </tr>
+        <tr data-min="10" data-max="20">
+          <td><span class="ath-row-dot" style="background:#f97316"></span>-10% bis -20%</td>
+          <td>Größere Tranche nachkaufen</td>
+        </tr>
+        <tr data-min="20" data-max="100">
+          <td><span class="ath-row-dot" style="background:#ef4444"></span>&gt; -20%</td>
+          <td>Aggressiv nachkaufen</td>
+        </tr>
+      </table>
+    </div>
+
+    <div class="section-label">Shiller CAPE (Bewertungsfilter)</div>
+    <div class="fg-box">
+      <div class="fg-top">
+        <div class="fg-score loading-shimmer" id="pe-value">--</div>
+        <div class="fg-meta">Welt-Markt KGV · <span id="pe-source">wird geladen...</span></div>
+      </div>
+      <div id="pe-deviation" style="font-size:18px;font-weight:600;color:#555;margin-bottom:14px;">—</div>
+      <table class="ath-table" id="cape-table">
+        <tr data-cmin="25" data-cmax="999">
+          <td><span class="ath-row-dot" style="background:#ef4444"></span>&gt; +25% (überbewertet)</td>
+          <td>Nur Basis-Sparplan; Zusatzkäufe erst bei ≥ −20% Drawdown</td>
+        </tr>
+        <tr data-cmin="0" data-cmax="25">
+          <td><span class="ath-row-dot" style="background:#f97316"></span>+0% bis +25% (fair/leicht teuer)</td>
+          <td>Sparplan; bei −5% kleine Tranche, −10% normale Tranche</td>
+        </tr>
+        <tr data-cmin="-10" data-cmax="0">
+          <td><span class="ath-row-dot" style="background:#86efac"></span>−10% bis 0% (fair/leicht günstig)</td>
+          <td>Basis + bei −5% normale Tranche</td>
+        </tr>
+        <tr data-cmin="-999" data-cmax="-10">
+          <td><span class="ath-row-dot" style="background:#22c55e"></span>&lt; −10% (günstig)</td>
+          <td>Erhöhe Zusatzbeiträge (z.B. 1,5×); bei −20% große Tranche</td>
+        </tr>
+      </table>
+    </div>
+
+    <div class="section-label">Markt-Sentiment</div>
+    <div class="fg-box">
+      <div class="fg-top">
+        <div class="fg-score loading-shimmer" id="fg-score">50</div>
+        <div class="fg-meta">CNN Fear &amp; Greed · <span id="fg-label">Wird geladen...</span></div>
+      </div>
+      <div class="fg-bar-wrap">
+        <div class="fg-bar-track">
+          <div class="fg-bar-marker" id="fg-marker" style="left:50%"></div>
+        </div>
+        <div class="fg-bar-labels">
+          <span>Extreme Angst</span>
+          <span></span>
+          <span>Neutral</span>
+          <span></span>
+          <span>Extreme Gier</span>
+        </div>
+      </div>
+      <table class="ath-table" id="fg-table">
+        <tr data-fgmin="75" data-fgmax="101">
+          <td><span class="ath-row-dot" style="background:#ef4444"></span>Extreme Gier (75–100)</td>
+          <td>Füße stillhalten – nicht investieren</td>
+        </tr>
+        <tr data-fgmin="55" data-fgmax="75">
+          <td><span class="ath-row-dot" style="background:#f97316"></span>Gier (55–74)</td>
+          <td>Vorsicht – nur Sparplan weiterführen</td>
+        </tr>
+        <tr data-fgmin="45" data-fgmax="55">
+          <td><span class="ath-row-dot" style="background:#eab308"></span>Neutral (45–54)</td>
+          <td>Normal – Sparplan weiterlaufen lassen</td>
+        </tr>
+        <tr data-fgmin="25" data-fgmax="45">
+          <td><span class="ath-row-dot" style="background:#86efac"></span>Angst (25–44)</td>
+          <td>Erste Tranche nachkaufen</td>
+        </tr>
+        <tr data-fgmin="0" data-fgmax="25">
+          <td><span class="ath-row-dot" style="background:#22c55e"></span>Extreme Angst (0–24)</td>
+          <td>Aggressiv nachkaufen – Angst der Masse nutzen</td>
+        </tr>
+      </table>
+    </div>
+
+    <div class="signal-box loading" id="signal-box">
+      <div class="signal-dot"></div>
+      <div class="signal-text">
+        <div class="signal-title" id="signal-title">Daten werden geladen...</div>
+        <div class="signal-desc" id="signal-desc">Bitte warten</div>
+      </div>
+    </div>
+
+    <div class="footer" id="footer">Letzte Aktualisierung: —</div>
+  </div>
+
+  <script>
+    const TICKER = 'VWCE.DE';
+    const PROXY  = 'https://corsproxy.io/?';
+
+    let allTimestamps = [];
+    let allCloses     = [];
+    let chartInstance = null;
+    let currentRange  = 90;
+
+    async function fetchYahoo(range, interval) {
+      const url = `https://query1.finance.yahoo.com/v8/finance/chart/${TICKER}?range=${range}&interval=${interval}&includePrePost=false`;
+      const res = await fetch(PROXY + encodeURIComponent(url));
+      if (!res.ok) throw new Error(`HTTP ${res.status}`);
+      const data = await res.json();
+      const result = data.chart.result[0];
+      if (!result) throw new Error('Keine Daten gefunden');
+      return result;
+    }
+
+    function calcMA(closes, period) {
+      if (closes.length < period) return null;
+      const slice = closes.slice(-period);
+      return slice.reduce((a, b) => a + b, 0) / period;
+    }
+
+    // Returns array of MA values (one per close, null until enough data)
+    function calcMALine(closes, period) {
+      return closes.map((_, i) => {
+        if (i < period - 1) return null;
+        const slice = closes.slice(i - period + 1, i + 1);
+        return slice.reduce((a, b) => a + b, 0) / period;
+      });
+    }
+
+    function calcRSI(closes, period = 14) {
+      if (closes.length < period + 1) return null;
+      const changes = [];
+      for (let i = 1; i < closes.length; i++) changes.push(closes[i] - closes[i - 1]);
+      const recent = changes.slice(-period);
+      let gains = 0, losses = 0;
+      for (const c of recent) { if (c > 0) gains += c; else losses -= c; }
+      const avgGain = gains / period;
+      const avgLoss = losses / period;
+      if (avgLoss === 0) return 100;
+      return 100 - (100 / (1 + avgGain / avgLoss));
+    }
+
+    function getRSIZone(rsi) {
+      if (rsi >= 70) return 'Überkauft (Euphorie)';
+      if (rsi >= 50) return 'Bullisch / Neutral';
+      if (rsi >= 40) return 'Leichte Abkühlung';
+      if (rsi >= 30) return 'Angst im Markt';
+      return 'Panik (Oversold)';
+    }
+
+    function getSignal(price, ma200, rsi) {
+      const diff = ((price - ma200) / ma200) * 100; // % above/below MA200
+      const rsiZone = getRSIZone(rsi);
+
+      // Szenario C: Kurs unter GD200 → günstig
+      if (diff < 0) return {
+        level: 'green',
+        title: '✓ Szenario C – Günstig',
+        desc: `Kurs ${diff.toFixed(1)}% unter GD200 · RSI ${rsi.toFixed(1)} – ${rsiZone}`
+      };
+
+      // Szenario B: Kurs nah an GD200 (0–5% drüber) → guter Kaufmoment
+      if (diff < 5) return {
+        level: 'green',
+        title: '✓ Szenario B – Guter Kaufmoment',
+        desc: `Kurs berührt GD200 (+${diff.toFixed(1)}%) · RSI ${rsi.toFixed(1)} – ${rsiZone}`
+      };
+
+      // Übergang: 5–10% über GD200 → neutral
+      if (diff < 10) return {
+        level: 'yellow',
+        title: '~ Neutral – Leicht erhöht',
+        desc: `Kurs +${diff.toFixed(1)}% über GD200 · RSI ${rsi.toFixed(1)} – ${rsiZone}`
+      };
+
+      // Szenario A: Kurs weit über GD200 (>10%) → teuer/überhitzt
+      return {
+        level: 'red',
+        title: '✕ Szenario A – Markt überhitzt',
+        desc: `Kurs +${diff.toFixed(1)}% über GD200 · RSI ${rsi.toFixed(1)} – ${rsiZone}`
+      };
+    }
+
+    function renderChart(rangeDays) {
+      const cutoff = allTimestamps.length - rangeDays;
+      const idx    = Math.max(0, cutoff);
+
+      const labels   = allTimestamps.slice(idx).map(ts => {
+        const d = new Date(ts * 1000);
+        return d.toLocaleDateString('de-DE', { day: '2-digit', month: 'short' });
+      });
+      const prices  = allCloses.slice(idx);
+      const maFull  = calcMALine(allCloses, 200);
+      const maSlice = maFull.slice(idx);
+
+      if (chartInstance) {
+        chartInstance.data.labels           = labels;
+        chartInstance.data.datasets[0].data = prices;
+        chartInstance.data.datasets[1].data = maSlice;
+        chartInstance.update('none');
+        return;
+      }
+
+      const ctx = document.getElementById('priceChart').getContext('2d');
+      chartInstance = new Chart(ctx, {
+        type: 'line',
+        data: {
+          labels,
+          datasets: [
+            {
+              label: 'Kurs',
+              data: prices,
+              borderColor: '#ffffff',
+              borderWidth: 1.5,
+              pointRadius: 0,
+              tension: 0.3,
+              fill: {
+                target: 'origin',
+                above: 'rgba(255,255,255,0.04)',
+              },
+            },
+            {
+              label: 'MA 200',
+              data: maSlice,
+              borderColor: '#3b82f6',
+              borderWidth: 1.2,
+              borderDash: [4, 3],
+              pointRadius: 0,
+              tension: 0.3,
+              fill: false,
+            }
+          ]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          interaction: { mode: 'index', intersect: false },
+          plugins: {
+            legend: { display: false },
+            tooltip: {
+              backgroundColor: '#1a1a1a',
+              borderColor: '#333',
+              borderWidth: 1,
+              titleColor: '#888',
+              bodyColor: '#fff',
+              padding: 10,
+              callbacks: {
+                label: ctx => `${ctx.dataset.label}: €${ctx.parsed.y?.toFixed(2) ?? '—'}`
+              }
+            }
+          },
+          scales: {
+            x: {
+              grid: { color: '#1a1a1a' },
+              ticks: {
+                color: '#444',
+                maxTicksLimit: 6,
+                maxRotation: 0,
+                font: { size: 10 }
+              }
+            },
+            y: {
+              grid: { color: '#1a1a1a' },
+              ticks: {
+                color: '#444',
+                font: { size: 10 },
+                callback: v => `€${v.toFixed(0)}`
+              },
+              position: 'right'
+            }
+          }
+        }
+      });
+    }
+
+    function setRange(days) {
+      currentRange = days;
+      document.querySelectorAll('.range-btn').forEach(b => {
+        b.classList.toggle('active', parseInt(b.textContent) === (
+          days === 30 ? 30 : days === 90 ? 90 : days === 180 ? 180 : 365
+        ));
+      });
+      // match by label text
+      document.querySelectorAll('.range-btn').forEach(b => {
+        const map = { '1M': 30, '3M': 90, '6M': 180, '1J': 365 };
+        b.classList.toggle('active', map[b.textContent] === days);
+      });
+      if (allCloses.length) renderChart(days);
+    }
+
+    function updateATH(price, closes) {
+      const ath        = Math.max(...closes);
+      const drawdownPct = ((price - ath) / ath) * 100; // negative number
+      const absPct     = Math.abs(drawdownPct);
+
+      const el = document.getElementById('ath-drawdown');
+      el.textContent = `${drawdownPct.toFixed(1)}%`;
+      el.classList.remove('loading-shimmer');
+
+      if (absPct < 5)       { el.className = 'ath-drawdown green'; }
+      else if (absPct < 10) { el.className = 'ath-drawdown yellow'; }
+      else if (absPct < 20) { el.className = 'ath-drawdown orange'; }
+      else                  { el.className = 'ath-drawdown red'; }
+
+      document.getElementById('ath-value').textContent = `€${ath.toFixed(2)}`;
+
+      // Highlight active row
+      document.querySelectorAll('#ath-table tr').forEach(row => {
+        const min = parseFloat(row.dataset.min);
+        const max = parseFloat(row.dataset.max);
+        row.classList.toggle('active-row', absPct >= min && absPct < max);
+      });
+    }
+
+    function getFGClass(score) {
+      if (score >= 75) return 'greed-extreme';
+      if (score >= 55) return 'greed';
+      if (score >= 45) return 'neutral';
+      if (score >= 25) return 'fear';
+      return 'fear-extreme';
+    }
+
+    function updateFearGreed(score, rating) {
+      const scoreEl = document.getElementById('fg-score');
+      scoreEl.textContent = Math.round(score);
+      scoreEl.classList.remove('loading-shimmer');
+      scoreEl.className = `fg-score ${getFGClass(score)}`;
+
+      const labelMap = {
+        'extreme fear': 'Extreme Angst',
+        'fear': 'Angst',
+        'neutral': 'Neutral',
+        'greed': 'Gier',
+        'extreme greed': 'Extreme Gier'
+      };
+      document.getElementById('fg-label').textContent = labelMap[rating.toLowerCase()] || rating;
+      document.getElementById('fg-marker').style.left = `${score}%`;
+
+      document.querySelectorAll('#fg-table tr').forEach(row => {
+        const min = parseFloat(row.dataset.fgmin);
+        const max = parseFloat(row.dataset.fgmax);
+        row.classList.toggle('active-row', score >= min && score < max);
+      });
+    }
+
+    function applyRSIZone(el, subEl, rsiVal) {
+      let color, zone;
+      if (rsiVal >= 70)      { color = '#ef4444'; zone = 'Überkauft (Euphorie)'; }
+      else if (rsiVal >= 50) { color = '#ffffff'; zone = 'Bullisch / Neutral'; }
+      else if (rsiVal >= 40) { color = '#86efac'; zone = 'Leichte Abkühlung'; }
+      else if (rsiVal >= 30) { color = '#22c55e'; zone = 'Angst im Markt'; }
+      else                   { color = '#22c55e'; zone = 'Panik (Oversold)'; }
+      el.style.color = color;
+      subEl.textContent = zone;
+      return rsiVal;
+    }
+
+    async function loadWeeklyRSI() {
+      try {
+        const result = await fetchYahoo('2y', '1wk');
+        const raw  = result.indicators.quote[0];
+        const ts   = result.timestamp;
+        const pairs = ts.map((t, i) => ({ t, c: raw.close[i] })).filter(p => p.c != null);
+        const closes = pairs.map(p => p.c);
+        const wrsi = calcRSI(closes, 14);
+
+        if (wrsi !== null) {
+          const el    = document.getElementById('wrsi');
+          const subEl = document.getElementById('wrsi-sub');
+          el.textContent = wrsi.toFixed(1);
+          el.classList.remove('loading-shimmer');
+          applyRSIZone(el, subEl, wrsi);
+
+          // RSI-Matrix Tabelle → Wochen-RSI ist maßgeblich
+          document.querySelectorAll('#rsi-table tr').forEach(row => {
+            const min = parseFloat(row.dataset.rsimin);
+            const max = parseFloat(row.dataset.rsimax);
+            row.classList.toggle('active-row', wrsi >= min && wrsi < max);
+          });
+        }
+      } catch (err) {
+        console.error('Weekly RSI error:', err);
+        const el = document.getElementById('wrsi');
+        el.textContent = '—';
+        el.classList.remove('loading-shimmer');
+        document.getElementById('wrsi-sub').textContent = 'Nicht verfügbar';
+      }
+    }
+
+    async function loadFearGreed() {
+      try {
+        const url = 'https://production.dataviz.cnn.io/index/fearandgreed/graphdata';
+        const res = await fetch(PROXY + encodeURIComponent(url));
+        if (!res.ok) throw new Error(`HTTP ${res.status}`);
+        const data = await res.json();
+        const fg = data.fear_and_greed;
+        updateFearGreed(fg.score, fg.rating);
+      } catch (err) {
+        console.error('Fear & Greed error:', err);
+        const scoreEl = document.getElementById('fg-score');
+        scoreEl.textContent = '—';
+        scoreEl.classList.remove('loading-shimmer');
+        document.getElementById('fg-label').textContent = 'Nicht verfügbar';
+      }
+    }
+
+    async function load() {
+      try {
+        const result = await fetchYahoo('2y', '1d');
+        const raw    = result.indicators.quote[0];
+        const ts     = result.timestamp;
+
+        // Filter nulls
+        const pairs = ts.map((t, i) => ({ t, c: raw.close[i] }))
+                        .filter(p => p.c != null);
+        allTimestamps = pairs.map(p => p.t);
+        allCloses     = pairs.map(p => p.c);
+
+        const meta      = result.meta;
+        const price     = meta.regularMarketPrice;
+        // Use last two historical closes for accurate daily change
+        const prevClose = allCloses.length >= 2 ? allCloses[allCloses.length - 2] : price;
+        const change    = price - prevClose;
+        const changePct = (change / prevClose) * 100;
+        const symbol    = '€';
+
+        // Preis
+        document.getElementById('price').textContent = `${symbol}${price.toFixed(2)}`;
+        const changeEl = document.getElementById('price-change');
+        changeEl.textContent = `${change >= 0 ? '+' : ''}${change.toFixed(2)} (${changePct >= 0 ? '+' : ''}${changePct.toFixed(2)}%) heute`;
+        changeEl.className = 'price-change ' + (change >= 0 ? 'up' : 'down');
+
+        const ma200 = calcMA(allCloses, 200);
+        const rsi   = calcRSI(allCloses, 14);
+
+        // MA200
+        if (ma200 !== null) {
+          document.getElementById('ma200').textContent = `${symbol}${ma200.toFixed(2)}`;
+          const diff = ((price - ma200) / ma200) * 100;
+          const sub  = document.getElementById('ma200-sub');
+          sub.textContent = `Kurs ${diff >= 0 ? '+' : ''}${diff.toFixed(1)}% vs MA`;
+          sub.style.color = diff >= 0 ? '#ef4444' : '#22c55e';
+        }
+
+        // RSI – 5-Zonen-Matrix (täglich)
+        if (rsi !== null) {
+          const rsiEl = document.getElementById('rsi');
+          rsiEl.textContent = rsi.toFixed(1);
+
+          let rsiColor, rsiZone;
+          if (rsi >= 70)      { rsiColor = '#ef4444'; rsiZone = 'Überkauft (Euphorie)'; }
+          else if (rsi >= 50) { rsiColor = '#ffffff'; rsiZone = 'Bullisch / Neutral'; }
+          else if (rsi >= 40) { rsiColor = '#86efac'; rsiZone = 'Leichte Abkühlung'; }
+          else if (rsi >= 30) { rsiColor = '#22c55e'; rsiZone = 'Angst im Markt'; }
+          else                { rsiColor = '#22c55e'; rsiZone = 'Panik (Oversold)'; }
+
+          rsiEl.style.color = rsiColor;
+          document.getElementById('rsi-sub').textContent = rsiZone;
+        }
+
+        // Signal
+        if (ma200 !== null && rsi !== null) {
+          const sig = getSignal(price, ma200, rsi);
+          const box = document.getElementById('signal-box');
+          box.className = `signal-box ${sig.level}`;
+          document.getElementById('signal-title').textContent = sig.title;
+          document.getElementById('signal-desc').textContent  = sig.desc;
+        }
+
+        // ATH Drawdown
+        updateATH(price, allCloses);
+
+        // Chart
+        renderChart(currentRange);
+
+        // Footer
+        const now = new Date();
+        document.getElementById('footer').textContent =
+          `Letzte Aktualisierung: ${now.toLocaleTimeString('de-DE')} · Quelle: Yahoo Finance`;
+
+      } catch (err) {
+        console.error(err);
+        const box = document.getElementById('error-box');
+        box.style.display = 'block';
+        box.textContent = `Fehler beim Laden: ${err.message}. Bitte Seite neu laden.`;
+      }
+    }
+
+    // KGV Bewertungsfilter (Shiller CAPE via multpl.com)
+    const PE_AVG = 17; // Shiller CAPE Langfrist-Mittel (S&P 500)
+
+    async function loadValuation() {
+      try {
+        // Shiller CAPE (S&P 500) von multpl.com als Welt-Proxy
+        const url = 'https://www.multpl.com/shiller-pe/';
+        const res = await fetch(PROXY + encodeURIComponent(url));
+        if (!res.ok) throw new Error(`HTTP ${res.status}`);
+        const html = await res.text();
+
+        // Wert aus Meta-Description parsen (zuverlässig server-seitig)
+        const match = html.match(/Current Shiller PE Ratio is ([\d.]+)/);
+        if (!match) throw new Error('Wert nicht gefunden');
+        const pe = parseFloat(match[1]);
+        if (isNaN(pe) || pe < 5 || pe > 100) throw new Error('ungültiger Wert');
+
+        const peEl = document.getElementById('pe-value');
+        peEl.textContent = pe.toFixed(1);
+        peEl.classList.remove('loading-shimmer');
+
+        const dev = ((pe - PE_AVG) / PE_AVG) * 100;
+        const devEl = document.getElementById('pe-deviation');
+        devEl.textContent = `${dev >= 0 ? '+' : ''}${dev.toFixed(1)}% vs. Ø ${PE_AVG}`;
+
+        let devColor;
+        if (dev > 25)        devColor = '#ef4444';
+        else if (dev >= 0)   devColor = '#f97316';
+        else if (dev >= -10) devColor = '#86efac';
+        else                 devColor = '#22c55e';
+        devEl.style.color = devColor;
+
+        document.getElementById('pe-source').textContent = 'S&P 500 Shiller CAPE · multpl.com';
+
+        document.querySelectorAll('#cape-table tr').forEach(row => {
+          const min = parseFloat(row.dataset.cmin);
+          const max = parseFloat(row.dataset.cmax);
+          row.classList.toggle('active-row', dev >= min && dev < max);
+        });
+      } catch (err) {
+        console.error('KGV error:', err);
+        const peEl = document.getElementById('pe-value');
+        peEl.textContent = '—';
+        peEl.classList.remove('loading-shimmer');
+        document.getElementById('pe-source').textContent = 'Nicht verfügbar';
+        document.getElementById('pe-deviation').textContent = '';
+      }
+    }
+
+    // Initialer Load
+    load();
+    loadWeeklyRSI();
+    loadFearGreed();
+    loadValuation();
+
+    // Auto-Refresh: Preis/MA/RSI alle 2 Min, langsame Daten seltener
+    setInterval(load,           2 * 60 * 1000);   // 2 Minuten
+    setInterval(loadWeeklyRSI, 15 * 60 * 1000);   // 15 Minuten
+    setInterval(loadFearGreed, 10 * 60 * 1000);   // 10 Minuten
+    setInterval(loadValuation, 30 * 60 * 1000);   // 30 Minuten
+  </script>
+</body>
+</html>
