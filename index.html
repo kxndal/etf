@@ -362,7 +362,7 @@
           <div class="etf-icon">VWCE</div>
           <div class="etf-name">
             <h1>VWCE</h1>
-            <p>Vanguard FTSE All-World UCITS ETF</p>
+            <p>Vanguard FTSE All-World UCITS ETF · Acc</p>
           </div>
         </div>
         <div class="header-right">
@@ -587,7 +587,7 @@
 
 <script>
   const TICKER   = 'VWCE.DE';
-  const LS_ISIN  = 'IE00B3RBWM25';
+  const LS_ISIN  = 'IE00BK5BQT80';
   const PROXY    = 'https://corsproxy.io/?';
 
   let allTimestamps      = [];
@@ -614,10 +614,10 @@
   }
 
   // ── Lang & Schwarz Live-Preis ───────────────────────────────
-  // instrumentId 514850 = VWCE (IE00B3RBWM25) auf LS Exchange
+  // instrumentId 1045625 = VWCE Acc (IE00BK5BQT80) auf LS Exchange
 
   async function fetchLSData() {
-    const instrId = 514850;
+    const instrId = 1045625;
     const url = `https://www.ls-tc.de/_rpc/json/instrument/chart/dataForInstrument?container=chart1&instrumentId=${instrId}&marketId=1&quotetype=mid&series=intraday%2Chistory&type=&localeId=2`;
     const res = await fetch(PROXY + encodeURIComponent(url), {
       headers: { 'X-Requested-With': 'XMLHttpRequest' }
