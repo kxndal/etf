@@ -22,21 +22,62 @@
       font-family: -apple-system, BlinkMacSystemFont, 'Inter', 'Segoe UI', sans-serif;
       background: #ffffff;
       color: #0a0a0a;
-      min-height: 100vh;
+      height: 100vh;
+      overflow: hidden;
+    }
+
+    .pages {
+      height: 100vh;
+      overflow-y: scroll;
+      scroll-snap-type: y mandatory;
+    }
+
+    .page {
+      height: 100vh;
+      scroll-snap-align: start;
       display: flex;
-      align-items: flex-start;
+      align-items: center;
       justify-content: center;
       padding: 48px 40px;
     }
 
-    .card {
-      background: transparent;
-      border-radius: 0;
-      padding: 0;
+    .page-inner {
       max-width: 760px;
       width: 100%;
-      border: none;
-      box-shadow: none;
+    }
+
+    .page-label {
+      font-size: 10px;
+      font-weight: 600;
+      color: #9ca3af;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      margin-bottom: 28px;
+    }
+
+    /* Page nav dots */
+    .page-dots {
+      position: fixed;
+      right: 24px;
+      top: 50%;
+      transform: translateY(-50%);
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      z-index: 100;
+    }
+    .dot {
+      display: block;
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      background: #d1d5db;
+      transition: background 0.2s, transform 0.2s;
+      text-decoration: none;
+    }
+    .dot.active {
+      background: #0a0a0a;
+      transform: scale(1.4);
     }
 
     /* Header */
@@ -98,7 +139,7 @@
     .chart-legend { display: flex; gap: 14px; }
     .legend-item { display: flex; align-items: center; gap: 5px; font-size: 10px; color: #9ca3af; }
     .legend-dot  { width: 8px; height: 2px; border-radius: 1px; }
-    .chart-wrap  { position: relative; height: 240px; }
+    .chart-wrap  { position: relative; height: 320px; }
 
     /* Range buttons */
     .range-btns { display: flex; gap: 4px; margin-bottom: 20px; align-items: center; padding-top: 8px; }
@@ -277,13 +318,13 @@
 
     /* Responsive */
     @media (max-width: 640px) {
-      body { padding: 0; align-items: stretch; }
-      .card { padding: 0; }
+      .page { padding: 24px 20px; align-items: flex-start; overflow-y: auto; }
+      .page-dots { display: none; }
       .header { flex-wrap: wrap; }
-      .header-right { width: 100%; }
+      .header-right { width: 100%; margin-top: 8px; }
       .price { font-size: 36px; }
       .indicators { grid-template-columns: 1fr 1fr; }
-      .chart-wrap { height: 180px; }
+      .chart-wrap { height: 220px; }
       .ath-drawdown { font-size: 32px; }
       .fg-score { font-size: 32px; }
       .ath-table td { font-size: 11px; padding: 7px 8px; }
@@ -293,254 +334,255 @@
       .calc-grid-2 { grid-template-columns: 1fr; }
     }
     @media (min-width: 641px) and (max-width: 900px) {
-      body { padding: 20px 16px; }
-      .card { padding: 28px 32px; }
+      .page { padding: 32px 24px; }
       .indicators { grid-template-columns: 1fr 1fr; }
       .calc-grid  { grid-template-columns: 1fr 1fr; }
     }
   </style>
 </head>
 <body>
-<div class="card">
+<nav class="page-dots" id="page-dots">
+  <a class="dot active" data-page="0" href="#pg-1"></a>
+  <a class="dot" data-page="1" href="#pg-2"></a>
+  <a class="dot" data-page="2" href="#pg-3"></a>
+  <a class="dot" data-page="3" href="#pg-4"></a>
+  <a class="dot" data-page="4" href="#pg-5"></a>
+  <a class="dot" data-page="5" href="#pg-6"></a>
+  <a class="dot" data-page="6" href="#pg-7"></a>
+</nav>
 
-  <div class="header">
-    <div class="header-left">
-      <div class="etf-icon">VWCE</div>
-      <div class="etf-name">
-        <h1>VWCE</h1>
-        <p>Vanguard FTSE All-World UCITS ETF</p>
+<div class="pages" id="pages">
+
+  <!-- PAGE 1: Übersicht -->
+  <section class="page" id="pg-1">
+    <div class="page-inner">
+      <div class="page-label">Übersicht</div>
+      <div class="header">
+        <div class="header-left">
+          <div class="etf-icon">VWCE</div>
+          <div class="etf-name">
+            <h1>VWCE</h1>
+            <p>Vanguard FTSE All-World UCITS ETF</p>
+          </div>
+        </div>
+        <div class="header-right">
+          <div class="price" id="price"><span class="loading-shimmer">€000.00</span></div>
+          <div class="price-change" id="price-change"></div>
+        </div>
+      </div>
+      <div id="error-box" class="error-msg" style="display:none;"></div>
+      <div class="signal-box loading" id="signal-box">
+        <div class="signal-dot"></div>
+        <div class="signal-text">
+          <div class="signal-title" id="signal-title">Daten werden geladen...</div>
+          <div class="signal-desc"  id="signal-desc">Bitte warten</div>
+        </div>
+      </div>
+      <div class="week52-section">
+        <div class="week52-header">
+          <span>52-Wochen-Tief</span>
+          <span style="color:#9ca3af;font-size:10px;" id="week52-pct">—</span>
+          <span>52-Wochen-Hoch</span>
+        </div>
+        <div class="week52-track">
+          <div class="week52-fill"   id="week52-fill"   style="width:0%"></div>
+          <div class="week52-marker" id="week52-marker" style="left:0%"></div>
+        </div>
+        <div class="week52-footer">
+          <span id="week52-low">—</span>
+          <span id="week52-high">—</span>
+        </div>
       </div>
     </div>
-    <div class="header-right">
-      <div class="price" id="price"><span class="loading-shimmer">€000.00</span></div>
-      <div class="price-change" id="price-change"></div>
-    </div>
-  </div>
+  </section>
 
-  <div id="error-box" class="error-msg" style="display:none;"></div>
-
-  <!-- ② GESAMTSIGNAL (direkt nach Preis – schnelle Orientierung) -->
-  <div class="signal-box loading" id="signal-box" style="margin-bottom:16px;">
-    <div class="signal-dot"></div>
-    <div class="signal-text">
-      <div class="signal-title" id="signal-title">Daten werden geladen...</div>
-      <div class="signal-desc"  id="signal-desc">Bitte warten</div>
-    </div>
-  </div>
-
-  <!-- ③ 52-WOCHEN RANGE -->
-  <div class="week52-section">
-    <div class="week52-header">
-      <span>52-Wochen-Tief</span>
-      <span style="color:#555;font-size:10px;" id="week52-pct">—</span>
-      <span>52-Wochen-Hoch</span>
-    </div>
-    <div class="week52-track">
-      <div class="week52-fill"   id="week52-fill"   style="width:0%"></div>
-      <div class="week52-marker" id="week52-marker" style="left:0%"></div>
-    </div>
-    <div class="week52-footer">
-      <span id="week52-low">—</span>
-      <span id="week52-high">—</span>
-    </div>
-  </div>
-
-  <!-- ④ CHART -->
-  <div class="chart-section">
-    <div class="chart-header">
-      <div class="chart-title">Kursverlauf</div>
-      <div class="chart-legend">
-        <div class="legend-item"><div class="legend-dot" style="background:#0a0a0a;"></div><span>Kurs</span></div>
-        <div class="legend-item"><div class="legend-dot" style="background:#9ca3af;"></div><span>MA200</span></div>
-        <div class="legend-item"><div class="legend-dot" style="background:#d1d5db;"></div><span>BB</span></div>
+  <!-- PAGE 2: Chart -->
+  <section class="page" id="pg-2">
+    <div class="page-inner">
+      <div class="page-label">Kursverlauf</div>
+      <div class="chart-section">
+        <div class="chart-header">
+          <div class="chart-title">Kursverlauf</div>
+          <div class="chart-legend">
+            <div class="legend-item"><div class="legend-dot" style="background:#0a0a0a;"></div><span>Kurs</span></div>
+            <div class="legend-item"><div class="legend-dot" style="background:#9ca3af;"></div><span>MA200</span></div>
+            <div class="legend-item"><div class="legend-dot" style="background:#d1d5db;"></div><span>BB</span></div>
+          </div>
+        </div>
+        <div class="chart-wrap"><canvas id="priceChart"></canvas></div>
+      </div>
+      <div class="range-btns">
+        <button class="range-btn" data-range="live" onclick="setRange('live')">Live</button>
+        <button class="range-btn" data-range="1m"   onclick="setRange('1m')">1M</button>
+        <button class="range-btn active" data-range="3m" onclick="setRange('3m')">3M</button>
+        <button class="range-btn" data-range="6m"   onclick="setRange('6m')">6M</button>
+        <button class="range-btn" data-range="ytd"  onclick="setRange('ytd')">YTD</button>
+        <button class="range-btn" data-range="1j"   onclick="setRange('1j')">1J</button>
+        <button class="range-btn" data-range="5j"   onclick="setRange('5j')">5J</button>
+        <button class="range-btn" data-range="max"  onclick="setRange('max')">Max</button>
+        <span id="range-perf" class="range-perf"></span>
       </div>
     </div>
-    <div class="chart-wrap"><canvas id="priceChart"></canvas></div>
-  </div>
+  </section>
 
-  <div class="range-btns">
-    <button class="range-btn" data-range="live" onclick="setRange('live')">Live</button>
-    <button class="range-btn" data-range="1m"   onclick="setRange('1m')">1M</button>
-    <button class="range-btn active" data-range="3m" onclick="setRange('3m')">3M</button>
-    <button class="range-btn" data-range="6m"   onclick="setRange('6m')">6M</button>
-    <button class="range-btn" data-range="ytd"  onclick="setRange('ytd')">YTD</button>
-    <button class="range-btn" data-range="1j"   onclick="setRange('1j')">1J</button>
-    <button class="range-btn" data-range="5j"   onclick="setRange('5j')">5J</button>
-    <button class="range-btn" data-range="max"  onclick="setRange('max')">Max</button>
-    <span id="range-perf" class="range-perf"></span>
-  </div>
-
-  <!-- ⑤ TECHNISCHE INDIKATOREN -->
-  <div class="indicators">
-    <div class="indicator-box">
-      <div class="ind-label">200-Tage MA</div>
-      <div class="ind-value" id="ma200"><span class="loading-shimmer">€000</span></div>
-      <div class="ind-sub"   id="ma200-sub"></div>
-    </div>
-    <div class="indicator-box">
-      <div class="ind-label">RSI – Täglich</div>
-      <div class="ind-value" id="rsi"><span class="loading-shimmer">00.0</span></div>
-      <div class="ind-sub"   id="rsi-sub"></div>
-    </div>
-    <div class="indicator-box">
-      <div class="ind-label">RSI – Wöchentlich</div>
-      <div class="ind-value" id="wrsi"><span class="loading-shimmer">00.0</span></div>
-      <div class="ind-sub"   id="wrsi-sub"></div>
-    </div>
-    <div class="indicator-box">
-      <div class="ind-label">VIX</div>
-      <div class="ind-value" id="vix-value"><span class="loading-shimmer">00.0</span></div>
-      <div class="ind-sub"   id="vix-sub">Volatilität</div>
-    </div>
-    <div class="indicator-box">
-      <div class="ind-label">EUR / USD</div>
-      <div class="ind-value" id="eurusd-value" style="font-size:22px;"><span class="loading-shimmer">0.0000</span></div>
-      <div class="ind-sub"   id="eurusd-sub">Wechselkurs</div>
-    </div>
-    <div class="indicator-box">
-      <div class="ind-label">MACD</div>
-      <div class="ind-value" id="macd-value"><span class="loading-shimmer">0.00</span></div>
-      <div class="ind-sub"   id="macd-sub">wird berechnet...</div>
-    </div>
-  </div>
-
-
-  <!-- ⑦ ATH-ABSTAND -->
-  <div class="section-label">ATH-Abstand &amp; Strategie</div>
-  <div class="ath-box">
-    <div class="ath-top">
-      <div class="ath-drawdown loading-shimmer" id="ath-drawdown">-0.0%</div>
-      <div class="ath-meta">vom ATH <span id="ath-value">€—</span></div>
-    </div>
-  </div>
-
-  <!-- ⑧ MARKT-SENTIMENT (Fear & Greed vor CAPE – intuitiver) -->
-  <div class="section-label">Markt-Sentiment</div>
-  <div class="fg-box">
-    <div class="fg-top">
-      <div class="fg-score loading-shimmer" id="fg-score">50</div>
-      <div class="fg-meta">CNN Fear &amp; Greed · <span id="fg-label">Wird geladen...</span></div>
-    </div>
-    <div class="fg-bar-wrap">
-      <div class="fg-bar-track">
-        <div class="fg-bar-marker" id="fg-marker" style="left:50%"></div>
-      </div>
-      <div class="fg-bar-labels">
-        <span>Extreme Angst</span><span></span><span>Neutral</span><span></span><span>Extreme Gier</span>
+  <!-- PAGE 3: Indikatoren -->
+  <section class="page" id="pg-3">
+    <div class="page-inner">
+      <div class="page-label">Technische Indikatoren</div>
+      <div class="indicators">
+        <div class="indicator-box">
+          <div class="ind-label">200-Tage MA</div>
+          <div class="ind-value" id="ma200"><span class="loading-shimmer">€000</span></div>
+          <div class="ind-sub"   id="ma200-sub"></div>
+        </div>
+        <div class="indicator-box">
+          <div class="ind-label">RSI – Täglich</div>
+          <div class="ind-value" id="rsi"><span class="loading-shimmer">00.0</span></div>
+          <div class="ind-sub"   id="rsi-sub"></div>
+        </div>
+        <div class="indicator-box">
+          <div class="ind-label">RSI – Wöchentlich</div>
+          <div class="ind-value" id="wrsi"><span class="loading-shimmer">00.0</span></div>
+          <div class="ind-sub"   id="wrsi-sub"></div>
+        </div>
+        <div class="indicator-box">
+          <div class="ind-label">VIX</div>
+          <div class="ind-value" id="vix-value"><span class="loading-shimmer">00.0</span></div>
+          <div class="ind-sub"   id="vix-sub">Volatilität</div>
+        </div>
+        <div class="indicator-box">
+          <div class="ind-label">EUR / USD</div>
+          <div class="ind-value" id="eurusd-value" style="font-size:22px;"><span class="loading-shimmer">0.0000</span></div>
+          <div class="ind-sub"   id="eurusd-sub">Wechselkurs</div>
+        </div>
+        <div class="indicator-box">
+          <div class="ind-label">MACD</div>
+          <div class="ind-value" id="macd-value"><span class="loading-shimmer">0.00</span></div>
+          <div class="ind-sub"   id="macd-sub">wird berechnet...</div>
+        </div>
       </div>
     </div>
-  </div>
+  </section>
 
-  <!-- ⑨ BEWERTUNG (CAPE nach Sentiment) -->
-  <div class="section-label">Shiller CAPE (Bewertungsfilter)</div>
-  <div class="fg-box">
-    <div class="fg-top">
-      <div class="fg-score loading-shimmer" id="pe-value">--</div>
-      <div class="fg-meta">Welt-Markt KGV · <span id="pe-source">wird geladen...</span></div>
-    </div>
-    <div id="pe-deviation" style="font-size:18px;font-weight:600;color:#555;margin-bottom:14px;">—</div>
-  </div>
-
-  <!-- ⑩ MEIN PORTFOLIO -->
-  <div class="section-label">Mein Portfolio</div>
-  <div class="calc-box">
-    <div class="calc-grid-2">
-      <div class="calc-field">
-        <label>Anzahl Anteile</label>
-        <input class="calc-input" type="number" id="pt-shares" placeholder="z.B. 50" min="0" step="0.001" oninput="calcPortfolio()">
+  <!-- PAGE 4: ATH + Sentiment + CAPE -->
+  <section class="page" id="pg-4">
+    <div class="page-inner">
+      <div class="page-label">Bewertung &amp; Sentiment</div>
+      <div class="ath-box">
+        <div class="ath-top">
+          <div class="ath-drawdown loading-shimmer" id="ath-drawdown">-0.0%</div>
+          <div class="ath-meta">vom ATH <span id="ath-value">€—</span></div>
+        </div>
       </div>
-      <div class="calc-field">
-        <label>Ø Kaufpreis (€)</label>
-        <input class="calc-input" type="number" id="pt-avgprice" placeholder="z.B. 120.00" min="0" step="0.01" oninput="calcPortfolio()">
+      <div class="fg-box">
+        <div class="fg-top">
+          <div class="fg-score loading-shimmer" id="fg-score">50</div>
+          <div class="fg-meta">CNN Fear &amp; Greed · <span id="fg-label">Wird geladen...</span></div>
+        </div>
+        <div class="fg-bar-wrap">
+          <div class="fg-bar-track">
+            <div class="fg-bar-marker" id="fg-marker" style="left:50%"></div>
+          </div>
+          <div class="fg-bar-labels">
+            <span>Extreme Angst</span><span></span><span>Neutral</span><span></span><span>Extreme Gier</span>
+          </div>
+        </div>
       </div>
-    </div>
-    <div class="calc-results">
-      <div class="calc-result-item"><div class="calc-result-label">Investiert</div>       <div class="calc-result-value" id="pt-invested">—</div></div>
-      <div class="calc-result-item"><div class="calc-result-label">Aktueller Wert</div>  <div class="calc-result-value" id="pt-currentval">—</div></div>
-      <div class="calc-result-item"><div class="calc-result-label">Gewinn / Verlust</div><div class="calc-result-value" id="pt-gain">—</div></div>
-      <div class="calc-result-item"><div class="calc-result-label">Performance</div>      <div class="calc-result-value" id="pt-gainpct">—</div></div>
-    </div>
-  </div>
-
-
-  <!-- ⑫ SPARPLAN-RECHNER (Planung – ganz am Ende) -->
-  <div class="section-label">Sparplan-Rechner</div>
-  <div class="calc-box">
-    <div class="calc-grid-2" style="margin-bottom:10px;">
-      <div class="calc-field">
-        <label>Monatliche Rate (€)</label>
-        <input class="calc-input" type="number" id="sp-monthly" value="500" min="0" oninput="calcSparplan()">
-      </div>
-      <div class="calc-field">
-        <label>Einmalzahlung (€)</label>
-        <input class="calc-input" type="number" id="sp-initial" value="0" min="0" placeholder="0" oninput="calcSparplan()">
+      <div class="fg-box">
+        <div class="fg-top">
+          <div class="fg-score loading-shimmer" id="pe-value">--</div>
+          <div class="fg-meta">Welt-Markt KGV · <span id="pe-source">wird geladen...</span></div>
+        </div>
+        <div id="pe-deviation" style="font-size:18px;font-weight:600;color:#555;margin-bottom:14px;">—</div>
       </div>
     </div>
-    <div class="calc-grid-2">
-      <div class="calc-field">
-        <label>Laufzeit (Jahre)</label>
-        <input class="calc-input" type="number" id="sp-years" value="30" min="1" max="50" oninput="calcSparplan()">
-      </div>
-      <div class="calc-field">
-        <label>Ø Rendite p.a. (VWCE)</label>
-        <div class="calc-input-static" id="sp-rate-display">—</div>
+  </section>
+
+  <!-- PAGE 5: Portfolio -->
+  <section class="page" id="pg-5">
+    <div class="page-inner">
+      <div class="page-label">Mein Portfolio</div>
+      <div class="calc-box">
+        <div class="calc-grid-2">
+          <div class="calc-field">
+            <label>Anzahl Anteile</label>
+            <input class="calc-input" type="number" id="pt-shares" placeholder="z.B. 50" min="0" step="0.001" oninput="calcPortfolio()">
+          </div>
+          <div class="calc-field">
+            <label>Ø Kaufpreis (€)</label>
+            <input class="calc-input" type="number" id="pt-avgprice" placeholder="z.B. 120.00" min="0" step="0.01" oninput="calcPortfolio()">
+          </div>
+        </div>
+        <div class="calc-results">
+          <div class="calc-result-item"><div class="calc-result-label">Investiert</div>       <div class="calc-result-value" id="pt-invested">—</div></div>
+          <div class="calc-result-item"><div class="calc-result-label">Aktueller Wert</div>  <div class="calc-result-value" id="pt-currentval">—</div></div>
+          <div class="calc-result-item"><div class="calc-result-label">Gewinn / Verlust</div><div class="calc-result-value" id="pt-gain">—</div></div>
+          <div class="calc-result-item"><div class="calc-result-label">Performance</div>      <div class="calc-result-value" id="pt-gainpct">—</div></div>
+        </div>
       </div>
     </div>
-    <div class="calc-results">
-      <div class="calc-result-item"><div class="calc-result-label">Eingezahlt</div>    <div class="calc-result-value" id="sp-invested">—</div></div>
-      <div class="calc-result-item"><div class="calc-result-label">Endwert</div>       <div class="calc-result-value" id="sp-endvalue">—</div></div>
-      <div class="calc-result-item"><div class="calc-result-label">Gewinn</div>        <div class="calc-result-value green" id="sp-gain">—</div></div>
-      <div class="calc-result-item"><div class="calc-result-label">Entnahme/Monat (4%)</div><div class="calc-result-value green" id="sp-gainpct">—</div></div>
+  </section>
+
+  <!-- PAGE 6: Sparplan -->
+  <section class="page" id="pg-6">
+    <div class="page-inner">
+      <div class="page-label">Sparplan-Rechner</div>
+      <div class="calc-box">
+        <div class="calc-grid-2" style="margin-bottom:10px;">
+          <div class="calc-field">
+            <label>Monatliche Rate (€)</label>
+            <input class="calc-input" type="number" id="sp-monthly" value="500" min="0" oninput="calcSparplan()">
+          </div>
+          <div class="calc-field">
+            <label>Einmalzahlung (€)</label>
+            <input class="calc-input" type="number" id="sp-initial" value="0" min="0" placeholder="0" oninput="calcSparplan()">
+          </div>
+        </div>
+        <div class="calc-grid-2">
+          <div class="calc-field">
+            <label>Laufzeit (Jahre)</label>
+            <input class="calc-input" type="number" id="sp-years" value="30" min="1" max="50" oninput="calcSparplan()">
+          </div>
+          <div class="calc-field">
+            <label>Ø Rendite p.a. (VWCE)</label>
+            <div class="calc-input-static" id="sp-rate-display">—</div>
+          </div>
+        </div>
+        <div class="calc-results">
+          <div class="calc-result-item"><div class="calc-result-label">Eingezahlt</div>    <div class="calc-result-value" id="sp-invested">—</div></div>
+          <div class="calc-result-item"><div class="calc-result-label">Endwert</div>       <div class="calc-result-value" id="sp-endvalue">—</div></div>
+          <div class="calc-result-item"><div class="calc-result-label">Gewinn</div>        <div class="calc-result-value green" id="sp-gain">—</div></div>
+          <div class="calc-result-item"><div class="calc-result-label">Entnahme/Monat (4%)</div><div class="calc-result-value green" id="sp-gainpct">—</div></div>
+        </div>
+      </div>
     </div>
-  </div>
+  </section>
 
-  <!-- SIGNALE IM ÜBERBLICK -->
-  <div class="section-label">Signale im Überblick</div>
-  <div class="signal-matrix">
-    <table>
-      <tr>
-        <td class="sig-name">GD200-Abstand</td>
-        <td class="sig-val"    id="sm-gd200-val">—</td>
-        <td class="sig-status" id="sm-gd200-status">—</td>
-      </tr>
-      <tr>
-        <td class="sig-name">RSI täglich</td>
-        <td class="sig-val"    id="sm-rsi-val">—</td>
-        <td class="sig-status" id="sm-rsi-status">—</td>
-      </tr>
-      <tr>
-        <td class="sig-name">RSI wöchentlich</td>
-        <td class="sig-val"    id="sm-wrsi-val">—</td>
-        <td class="sig-status" id="sm-wrsi-status">—</td>
-      </tr>
-      <tr>
-        <td class="sig-name">ATH-Abstand</td>
-        <td class="sig-val"    id="sm-ath-val">—</td>
-        <td class="sig-status" id="sm-ath-status">—</td>
-      </tr>
-      <tr>
-        <td class="sig-name">Fear &amp; Greed</td>
-        <td class="sig-val"    id="sm-fg-val">—</td>
-        <td class="sig-status" id="sm-fg-status">—</td>
-      </tr>
-      <tr>
-        <td class="sig-name">Shiller CAPE</td>
-        <td class="sig-val"    id="sm-cape-val">—</td>
-        <td class="sig-status" id="sm-cape-status">—</td>
-      </tr>
-    </table>
-  </div>
+  <!-- PAGE 7: Signale + Kaufmoment -->
+  <section class="page" id="pg-7">
+    <div class="page-inner">
+      <div class="page-label">Signale &amp; Kaufmoment</div>
+      <div class="signal-matrix">
+        <table>
+          <tr><td class="sig-name">GD200-Abstand</td>  <td class="sig-val" id="sm-gd200-val">—</td>  <td class="sig-status" id="sm-gd200-status">—</td></tr>
+          <tr><td class="sig-name">RSI täglich</td>     <td class="sig-val" id="sm-rsi-val">—</td>    <td class="sig-status" id="sm-rsi-status">—</td></tr>
+          <tr><td class="sig-name">RSI wöchentlich</td> <td class="sig-val" id="sm-wrsi-val">—</td>   <td class="sig-status" id="sm-wrsi-status">—</td></tr>
+          <tr><td class="sig-name">ATH-Abstand</td>     <td class="sig-val" id="sm-ath-val">—</td>    <td class="sig-status" id="sm-ath-status">—</td></tr>
+          <tr><td class="sig-name">Fear &amp; Greed</td><td class="sig-val" id="sm-fg-val">—</td>     <td class="sig-status" id="sm-fg-status">—</td></tr>
+          <tr><td class="sig-name">Shiller CAPE</td>    <td class="sig-val" id="sm-cape-val">—</td>   <td class="sig-status" id="sm-cape-status">—</td></tr>
+        </table>
+      </div>
+      <div class="buy-card" id="buy-card">
+        <div class="buy-card-label">Kaufmoment-Analyse</div>
+        <div class="buy-verdict" id="buy-verdict">Wird berechnet…</div>
+        <div class="buy-score-line" id="buy-score-line"></div>
+        <div class="buy-score-bar-wrap"><div class="buy-score-bar" id="buy-score-bar" style="width:0%"></div></div>
+        <div class="buy-bullets" id="buy-bullets"></div>
+      </div>
+      <div class="footer" id="footer">Letzte Aktualisierung: —</div>
+    </div>
+  </section>
 
-  <!-- KAUFMOMENT -->
-  <div class="buy-card" id="buy-card">
-    <div class="buy-card-label">Kaufmoment-Analyse</div>
-    <div class="buy-verdict" id="buy-verdict">Wird berechnet…</div>
-    <div class="buy-score-line" id="buy-score-line"></div>
-    <div class="buy-score-bar-wrap"><div class="buy-score-bar" id="buy-score-bar" style="width:0%"></div></div>
-    <div class="buy-bullets" id="buy-bullets"></div>
-  </div>
-
-  <div class="footer" id="footer">Letzte Aktualisierung: —</div>
 </div>
 
 <script>
@@ -1242,6 +1284,19 @@
   setInterval(() => { if (currentRange === 'live') loadIntraday(); }, 30 * 1000);
   setTimeout(loadLongTermReturn, 3000);
   setInterval(loadLongTermReturn, 30 * 24 * 60 * 60 * 1000);
+
+  // Page dots — highlight active page
+  const _pages = document.querySelectorAll('.page');
+  const _dots  = document.querySelectorAll('.dot');
+  const _obs   = new IntersectionObserver(entries => {
+    entries.forEach(e => {
+      if (e.isIntersecting) {
+        const i = [..._pages].indexOf(e.target);
+        _dots.forEach((d, j) => d.classList.toggle('active', i === j));
+      }
+    });
+  }, { root: document.getElementById('pages'), threshold: 0.5 });
+  _pages.forEach(p => _obs.observe(p));
 </script>
 </body>
 </html>
