@@ -30,7 +30,6 @@
       height: 100vh;
       overflow-y: scroll;
       scroll-snap-type: y mandatory;
-      scroll-behavior: smooth;
       -webkit-overflow-scrolling: touch;
     }
 
@@ -1336,18 +1335,58 @@
   setInterval(loadLongTermReturn, 30 * 24 * 60 * 60 * 1000);
   setInterval(refreshLSPrice,    60 * 1000); // L&S Preis alle 60s
 
-  // Page dots — highlight active page
-  const _pages = document.querySelectorAll('.page');
-  const _dots  = document.querySelectorAll('.dot');
-  const _obs   = new IntersectionObserver(entries => {
-    entries.forEach(e => {
-      if (e.isIntersecting) {
-        const i = [..._pages].indexOf(e.target);
-        _dots.forEach((d, j) => d.classList.toggle('active', i === j));
-      }
-    });
-  }, { root: document.getElementById('pages'), threshold: 0.5 });
-  _pages.forEach(p => _obs.observe(p));
+  // ─── Snappy Page Navigation ──────────────────────────────────────────────
+  const _pagesEl = document.getElementById('pages');
+  const _pageEls = document.querySelectorAll('.page');
+  const _dotEls  = document.querySelectorAll('.dot');
+  let _curIdx    = 0;
+  let _isAnim    = false;
+
+  function _setDots(i) {
+    _dotEls.forEach((d, j) => d.classList.toggle('active', i === j));
+  }
+
+  function scrollToPage(idx, dur = 300) {
+    if (idx < 0 || idx >= _pageEls.length || _isAnim) return;
+    _isAnim = true;
+    _curIdx = idx;
+    _setDots(idx);
+    const startY  = _pagesEl.scrollTop;
+    const targetY = idx * _pagesEl.clientHeight;
+    const dist    = targetY - startY;
+    const t0      = performance.now();
+    function ease(t) { return t < 0.5 ? 2*t*t : -1+(4-2*t)*t; }
+    (function step(now) {
+      const p = Math.min((now - t0) / dur, 1);
+      _pagesEl.scrollTop = startY + dist * ease(p);
+      if (p < 1) requestAnimationFrame(step);
+      else { _pagesEl.scrollTop = targetY; _isAnim = false; }
+    })(performance.now());
+  }
+
+  // Mausrad — ein Tick = eine Seite
+  _pagesEl.addEventListener('wheel', e => {
+    e.preventDefault();
+    if (_isAnim) return;
+    scrollToPage(_curIdx + (e.deltaY > 0 ? 1 : -1));
+  }, { passive: false });
+
+  // Touch — wischen
+  let _ty0 = 0;
+  _pagesEl.addEventListener('touchstart', e => { _ty0 = e.touches[0].clientY; }, { passive: true });
+  _pagesEl.addEventListener('touchend',   e => {
+    const d = _ty0 - e.changedTouches[0].clientY;
+    if (Math.abs(d) > 40) scrollToPage(_curIdx + (d > 0 ? 1 : -1));
+  }, { passive: true });
+
+  // Tastatur: Pfeiltasten + PageUp/Down
+  document.addEventListener('keydown', e => {
+    if (e.key === 'ArrowDown' || e.key === 'PageDown') { e.preventDefault(); scrollToPage(_curIdx + 1); }
+    if (e.key === 'ArrowUp'   || e.key === 'PageUp')   { e.preventDefault(); scrollToPage(_curIdx - 1); }
+  });
+
+  // Dot-Klicks
+  _dotEls.forEach((dot, i) => dot.addEventListener('click', e => { e.preventDefault(); scrollToPage(i); }));
 </script>
 </body>
 </html>
