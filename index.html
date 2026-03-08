@@ -17,7 +17,8 @@
 
     body {
       font-family: 'Segoe UI', sans-serif;
-      background: #0a0a0a;
+      background: #080808;
+      background-image: radial-gradient(ellipse 80% 50% at 50% -10%, rgba(37,99,235,0.08), transparent);
       color: #e1e4e8;
       min-height: 100vh;
       display: flex;
@@ -28,36 +29,47 @@
 
     .card {
       background: #111111;
-      border-radius: 20px;
+      border-radius: 22px;
       padding: 48px 56px;
       max-width: 780px;
       width: 100%;
-      box-shadow: 0 12px 48px rgba(0,0,0,0.7);
-      border: 1px solid #222;
+      box-shadow: 0 24px 80px rgba(0,0,0,0.85), 0 0 0 1px rgba(255,255,255,0.04);
+      border: 1px solid #1e1e1e;
+      position: relative;
+      overflow: hidden;
+    }
+    .card::before {
+      content: '';
+      position: absolute; top: 0; left: 0; right: 0; height: 3px;
+      background: linear-gradient(to right, #1d4ed8, #7c3aed, #1d4ed8);
+      pointer-events: none;
     }
 
     .header {
       display: flex;
       align-items: center;
-      gap: 12px;
+      gap: 14px;
+      padding-bottom: 24px;
+      border-bottom: 1px solid #1a1a1a;
       margin-bottom: 28px;
     }
 
     .etf-icon {
-      width: 54px; height: 54px;
-      background: #2563eb;
-      border-radius: 12px;
+      width: 52px; height: 52px;
+      background: linear-gradient(135deg, #1d4ed8, #2563eb);
+      border-radius: 14px;
       display: flex; align-items: center; justify-content: center;
       font-weight: 700; font-size: 13px; color: white; letter-spacing: 0.3px;
+      box-shadow: 0 4px 16px rgba(37,99,235,0.4);
     }
 
-    .etf-name h1 { font-size: 24px; font-weight: 700; color: #fff; }
-    .etf-name p  { font-size: 13px; color: #555; margin-top: 3px; }
+    .etf-name h1 { font-size: 22px; font-weight: 700; color: #fff; letter-spacing: -0.3px; }
+    .etf-name p  { font-size: 13px; color: #444; margin-top: 3px; }
 
     .price-section { margin-bottom: 16px; }
-    .price-label { font-size: 11px; color: #555; text-transform: uppercase; letter-spacing: 1.2px; margin-bottom: 6px; }
-    .price { font-size: 64px; font-weight: 700; color: #fff; line-height: 1; }
-    .price-change { margin-top: 8px; font-size: 18px; font-weight: 500; }
+    .price-label { font-size: 11px; color: #444; text-transform: uppercase; letter-spacing: 1.4px; margin-bottom: 6px; }
+    .price { font-size: 64px; font-weight: 700; color: #fff; line-height: 1; letter-spacing: -2px; }
+    .price-change { margin-top: 8px; font-size: 17px; font-weight: 500; }
     .price-change.up   { color: #22c55e; }
     .price-change.down { color: #ef4444; }
 
@@ -88,31 +100,34 @@
 
     /* Chart */
     .chart-section {
-      background: #0a0a0a; border-radius: 12px;
-      padding: 16px; border: 1px solid #1e1e1e; margin-bottom: 20px;
+      background: #0a0a0a; border-radius: 14px;
+      padding: 18px; border: 1px solid #1e1e1e; margin-bottom: 20px;
     }
     .chart-header {
       display: flex; align-items: center;
       justify-content: space-between; margin-bottom: 12px;
     }
-    .chart-title { font-size: 11px; color: #555; text-transform: uppercase; letter-spacing: 1px; }
+    .chart-title { font-size: 10px; color: #444; text-transform: uppercase; letter-spacing: 1.5px; }
     .chart-legend { display: flex; gap: 14px; }
     .legend-item { display: flex; align-items: center; gap: 5px; font-size: 10px; color: #555; }
     .legend-dot  { width: 8px; height: 2px; border-radius: 1px; }
     .chart-wrap  { position: relative; height: 220px; }
 
     /* Range buttons */
-    .range-btns { display: flex; gap: 6px; margin-bottom: 20px; align-items: center; }
+    .range-btns { display: flex; gap: 5px; margin-bottom: 20px; align-items: center; }
     .range-perf { margin-left: auto; font-size: 13px; font-weight: 600; letter-spacing: 0.3px; }
     .range-perf.up   { color: #22c55e; }
     .range-perf.down { color: #ef4444; }
     .range-btn {
-      background: #1a1a1a; border: 1px solid #222; border-radius: 6px;
-      color: #555; font-size: 11px; padding: 5px 10px;
+      background: transparent; border: 1px solid #222; border-radius: 20px;
+      color: #444; font-size: 11px; padding: 5px 12px;
       cursor: pointer; transition: all 0.15s; font-family: inherit;
     }
-    .range-btn:hover  { color: #aaa; border-color: #333; }
-    .range-btn.active { background: #1e293b; border-color: #2563eb; color: #60a5fa; }
+    .range-btn:hover  { color: #aaa; border-color: #3a3a3a; background: #1a1a1a; }
+    .range-btn.active {
+      background: #172554; border-color: #2563eb; color: #93c5fd;
+      box-shadow: 0 0 0 1px #2563eb40, 0 2px 8px rgba(37,99,235,0.2);
+    }
 
     /* Indicators */
     .indicators {
@@ -120,12 +135,14 @@
       gap: 10px; margin-bottom: 20px;
     }
     .indicator-box {
-      background: #0a0a0a; border-radius: 10px;
-      padding: 14px 16px; border: 1px solid #1e1e1e;
+      background: #0d0d0d; border-radius: 12px;
+      padding: 16px 18px; border: 1px solid #1e1e1e;
+      transition: border-color 0.15s, background 0.15s;
     }
-    .ind-label { font-size: 11px; color: #555; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 8px; }
-    .ind-value { font-size: 28px; font-weight: 600; color: #fff; }
-    .ind-sub   { font-size: 13px; color: #555; margin-top: 4px; }
+    .indicator-box:hover { background: #141414; border-color: #2a2a2a; }
+    .ind-label { font-size: 10px; color: #444; text-transform: uppercase; letter-spacing: 1.2px; margin-bottom: 10px; }
+    .ind-value { font-size: 26px; font-weight: 600; color: #fff; line-height: 1; }
+    .ind-sub   { font-size: 12px; color: #444; margin-top: 6px; }
 
     /* Signal */
     .signal-box {
@@ -151,8 +168,14 @@
 
     /* Section label */
     .section-label {
-      font-size: 11px; color: #555; text-transform: uppercase;
-      letter-spacing: 1px; margin-bottom: 10px; margin-top: 20px;
+      font-size: 10px; color: #444; text-transform: uppercase;
+      letter-spacing: 1.5px; margin-bottom: 12px; margin-top: 28px;
+      display: flex; align-items: center; gap: 10px;
+    }
+    .section-label::before {
+      content: ''; display: block; width: 3px; height: 14px;
+      background: linear-gradient(to bottom, #2563eb, #7c3aed);
+      border-radius: 2px; flex-shrink: 0;
     }
 
     /* ATH / generic box */
@@ -210,8 +233,8 @@
 
     /* Calc boxes (Sparplan + Portfolio) */
     .calc-box {
-      background: #0a0a0a; border-radius: 12px;
-      padding: 20px 22px; border: 1px solid #1e1e1e; margin-bottom: 20px;
+      background: #0a0a0a; border-radius: 14px;
+      padding: 22px 24px; border: 1px solid #1e1e1e; margin-bottom: 20px;
     }
     .calc-grid   { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; margin-bottom: 16px; }
     .calc-grid-2 { display: grid; grid-template-columns: 1fr 1fr;     gap: 10px; margin-bottom: 16px; }
@@ -232,16 +255,19 @@
     }
     .calc-results {
       display: grid; grid-template-columns: 1fr 1fr; gap: 10px;
-      border-top: 1px solid #1e1e1e; padding-top: 14px;
+      border-top: 1px solid #1a1a1a; padding-top: 14px;
     }
 
     /* Signal-Matrix */
     .signal-matrix { background: #0a0a0a; border-radius: 12px; border: 1px solid #1e1e1e; margin-bottom: 20px; overflow: hidden; }
     .signal-matrix table { width: 100%; border-collapse: collapse; }
-    .signal-matrix td { padding: 11px 14px; border-bottom: 1px solid #111; font-size: 13px; vertical-align: middle; }
+    .signal-matrix tr { transition: background 0.12s; }
+    .signal-matrix tr:nth-child(even) { background: rgba(255,255,255,0.015); }
+    .signal-matrix tr:hover { background: rgba(255,255,255,0.03); }
+    .signal-matrix td { padding: 12px 16px; border-bottom: 1px solid #0f0f0f; font-size: 13px; vertical-align: middle; }
     .signal-matrix tr:last-child td { border-bottom: none; }
     .sig-name  { color: #555; width: 36%; }
-    .sig-val   { color: #888; width: 18%; font-variant-numeric: tabular-nums; }
+    .sig-val   { color: #777; width: 18%; font-variant-numeric: tabular-nums; }
     .sig-dot   { display: inline-block; width: 7px; height: 7px; border-radius: 50%; margin-right: 7px; vertical-align: middle; flex-shrink: 0; }
     .sig-status        { width: 46%; }
     .sig-status.green  { color: #22c55e; }
@@ -251,20 +277,26 @@
 
     /* Kaufmoment-Karte */
     .buy-card { border-radius: 16px; padding: 28px 24px; margin-bottom: 20px; border: 1px solid; text-align: center; }
-    .buy-card.green  { background: rgba(34,197,94,0.07);  border-color: rgba(34,197,94,0.3); }
-    .buy-card.yellow { background: rgba(234,179,8,0.07);  border-color: rgba(234,179,8,0.3); }
-    .buy-card.orange { background: rgba(249,115,22,0.07); border-color: rgba(249,115,22,0.3); }
-    .buy-card.red    { background: rgba(239,68,68,0.07);  border-color: rgba(239,68,68,0.3); }
-    .buy-card-label  { font-size: 11px; color: #555; text-transform: uppercase; letter-spacing: 1.5px; margin-bottom: 12px; }
-    .buy-verdict     { font-size: 28px; font-weight: 700; margin-bottom: 6px; }
+    .buy-card.green  { background: rgba(34,197,94,0.05);  border-color: rgba(34,197,94,0.2); }
+    .buy-card.yellow { background: rgba(234,179,8,0.05);  border-color: rgba(234,179,8,0.2); }
+    .buy-card.orange { background: rgba(249,115,22,0.05); border-color: rgba(249,115,22,0.2); }
+    .buy-card.red    { background: rgba(239,68,68,0.05);  border-color: rgba(239,68,68,0.2); }
+    .buy-card-label  { font-size: 10px; color: #444; text-transform: uppercase; letter-spacing: 1.5px; margin-bottom: 14px; }
+    .buy-verdict     { font-size: 30px; font-weight: 700; margin-bottom: 8px; }
     .buy-card.green  .buy-verdict { color: #22c55e; }
     .buy-card.yellow .buy-verdict { color: #eab308; }
     .buy-card.orange .buy-verdict { color: #f97316; }
     .buy-card.red    .buy-verdict { color: #ef4444; }
-    .buy-score-line  { font-size: 13px; color: #555; margin-bottom: 14px; }
-    .buy-bullets     { font-size: 13px; color: #888; line-height: 1.8; text-align: left; display: inline-block; }
-    .calc-result-item   { display: flex; flex-direction: column; gap: 4px; }
-    .calc-result-label  { font-size: 11px; color: #555; text-transform: uppercase; letter-spacing: 0.8px; }
+    .buy-score-line  { font-size: 13px; color: #555; margin-bottom: 16px; }
+    .buy-score-bar-wrap { background: #111; border-radius: 6px; height: 6px; margin: 0 auto 16px; max-width: 280px; overflow: hidden; }
+    .buy-score-bar      { height: 100%; border-radius: 6px; transition: width 0.6s ease; }
+    .buy-card.green  .buy-score-bar { background: linear-gradient(to right, #16a34a, #22c55e); }
+    .buy-card.yellow .buy-score-bar { background: linear-gradient(to right, #ca8a04, #eab308); }
+    .buy-card.orange .buy-score-bar { background: linear-gradient(to right, #ea580c, #f97316); }
+    .buy-card.red    .buy-score-bar { background: linear-gradient(to right, #dc2626, #ef4444); }
+    .buy-bullets     { font-size: 13px; color: #777; line-height: 1.9; text-align: left; display: inline-block; }
+    .calc-result-item   { display: flex; flex-direction: column; gap: 4px; padding: 12px 14px; background: #0d0d0d; border-radius: 10px; border: 1px solid #1e1e1e; }
+    .calc-result-label  { font-size: 10px; color: #444; text-transform: uppercase; letter-spacing: 1px; }
     .calc-result-value  { font-size: 22px; font-weight: 700; color: #fff; }
     .calc-result-value.green { color: #22c55e; }
     .calc-result-value.red   { color: #ef4444; }
@@ -548,6 +580,7 @@
     <div class="buy-card-label">Kaufmoment-Analyse</div>
     <div class="buy-verdict" id="buy-verdict">Wird berechnet…</div>
     <div class="buy-score-line" id="buy-score-line"></div>
+    <div class="buy-score-bar-wrap"><div class="buy-score-bar" id="buy-score-bar" style="width:0%"></div></div>
     <div class="buy-bullets" id="buy-bullets"></div>
   </div>
 
@@ -1014,6 +1047,8 @@
     verdict.textContent = text;
     scorEl.textContent  = `${score} / ${max} Punkte`;
     bullEl.innerHTML = bullets.map(b => `<div>· ${b}</div>`).join('');
+    const bar = document.getElementById('buy-score-bar');
+    if (bar) bar.style.width = `${Math.round(pct * 100)}%`;
   }
 
   // ── API Fetches ────────────────────────────────────────────
