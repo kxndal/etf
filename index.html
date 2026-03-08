@@ -478,11 +478,17 @@
   <!-- ⑫ SPARPLAN-RECHNER (Planung – ganz am Ende) -->
   <div class="section-label">Sparplan-Rechner</div>
   <div class="calc-box">
-    <div class="calc-grid">
+    <div class="calc-grid-2" style="margin-bottom:10px;">
       <div class="calc-field">
         <label>Monatliche Rate (€)</label>
-        <input class="calc-input" type="number" id="sp-monthly" value="500" min="1" oninput="calcSparplan()">
+        <input class="calc-input" type="number" id="sp-monthly" value="500" min="0" oninput="calcSparplan()">
       </div>
+      <div class="calc-field">
+        <label>Einmalzahlung (€)</label>
+        <input class="calc-input" type="number" id="sp-initial" value="0" min="0" placeholder="0" oninput="calcSparplan()">
+      </div>
+    </div>
+    <div class="calc-grid-2">
       <div class="calc-field">
         <label>Laufzeit (Jahre)</label>
         <input class="calc-input" type="number" id="sp-years" value="30" min="1" max="50" oninput="calcSparplan()">
@@ -854,12 +860,15 @@
 
   function calcSparplan() {
     const monthly = parseFloat(document.getElementById('sp-monthly').value) || 0;
+    const initial = parseFloat(document.getElementById('sp-initial').value) || 0;
     const years   = parseFloat(document.getElementById('sp-years').value)   || 0;
     const rate    = spRate;
     const n = years * 12, r = rate / 100 / 12;
-    const invested = monthly * n;
-    const endValue = r === 0 ? invested : monthly * ((Math.pow(1 + r, n) - 1) / r) * (1 + r);
-    const gain     = endValue - invested;
+    const invested  = monthly * n + initial;
+    const fvMonthly = r === 0 ? monthly * n : monthly * ((Math.pow(1 + r, n) - 1) / r) * (1 + r);
+    const fvInitial = initial * Math.pow(1 + r, n);
+    const endValue  = fvMonthly + fvInitial;
+    const gain      = endValue - invested;
     const fmt = v => `€${Math.round(v).toLocaleString('de-DE')}`;
     document.getElementById('sp-invested').textContent = fmt(invested);
     document.getElementById('sp-endvalue').textContent = fmt(endValue);
