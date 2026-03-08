@@ -586,8 +586,9 @@
 </div>
 
 <script>
-  const TICKER = 'VWCE.DE';
-  const PROXY  = 'https://corsproxy.io/?';
+  const TICKER   = 'VWCE.DE';
+  const LS_ISIN  = 'IE00B3RBWM25';
+  const PROXY    = 'https://corsproxy.io/?';
 
   let allTimestamps      = [];
   let allCloses          = [];
@@ -597,6 +598,7 @@
   let extCloses          = {};
   let chartInstance      = null;
   let currentRange       = '3m';
+  let lsInstrumentId     = null;
   let currentPrice       = 0;
 
   // ── Helpers ────────────────────────────────────────────────
@@ -609,6 +611,49 @@
     const result = data.chart.result[0];
     if (!result) throw new Error('Keine Daten');
     return result;
+  }
+
+  // ── Lang & Schwarz Live-Preis ───────────────────────────────
+  // instrumentId 514850 = VWCE (IE00B3RBWM25) auf LS Exchange
+
+  async function fetchLSData() {
+    const instrId = 514850;
+    const url = `https://www.ls-tc.de/_rpc/json/instrument/chart/dataForInstrument?container=chart1&instrumentId=${instrId}&marketId=1&quotetype=mid&series=intraday%2Chistory&type=&localeId=2`;
+    const res = await fetch(PROXY + encodeURIComponent(url), {
+      headers: { 'X-Requested-With': 'XMLHttpRequest' }
+    });
+    if (!res.ok) throw new Error(`LS HTTP ${res.status}`);
+    const data = await res.json();
+
+    // series.intraday.data = [[timestampMs, price], ...]
+    const intradata = data?.series?.intraday?.data ?? [];
+    const histdata  = data?.series?.history?.data  ?? [];
+    // prevClose aus plotlines (Vortag)
+    const prevClose = data?.info?.plotlines?.find(p => p.id === 'previousDay')?.value ?? null;
+
+    // Nimm letzten Intraday-Preis, sonst letzten History-Preis
+    const series = intradata.length ? intradata : histdata;
+    if (!series.length) throw new Error('Keine LS-Daten');
+    const price = series[series.length - 1][1];
+    return { price, prevClose };
+  }
+
+  async function refreshLSPrice() {
+    try {
+      const { price, prevClose } = await fetchLSData();
+      if (!price || isNaN(price)) return;
+      currentPrice = price;
+      document.getElementById('price').textContent = `€${price.toFixed(2)}`;
+      const prev      = prevClose ?? (allCloses.length >= 2 ? allCloses[allCloses.length - 2] : price);
+      const change    = price - prev;
+      const changePct = (change / prev) * 100;
+      const changeEl  = document.getElementById('price-change');
+      changeEl.textContent = `${change >= 0 ? '+' : ''}${change.toFixed(2)} (${changePct >= 0 ? '+' : ''}${changePct.toFixed(2)}%) heute`;
+      changeEl.className   = 'price-change ' + (change >= 0 ? 'up' : 'down');
+      calcPortfolio();
+    } catch (e) {
+      console.warn('L&S Preis-Refresh fehlgeschlagen:', e.message);
+    }
   }
 
   // ── Technische Indikatoren ─────────────────────────────────
@@ -1098,9 +1143,20 @@
       allTimestamps = pairs.map(p => p.t);
       allCloses     = pairs.map(p => p.c);
 
-      const price     = result.meta.regularMarketPrice;
+      // Versuche L&S Live-Preis; Fallback auf Yahoo
+      let price, prevClose;
+      let priceSource = 'Yahoo Finance (Xetra)';
+      try {
+        const ls = await fetchLSData();
+        price       = ls.price;
+        prevClose   = ls.prevClose ?? (allCloses.length >= 2 ? allCloses[allCloses.length - 2] : ls.price);
+        priceSource = 'Lang & Schwarz';
+      } catch (lsErr) {
+        console.warn('L&S nicht verfügbar, Fallback Yahoo:', lsErr.message);
+        price     = result.meta.regularMarketPrice;
+        prevClose = allCloses.length >= 2 ? allCloses[allCloses.length - 2] : price;
+      }
       currentPrice    = price;
-      const prevClose = allCloses.length >= 2 ? allCloses[allCloses.length - 2] : price;
       const change    = price - prevClose;
       const changePct = (change / prevClose) * 100;
 
@@ -1154,7 +1210,7 @@
       calcPortfolio();
 
       document.getElementById('footer').textContent =
-        `Letzte Aktualisierung: ${new Date().toLocaleTimeString('de-DE')} · Quelle: Yahoo Finance`;
+        `Letzte Aktualisierung: ${new Date().toLocaleTimeString('de-DE')} · Kurs: ${priceSource} · Chart/Indikatoren: Xetra`;
 
     } catch (err) {
       console.error(err);
@@ -1284,6 +1340,7 @@
   setInterval(() => { if (currentRange === 'live') loadIntraday(); }, 30 * 1000);
   setTimeout(loadLongTermReturn, 3000);
   setInterval(loadLongTermReturn, 30 * 24 * 60 * 60 * 1000);
+  setInterval(refreshLSPrice,    60 * 1000); // L&S Preis alle 60s
 
   // Page dots — highlight active page
   const _pages = document.querySelectorAll('.page');
