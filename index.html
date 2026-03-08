@@ -234,6 +234,35 @@
       display: grid; grid-template-columns: 1fr 1fr; gap: 10px;
       border-top: 1px solid #1e1e1e; padding-top: 14px;
     }
+
+    /* Signal-Matrix */
+    .signal-matrix { background: #0a0a0a; border-radius: 12px; border: 1px solid #1e1e1e; margin-bottom: 20px; overflow: hidden; }
+    .signal-matrix table { width: 100%; border-collapse: collapse; }
+    .signal-matrix td { padding: 11px 14px; border-bottom: 1px solid #111; font-size: 13px; vertical-align: middle; }
+    .signal-matrix tr:last-child td { border-bottom: none; }
+    .sig-name  { color: #555; width: 36%; }
+    .sig-val   { color: #888; width: 18%; font-variant-numeric: tabular-nums; }
+    .sig-dot   { display: inline-block; width: 7px; height: 7px; border-radius: 50%; margin-right: 7px; vertical-align: middle; flex-shrink: 0; }
+    .sig-status        { width: 46%; }
+    .sig-status.green  { color: #22c55e; }
+    .sig-status.yellow { color: #eab308; }
+    .sig-status.orange { color: #f97316; }
+    .sig-status.red    { color: #ef4444; }
+
+    /* Kaufmoment-Karte */
+    .buy-card { border-radius: 16px; padding: 28px 24px; margin-bottom: 20px; border: 1px solid; text-align: center; }
+    .buy-card.green  { background: rgba(34,197,94,0.07);  border-color: rgba(34,197,94,0.3); }
+    .buy-card.yellow { background: rgba(234,179,8,0.07);  border-color: rgba(234,179,8,0.3); }
+    .buy-card.orange { background: rgba(249,115,22,0.07); border-color: rgba(249,115,22,0.3); }
+    .buy-card.red    { background: rgba(239,68,68,0.07);  border-color: rgba(239,68,68,0.3); }
+    .buy-card-label  { font-size: 11px; color: #555; text-transform: uppercase; letter-spacing: 1.5px; margin-bottom: 12px; }
+    .buy-verdict     { font-size: 28px; font-weight: 700; margin-bottom: 6px; }
+    .buy-card.green  .buy-verdict { color: #22c55e; }
+    .buy-card.yellow .buy-verdict { color: #eab308; }
+    .buy-card.orange .buy-verdict { color: #f97316; }
+    .buy-card.red    .buy-verdict { color: #ef4444; }
+    .buy-score-line  { font-size: 13px; color: #555; margin-bottom: 14px; }
+    .buy-bullets     { font-size: 13px; color: #888; line-height: 1.8; text-align: left; display: inline-block; }
     .calc-result-item   { display: flex; flex-direction: column; gap: 4px; }
     .calc-result-label  { font-size: 11px; color: #555; text-transform: uppercase; letter-spacing: 0.8px; }
     .calc-result-value  { font-size: 22px; font-weight: 700; color: #fff; }
@@ -397,32 +426,6 @@
     </div>
   </div>
 
-  <!-- ⑥ RSI-MATRIX (direkt nach RSI-Indikatoren) -->
-  <div class="section-label">RSI-Matrix (Wochen-RSI)</div>
-  <div class="ath-box" style="margin-bottom:20px;">
-    <table class="ath-table" id="rsi-table">
-      <tr data-rsimin="70" data-rsimax="200">
-        <td><span class="ath-row-dot" style="background:#ef4444"></span>Über 70 – Überkauft (Euphorie)</td>
-        <td>Sparplan laufen lassen. Keine großen Einmalsummen.</td>
-      </tr>
-      <tr data-rsimin="50" data-rsimax="70">
-        <td><span class="ath-row-dot" style="background:#fff"></span>50–70 – Bullisch / Neutral</td>
-        <td>Business as usual. Sparplan läuft.</td>
-      </tr>
-      <tr data-rsimin="40" data-rsimax="50">
-        <td><span class="ath-row-dot" style="background:#86efac"></span>40–50 – Leichte Abkühlung</td>
-        <td>Kleine Extra-Beträge nachschießen.</td>
-      </tr>
-      <tr data-rsimin="30" data-rsimax="40">
-        <td><span class="ath-row-dot" style="background:#22c55e"></span>30–40 – Angst im Markt</td>
-        <td>Kaufsignal. Sparplan aufstocken oder Tranche nachkaufen.</td>
-      </tr>
-      <tr data-rsimin="0" data-rsimax="30">
-        <td><span class="ath-row-dot" style="background:#22c55e"></span>Unter 30 – Panik (Oversold)</td>
-        <td>Starkes Kaufsignal. Historisch beste Einstiegszeitpunkte.</td>
-      </tr>
-    </table>
-  </div>
 
   <!-- ⑦ ATH-ABSTAND -->
   <div class="section-label">ATH-Abstand &amp; Strategie</div>
@@ -431,12 +434,6 @@
       <div class="ath-drawdown loading-shimmer" id="ath-drawdown">-0.0%</div>
       <div class="ath-meta">vom ATH <span id="ath-value">€—</span></div>
     </div>
-    <table class="ath-table" id="ath-table">
-      <tr data-min="0"  data-max="5">  <td><span class="ath-row-dot" style="background:#22c55e"></span>0% bis -5%</td>   <td>Nichts tun / Sparplan</td></tr>
-      <tr data-min="5"  data-max="10"> <td><span class="ath-row-dot" style="background:#eab308"></span>-5% bis -10%</td>  <td>Erste Tranche nachkaufen</td></tr>
-      <tr data-min="10" data-max="20"> <td><span class="ath-row-dot" style="background:#f97316"></span>-10% bis -20%</td> <td>Größere Tranche nachkaufen</td></tr>
-      <tr data-min="20" data-max="100"><td><span class="ath-row-dot" style="background:#ef4444"></span>&gt; -20%</td>     <td>Aggressiv nachkaufen</td></tr>
-    </table>
   </div>
 
   <!-- ⑧ MARKT-SENTIMENT (Fear & Greed vor CAPE – intuitiver) -->
@@ -454,13 +451,6 @@
         <span>Extreme Angst</span><span></span><span>Neutral</span><span></span><span>Extreme Gier</span>
       </div>
     </div>
-    <table class="ath-table" id="fg-table">
-      <tr data-fgmin="75" data-fgmax="101"><td><span class="ath-row-dot" style="background:#ef4444"></span>Extreme Gier (75–100)</td><td>Füße stillhalten – nicht investieren</td></tr>
-      <tr data-fgmin="55" data-fgmax="75"> <td><span class="ath-row-dot" style="background:#f97316"></span>Gier (55–74)</td>          <td>Vorsicht – nur Sparplan weiterführen</td></tr>
-      <tr data-fgmin="45" data-fgmax="55"> <td><span class="ath-row-dot" style="background:#eab308"></span>Neutral (45–54)</td>       <td>Normal – Sparplan weiterlaufen lassen</td></tr>
-      <tr data-fgmin="25" data-fgmax="45"> <td><span class="ath-row-dot" style="background:#86efac"></span>Angst (25–44)</td>         <td>Erste Tranche nachkaufen</td></tr>
-      <tr data-fgmin="0"  data-fgmax="25"> <td><span class="ath-row-dot" style="background:#22c55e"></span>Extreme Angst (0–24)</td>  <td>Aggressiv nachkaufen – Angst der Masse nutzen</td></tr>
-    </table>
   </div>
 
   <!-- ⑨ BEWERTUNG (CAPE nach Sentiment) -->
@@ -471,12 +461,6 @@
       <div class="fg-meta">Welt-Markt KGV · <span id="pe-source">wird geladen...</span></div>
     </div>
     <div id="pe-deviation" style="font-size:18px;font-weight:600;color:#555;margin-bottom:14px;">—</div>
-    <table class="ath-table" id="cape-table">
-      <tr data-cmin="25"   data-cmax="999"><td><span class="ath-row-dot" style="background:#ef4444"></span>&gt; +25% (überbewertet)</td>      <td>Nur Basis-Sparplan; Zusatzkäufe erst bei ≥ −20% Drawdown</td></tr>
-      <tr data-cmin="0"    data-cmax="25"> <td><span class="ath-row-dot" style="background:#f97316"></span>+0% bis +25% (fair/leicht teuer)</td><td>Sparplan; bei −5% kleine Tranche, −10% normale Tranche</td></tr>
-      <tr data-cmin="-10"  data-cmax="0">  <td><span class="ath-row-dot" style="background:#86efac"></span>−10% bis 0% (fair/leicht günstig)</td><td>Basis + bei −5% normale Tranche</td></tr>
-      <tr data-cmin="-999" data-cmax="-10"><td><span class="ath-row-dot" style="background:#22c55e"></span>&lt; −10% (günstig)</td>            <td>Erhöhe Zusatzbeiträge (z.B. 1,5×); bei −20% große Tranche</td></tr>
-    </table>
   </div>
 
   <!-- ⑩ MEIN PORTFOLIO -->
@@ -540,6 +524,51 @@
       <div class="calc-result-item"><div class="calc-result-label">Gewinn</div>        <div class="calc-result-value green" id="sp-gain">—</div></div>
       <div class="calc-result-item"><div class="calc-result-label">Entnahme/Monat (4%)</div><div class="calc-result-value green" id="sp-gainpct">—</div></div>
     </div>
+  </div>
+
+  <!-- SIGNALE IM ÜBERBLICK -->
+  <div class="section-label">Signale im Überblick</div>
+  <div class="signal-matrix">
+    <table>
+      <tr>
+        <td class="sig-name">GD200-Abstand</td>
+        <td class="sig-val"    id="sm-gd200-val">—</td>
+        <td class="sig-status" id="sm-gd200-status">—</td>
+      </tr>
+      <tr>
+        <td class="sig-name">RSI täglich</td>
+        <td class="sig-val"    id="sm-rsi-val">—</td>
+        <td class="sig-status" id="sm-rsi-status">—</td>
+      </tr>
+      <tr>
+        <td class="sig-name">RSI wöchentlich</td>
+        <td class="sig-val"    id="sm-wrsi-val">—</td>
+        <td class="sig-status" id="sm-wrsi-status">—</td>
+      </tr>
+      <tr>
+        <td class="sig-name">ATH-Abstand</td>
+        <td class="sig-val"    id="sm-ath-val">—</td>
+        <td class="sig-status" id="sm-ath-status">—</td>
+      </tr>
+      <tr>
+        <td class="sig-name">Fear &amp; Greed</td>
+        <td class="sig-val"    id="sm-fg-val">—</td>
+        <td class="sig-status" id="sm-fg-status">—</td>
+      </tr>
+      <tr>
+        <td class="sig-name">Shiller CAPE</td>
+        <td class="sig-val"    id="sm-cape-val">—</td>
+        <td class="sig-status" id="sm-cape-status">—</td>
+      </tr>
+    </table>
+  </div>
+
+  <!-- KAUFMOMENT -->
+  <div class="buy-card" id="buy-card">
+    <div class="buy-card-label">Kaufmoment-Analyse</div>
+    <div class="buy-verdict" id="buy-verdict">Wird berechnet…</div>
+    <div class="buy-score-line" id="buy-score-line"></div>
+    <div class="buy-bullets" id="buy-bullets"></div>
   </div>
 
   <div class="footer" id="footer">Letzte Aktualisierung: —</div>
@@ -826,9 +855,8 @@
     el.classList.remove('loading-shimmer');
     el.className = 'ath-drawdown ' + (absPct < 5 ? 'green' : absPct < 10 ? 'yellow' : absPct < 20 ? 'orange' : 'red');
     document.getElementById('ath-value').textContent = `€${ath.toFixed(2)}`;
-    document.querySelectorAll('#ath-table tr').forEach(row => {
-      row.classList.toggle('active-row', absPct >= +row.dataset.min && absPct < +row.dataset.max);
-    });
+    sigValues.athPct = drawPct;
+    updateSignalMatrix();
   }
 
   // ── Fear & Greed ───────────────────────────────────────────
@@ -842,9 +870,8 @@
     const map = { 'extreme fear': 'Extreme Angst', 'fear': 'Angst', 'neutral': 'Neutral', 'greed': 'Gier', 'extreme greed': 'Extreme Gier' };
     document.getElementById('fg-label').textContent = map[rating.toLowerCase()] || rating;
     document.getElementById('fg-marker').style.left = `${score}%`;
-    document.querySelectorAll('#fg-table tr').forEach(row => {
-      row.classList.toggle('active-row', score >= +row.dataset.fgmin && score < +row.dataset.fgmax);
-    });
+    sigValues.fg = score;
+    updateSignalMatrix();
   }
 
   // ── Sparplan ───────────────────────────────────────────────
@@ -938,6 +965,122 @@
       document.getElementById('alert-below').value = '';
       updateAlertStatus();
     }
+  }
+
+  // ── Kaufmoment ─────────────────────────────────────────────
+
+  const sigValues = { gd200Diff: null, rsi: null, wrsi: null, athPct: null, fg: null, capeDev: null };
+
+  function setSigRow(valId, statusId, valText, score, color, label) {
+    const dotColor = { green: '#22c55e', yellow: '#eab308', orange: '#f97316', red: '#ef4444' }[color] || '#555';
+    const vEl = document.getElementById(valId);
+    const sEl = document.getElementById(statusId);
+    if (vEl) vEl.textContent = valText;
+    if (sEl) {
+      sEl.innerHTML = `<span class="sig-dot" style="background:${dotColor}"></span>${label}`;
+      sEl.className = `sig-status ${color}`;
+    }
+    return score;
+  }
+
+  function updateSignalMatrix() {
+    let total = 0, avail = 0;
+
+    if (sigValues.gd200Diff !== null) {
+      const d = sigValues.gd200Diff;
+      const v = `${d >= 0 ? '+' : ''}${d.toFixed(1)} %`;
+      let s, c, l;
+      if      (d <  0)  { s=2; c='green';  l='Unter GD200 – Kaufzone'; }
+      else if (d <  5)  { s=2; c='green';  l='GD200-Niveau – Gut'; }
+      else if (d < 10)  { s=1; c='yellow'; l='Leicht erhöht'; }
+      else if (d < 20)  { s=0; c='orange'; l='Deutlich erhöht'; }
+      else              { s=0; c='red';    l='Stark überhitzt'; }
+      total += setSigRow('sm-gd200-val', 'sm-gd200-status', v, s, c, l); avail += 2;
+    }
+
+    if (sigValues.rsi !== null) {
+      const r = sigValues.rsi;
+      let s, c, l;
+      if      (r < 30) { s=2; c='green';  l='Überverkauft – Kaufzone'; }
+      else if (r < 40) { s=2; c='green';  l='Angst – Kaufsignal'; }
+      else if (r < 50) { s=1; c='yellow'; l='Leichte Abkühlung'; }
+      else if (r < 70) { s=1; c='yellow'; l='Bullisch / Neutral'; }
+      else             { s=0; c='red';    l='Überkauft – Vorsicht'; }
+      total += setSigRow('sm-rsi-val', 'sm-rsi-status', r.toFixed(1), s, c, l); avail += 2;
+    }
+
+    if (sigValues.wrsi !== null) {
+      const r = sigValues.wrsi;
+      let s, c, l;
+      if      (r < 30) { s=2; c='green';  l='Überverkauft – Kaufzone'; }
+      else if (r < 40) { s=2; c='green';  l='Angst – Kaufsignal'; }
+      else if (r < 50) { s=1; c='yellow'; l='Leichte Abkühlung'; }
+      else if (r < 70) { s=1; c='yellow'; l='Bullisch / Neutral'; }
+      else             { s=0; c='red';    l='Überkauft – Vorsicht'; }
+      total += setSigRow('sm-wrsi-val', 'sm-wrsi-status', r.toFixed(1), s, c, l); avail += 2;
+    }
+
+    if (sigValues.athPct !== null) {
+      const a = Math.abs(sigValues.athPct);
+      const v = `${sigValues.athPct.toFixed(1)} %`;
+      let s, c, l;
+      if      (a >= 20) { s=2; c='green';  l='Großer Drawdown – Kaufchance'; }
+      else if (a >= 10) { s=2; c='green';  l='Mittlerer Drawdown – Gut'; }
+      else if (a >=  5) { s=1; c='yellow'; l='Leichter Drawdown'; }
+      else              { s=0; c='orange'; l='Nahe ATH – kein Rabatt'; }
+      total += setSigRow('sm-ath-val', 'sm-ath-status', v, s, c, l); avail += 2;
+    }
+
+    if (sigValues.fg !== null) {
+      const f = sigValues.fg;
+      let s, c, l;
+      if      (f <  25) { s=2; c='green';  l='Extreme Angst – Kaufzone'; }
+      else if (f <  45) { s=2; c='green';  l='Angst – Kaufsignal'; }
+      else if (f <  55) { s=1; c='yellow'; l='Neutral'; }
+      else if (f <  75) { s=0; c='orange'; l='Gier – Vorsicht'; }
+      else              { s=0; c='red';    l='Extreme Gier – meiden'; }
+      total += setSigRow('sm-fg-val', 'sm-fg-status', Math.round(f).toString(), s, c, l); avail += 2;
+    }
+
+    if (sigValues.capeDev !== null) {
+      const d = sigValues.capeDev;
+      const v = `${d >= 0 ? '+' : ''}${d.toFixed(1)} %`;
+      let s, c, l;
+      if      (d < -10) { s=2; c='green';  l='Günstig bewertet'; }
+      else if (d <   0) { s=1; c='yellow'; l='Fair bewertet'; }
+      else if (d <  25) { s=0; c='orange'; l='Leicht überbewertet'; }
+      else              { s=0; c='red';    l='Stark überbewertet'; }
+      total += setSigRow('sm-cape-val', 'sm-cape-status', v, s, c, l); avail += 2;
+    }
+
+    if (avail > 0) updateKaufmoment(total, avail);
+  }
+
+  function updateKaufmoment(score, max) {
+    const card    = document.getElementById('buy-card');
+    const verdict = document.getElementById('buy-verdict');
+    const scorEl  = document.getElementById('buy-score-line');
+    const bullEl  = document.getElementById('buy-bullets');
+    if (!card) return;
+    const pct = score / max;
+    let cls, text, bullets;
+    if (pct >= 0.72) {
+      cls='green';  text='Guter Kaufmoment';
+      bullets = ['Mehrere Signale zeigen Kaufbereitschaft.', 'Sparplan normal weiterführen.', 'Zusatzkäufe sinnvoll.'];
+    } else if (pct >= 0.5) {
+      cls='yellow'; text='Neutraler Markt';
+      bullets = ['Markt weder günstig noch teuer.', 'Sparplan weiterlaufen lassen.', 'Keine Extrakäufe nötig.'];
+    } else if (pct >= 0.3) {
+      cls='orange'; text='Eher ungünstig';
+      bullets = ['Mehrere Warnsignale aktiv.', 'Nur Basis-Sparplan weiterführen.', 'Geduld zahlt sich aus.'];
+    } else {
+      cls='red';    text='Kein Kaufmoment';
+      bullets = ['Markt überhitzt oder überbewertet.', 'Nur Basis-Sparplan weiterlaufen lassen.', 'Auf Rücksetzer warten.'];
+    }
+    card.className = `buy-card ${cls}`;
+    verdict.textContent = text;
+    scorEl.textContent  = `${score} / ${max} Punkte`;
+    bullEl.innerHTML = bullets.map(b => `<div>· ${b}</div>`).join('');
   }
 
   // ── API Fetches ────────────────────────────────────────────
@@ -1034,6 +1177,8 @@
         box.className = `signal-box ${sig.level}`;
         document.getElementById('signal-title').textContent = sig.title;
         document.getElementById('signal-desc').textContent  = sig.desc;
+        sigValues.gd200Diff = ((price - ma200) / ma200) * 100;
+        sigValues.rsi = rsi;
       }
 
       updateATH(price, allCloses);
@@ -1066,9 +1211,8 @@
         el.textContent = wrsi.toFixed(1);
         el.classList.remove('loading-shimmer');
         applyRSIZone(el, document.getElementById('wrsi-sub'), wrsi);
-        document.querySelectorAll('#rsi-table tr').forEach(row => {
-          row.classList.toggle('active-row', wrsi >= +row.dataset.rsimin && wrsi < +row.dataset.rsimax);
-        });
+        sigValues.wrsi = wrsi;
+        updateSignalMatrix();
       }
     } catch (err) {
       document.getElementById('wrsi').textContent = '—';
@@ -1108,9 +1252,8 @@
       devEl.textContent = `${dev >= 0 ? '+' : ''}${dev.toFixed(1)}% vs. Ø ${PE_AVG}`;
       devEl.style.color = dev > 25 ? '#ef4444' : dev >= 0 ? '#f97316' : dev >= -10 ? '#86efac' : '#22c55e';
       document.getElementById('pe-source').textContent = 'S&P 500 Shiller CAPE · multpl.com';
-      document.querySelectorAll('#cape-table tr').forEach(row => {
-        row.classList.toggle('active-row', dev >= +row.dataset.cmin && dev < +row.dataset.cmax);
-      });
+      sigValues.capeDev = dev;
+      updateSignalMatrix();
     } catch (err) {
       document.getElementById('pe-value').textContent = '—';
       document.getElementById('pe-value').classList.remove('loading-shimmer');
