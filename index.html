@@ -269,16 +269,6 @@
     .calc-result-value.green { color: #22c55e; }
     .calc-result-value.red   { color: #ef4444; }
 
-    /* Preisalarm */
-    .alert-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 12px; }
-    .alert-btn {
-      background: #1e293b; border: 1px solid #2563eb; border-radius: 8px;
-      color: #60a5fa; font-size: 13px; font-family: inherit;
-      padding: 9px 16px; cursor: pointer; transition: all 0.15s; width: 100%;
-    }
-    .alert-btn:hover { background: #2563eb; color: #fff; }
-    .alert-status { font-size: 12px; color: #555; margin-top: 10px; }
-    .alert-status.active { color: #22c55e; }
 
     .footer { margin-top: 18px; font-size: 10px; color: #333; text-align: right; }
 
@@ -311,7 +301,7 @@
       .fg-bar-labels { font-size: 8px; }
       .calc-grid   { grid-template-columns: 1fr; }
       .calc-grid-2 { grid-template-columns: 1fr; }
-      .alert-grid  { grid-template-columns: 1fr; }
+
     }
     @media (min-width: 641px) and (max-width: 900px) {
       body { padding: 20px 16px; }
@@ -484,22 +474,6 @@
     </div>
   </div>
 
-  <!-- ⑪ PREISALARM -->
-  <div class="section-label">Preisalarm</div>
-  <div class="calc-box">
-    <div class="alert-grid">
-      <div class="calc-field">
-        <label>Alarm über (€)</label>
-        <input class="calc-input" type="number" id="alert-above" placeholder="z.B. 160.00" min="0" step="0.01">
-      </div>
-      <div class="calc-field">
-        <label>Alarm unter (€)</label>
-        <input class="calc-input" type="number" id="alert-below" placeholder="z.B. 130.00" min="0" step="0.01">
-      </div>
-    </div>
-    <button class="alert-btn" onclick="activateAlert()">Alarm aktivieren</button>
-    <div class="alert-status" id="alert-status">Preise eingeben und "Alarm aktivieren" klicken</div>
-  </div>
 
   <!-- ⑫ SPARPLAN-RECHNER (Planung – ganz am Ende) -->
   <div class="section-label">Sparplan-Rechner</div>
@@ -916,56 +890,6 @@
     gainPctEl.className   = `calc-result-value ${gainPct >= 0 ? 'green' : 'red'}`;
   }
 
-  // ── Preisalarm ─────────────────────────────────────────────
-
-  let alertAbove = parseFloat(localStorage.getItem('alertAbove')) || null;
-  let alertBelow = parseFloat(localStorage.getItem('alertBelow')) || null;
-
-  function updateAlertStatus() {
-    const el = document.getElementById('alert-status');
-    if (!('Notification' in window)) { el.textContent = 'Browser unterstützt keine Benachrichtigungen'; return; }
-    if (Notification.permission === 'granted') {
-      const parts = [];
-      if (alertAbove) parts.push(`über €${alertAbove.toFixed(2)}`);
-      if (alertBelow) parts.push(`unter €${alertBelow.toFixed(2)}`);
-      if (parts.length) { el.textContent = `Aktiv: Alarm ${parts.join(' · ')}`; el.className = 'alert-status active'; }
-      else              { el.textContent = 'Kein Alarm gesetzt. Preise eingeben und speichern.'; el.className = 'alert-status'; }
-    } else if (Notification.permission === 'denied') {
-      el.textContent = 'Benachrichtigungen blockiert – bitte in Browser-Einstellungen erlauben';
-      el.className = 'alert-status';
-    } else {
-      el.textContent = 'Klicke "Alarm aktivieren" um Benachrichtigungen zu erlauben';
-      el.className = 'alert-status';
-    }
-  }
-
-  async function activateAlert() {
-    if (!('Notification' in window)) return;
-    if (Notification.permission !== 'granted') await Notification.requestPermission();
-    const above = parseFloat(document.getElementById('alert-above').value);
-    const below = parseFloat(document.getElementById('alert-below').value);
-    if (!isNaN(above) && above > 0) { alertAbove = above; localStorage.setItem('alertAbove', above); }
-    else { alertAbove = null; localStorage.removeItem('alertAbove'); }
-    if (!isNaN(below) && below > 0) { alertBelow = below; localStorage.setItem('alertBelow', below); }
-    else { alertBelow = null; localStorage.removeItem('alertBelow'); }
-    updateAlertStatus();
-  }
-
-  function checkPriceAlert(price) {
-    if (Notification.permission !== 'granted') return;
-    if (alertAbove && price >= alertAbove) {
-      new Notification('VWCE Preisalarm', { body: `Kurs €${price.toFixed(2)} hat €${alertAbove.toFixed(2)} überschritten` });
-      alertAbove = null; localStorage.removeItem('alertAbove');
-      document.getElementById('alert-above').value = '';
-      updateAlertStatus();
-    }
-    if (alertBelow && price <= alertBelow) {
-      new Notification('VWCE Preisalarm', { body: `Kurs €${price.toFixed(2)} ist unter €${alertBelow.toFixed(2)} gefallen` });
-      alertBelow = null; localStorage.removeItem('alertBelow');
-      document.getElementById('alert-below').value = '';
-      updateAlertStatus();
-    }
-  }
 
   // ── Kaufmoment ─────────────────────────────────────────────
 
@@ -1186,7 +1110,6 @@
       renderChart(currentRange);
       updateRangePerf(currentRange);
       calcPortfolio();
-      checkPriceAlert(price);
 
       document.getElementById('footer').textContent =
         `Letzte Aktualisierung: ${new Date().toLocaleTimeString('de-DE')} · Quelle: Yahoo Finance`;
@@ -1299,10 +1222,6 @@
   const savedAvg    = localStorage.getItem('pt-avgprice');
   if (savedShares) document.getElementById('pt-shares').value   = savedShares;
   if (savedAvg)    document.getElementById('pt-avgprice').value = savedAvg;
-  if (alertAbove)  document.getElementById('alert-above').value = alertAbove;
-  if (alertBelow)  document.getElementById('alert-below').value = alertBelow;
-
-  updateAlertStatus();
   calcSparplan();
 
   // Initial loads (staggered to avoid simultaneous proxy requests)
