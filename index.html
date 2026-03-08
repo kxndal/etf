@@ -30,15 +30,18 @@
       height: 100vh;
       overflow-y: scroll;
       scroll-snap-type: y mandatory;
+      scroll-behavior: smooth;
+      -webkit-overflow-scrolling: touch;
     }
 
     .page {
       height: 100vh;
       scroll-snap-align: start;
+      scroll-snap-stop: always;
       display: flex;
       align-items: center;
       justify-content: center;
-      padding: 48px 40px;
+      padding: 36px 40px;
     }
 
     .page-inner {
@@ -139,7 +142,7 @@
     .chart-legend { display: flex; gap: 14px; }
     .legend-item { display: flex; align-items: center; gap: 5px; font-size: 10px; color: #9ca3af; }
     .legend-dot  { width: 8px; height: 2px; border-radius: 1px; }
-    .chart-wrap  { position: relative; height: 320px; }
+    .chart-wrap  { position: relative; height: 200px; }
 
     /* Range buttons */
     .range-btns { display: flex; gap: 4px; margin-bottom: 20px; align-items: center; padding-top: 8px; }
@@ -318,13 +321,13 @@
 
     /* Responsive */
     @media (max-width: 640px) {
-      .page { padding: 24px 20px; align-items: flex-start; overflow-y: auto; }
+      .page { padding: 20px 20px; align-items: flex-start; overflow-y: auto; }
       .page-dots { display: none; }
       .header { flex-wrap: wrap; }
       .header-right { width: 100%; margin-top: 8px; }
-      .price { font-size: 36px; }
+      .price { font-size: 32px; }
       .indicators { grid-template-columns: 1fr 1fr; }
-      .chart-wrap { height: 220px; }
+      .chart-wrap { height: 160px; }
       .ath-drawdown { font-size: 32px; }
       .fg-score { font-size: 32px; }
       .ath-table td { font-size: 11px; padding: 7px 8px; }
@@ -348,15 +351,13 @@
   <a class="dot" data-page="3" href="#pg-4"></a>
   <a class="dot" data-page="4" href="#pg-5"></a>
   <a class="dot" data-page="5" href="#pg-6"></a>
-  <a class="dot" data-page="6" href="#pg-7"></a>
 </nav>
 
 <div class="pages" id="pages">
 
-  <!-- PAGE 1: Übersicht -->
+  <!-- PAGE 1: Übersicht + Kursverlauf -->
   <section class="page" id="pg-1">
     <div class="page-inner">
-      <div class="page-label">Übersicht</div>
       <div class="header">
         <div class="header-left">
           <div class="etf-icon">VWCE</div>
@@ -393,13 +394,6 @@
           <span id="week52-high">—</span>
         </div>
       </div>
-    </div>
-  </section>
-
-  <!-- PAGE 2: Chart -->
-  <section class="page" id="pg-2">
-    <div class="page-inner">
-      <div class="page-label">Kursverlauf</div>
       <div class="chart-section">
         <div class="chart-header">
           <div class="chart-title">Kursverlauf</div>
@@ -425,8 +419,8 @@
     </div>
   </section>
 
-  <!-- PAGE 3: Indikatoren -->
-  <section class="page" id="pg-3">
+  <!-- PAGE 2: Indikatoren -->
+  <section class="page" id="pg-2">
     <div class="page-inner">
       <div class="page-label">Technische Indikatoren</div>
       <div class="indicators">
@@ -464,8 +458,8 @@
     </div>
   </section>
 
-  <!-- PAGE 4: ATH + Sentiment + CAPE -->
-  <section class="page" id="pg-4">
+  <!-- PAGE 3: ATH + Sentiment + CAPE -->
+  <section class="page" id="pg-3">
     <div class="page-inner">
       <div class="page-label">Bewertung &amp; Sentiment</div>
       <div class="ath-box">
@@ -498,8 +492,8 @@
     </div>
   </section>
 
-  <!-- PAGE 5: Portfolio -->
-  <section class="page" id="pg-5">
+  <!-- PAGE 4: Portfolio -->
+  <section class="page" id="pg-4">
     <div class="page-inner">
       <div class="page-label">Mein Portfolio</div>
       <div class="calc-box">
@@ -523,8 +517,8 @@
     </div>
   </section>
 
-  <!-- PAGE 6: Sparplan -->
-  <section class="page" id="pg-6">
+  <!-- PAGE 5: Sparplan -->
+  <section class="page" id="pg-5">
     <div class="page-inner">
       <div class="page-label">Sparplan-Rechner</div>
       <div class="calc-box">
@@ -558,8 +552,8 @@
     </div>
   </section>
 
-  <!-- PAGE 7: Signale + Kaufmoment -->
-  <section class="page" id="pg-7">
+  <!-- PAGE 6: Signale + Kaufmoment -->
+  <section class="page" id="pg-6">
     <div class="page-inner">
       <div class="page-label">Signale &amp; Kaufmoment</div>
       <div class="signal-matrix">
