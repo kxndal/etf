@@ -719,8 +719,8 @@
   function applyRSIZone(el, subEl, rsi) {
     const zones = [
       { min: 70,  color: '#ef4444', label: 'Überkauft (Euphorie)' },
-      { min: 50,  color: '#ffffff', label: 'Bullisch / Neutral' },
-      { min: 40,  color: '#86efac', label: 'Leichte Abkühlung' },
+      { min: 50,  color: '#0a0a0a', label: 'Bullisch / Neutral' },
+      { min: 40,  color: '#f97316', label: 'Leichte Abkühlung' },
       { min: 30,  color: '#22c55e', label: 'Angst im Markt' },
       { min: -Infinity, color: '#22c55e', label: 'Panik (Oversold)' },
     ];
@@ -733,7 +733,7 @@
     const diff = ((price - ma200) / ma200) * 100;
     const zone = getRSIZone(rsi);
     if (diff < 0)  return { level: 'green',  title: '✓ Szenario C – Günstig',          desc: `Kurs ${diff.toFixed(1)}% unter GD200 · RSI ${rsi.toFixed(1)} – ${zone}` };
-    if (diff < 5)  return { level: 'green',  title: '✓ Szenario B – Guter Kaufmoment', desc: `Kurs berührt GD200 (+${diff.toFixed(1)}%) · RSI ${rsi.toFixed(1)} – ${zone}` };
+    if (diff < 5)  return { level: 'green',  title: '✓ Szenario B – Guter Kaufmoment', desc: `Kurs nahe GD200 (+${diff.toFixed(1)}%) · RSI ${rsi.toFixed(1)} – ${zone}` };
     if (diff < 10) return { level: 'yellow', title: '~ Neutral – Leicht erhöht',        desc: `Kurs +${diff.toFixed(1)}% über GD200 · RSI ${rsi.toFixed(1)} – ${zone}` };
     return           { level: 'red',    title: '✕ Szenario A – Markt überhitzt',    desc: `Kurs +${diff.toFixed(1)}% über GD200 · RSI ${rsi.toFixed(1)} – ${zone}` };
   }
