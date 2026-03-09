@@ -597,7 +597,7 @@
   // ── Helpers ────────────────────────────────────────────────
 
   async function fetchYahoo(ticker, range, interval) {
-    const url = `https://query1.finance.yahoo.com/v8/finance/chart/${ticker}?range=${range}&interval=${interval}&includePrePost=false&_t=${Date.now()}`;
+    const url = `https://query1.finance.yahoo.com/v8/finance/chart/${ticker}?range=${range}&interval=${interval}&includePrePost=false`;
     const res = await fetch(PROXY + encodeURIComponent(url));
     if (!res.ok) throw new Error(`HTTP ${res.status}`);
     const data = await res.json();
