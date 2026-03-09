@@ -1026,11 +1026,11 @@
   // ── Portfolio ──────────────────────────────────────────────
 
   function calcPortfolio() {
-    const shares   = parseFloat(document.getElementById('pt-shares').value)   || 0;
-    const avgPrice = parseFloat(document.getElementById('pt-avgprice').value) || 0;
-    localStorage.setItem('pt-shares',   shares);
-    localStorage.setItem('pt-avgprice', avgPrice);
-    if (!shares || !avgPrice || !currentPrice) return;
+    const shares   = parseFloat(document.getElementById('pt-shares').value);
+    const avgPrice = parseFloat(document.getElementById('pt-avgprice').value);
+    if (shares   > 0) localStorage.setItem('pt-shares',   shares);
+    if (avgPrice > 0) localStorage.setItem('pt-avgprice', avgPrice);
+    if (!(shares > 0) || !(avgPrice > 0) || !currentPrice) return;
     const invested   = shares * avgPrice;
     const currentVal = shares * currentPrice;
     const gain       = currentVal - invested;
@@ -1386,11 +1386,11 @@
 
   // ── Init ───────────────────────────────────────────────────
 
-  // Restore saved values
-  const savedShares = localStorage.getItem('pt-shares');
-  const savedAvg    = localStorage.getItem('pt-avgprice');
-  if (savedShares) document.getElementById('pt-shares').value   = savedShares;
-  if (savedAvg)    document.getElementById('pt-avgprice').value = savedAvg;
+  // Restore saved values (nur wenn > 0)
+  const savedShares = parseFloat(localStorage.getItem('pt-shares'));
+  const savedAvg    = parseFloat(localStorage.getItem('pt-avgprice'));
+  if (savedShares > 0) document.getElementById('pt-shares').value   = savedShares;
+  if (savedAvg    > 0) document.getElementById('pt-avgprice').value = savedAvg;
   calcSparplan();
 
   // Initial loads (staggered to avoid simultaneous proxy requests)
@@ -1410,8 +1410,14 @@
   setInterval(loadVIX,         5 * 60 * 1000);
   setInterval(loadEURUSD,      5 * 60 * 1000);
   setInterval(() => { if (currentRange === 'live') loadIntraday(); }, 30 * 1000);
-  setTimeout(loadLongTermReturn, 3000);
-  setInterval(loadLongTermReturn, 30 * 24 * 60 * 60 * 1000);
+  // LongTermReturn einmalig laden (kein setInterval — ändert sich selten)
+  let _ltrLoaded = false;
+  setTimeout(async () => {
+    if (_ltrLoaded) return;
+    _ltrLoaded = true;
+    await loadLongTermReturn();
+  }, 3000);
+  // loadLongTermReturn läuft einmalig (oben per setTimeout)
 
   // ─── Snappy Page Navigation ──────────────────────────────────────────────
   const _pagesEl = document.getElementById('pages');
