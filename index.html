@@ -315,25 +315,106 @@
       border-radius: 8px; padding: 12px 16px; font-size: 12px; color: #dc2626; margin-bottom: 16px;
     }
 
-    /* Responsive */
+    /* ── Responsive ────────────────────────────────────────────── */
     @media (max-width: 640px) {
-      .page { padding: 20px 20px; align-items: flex-start; overflow-y: auto; }
+      /* Seiten stapeln sich — kein Snap auf Mobile */
+      .page {
+        height: auto;
+        min-height: 100svh;
+        padding: 44px 22px 60px;
+        align-items: flex-start;
+        border-bottom: 1px solid #f0f0ec;
+      }
+      .page:last-child { border-bottom: none; }
       .page-dots { display: none; }
-      .header { flex-wrap: wrap; }
-      .header-right { width: 100%; margin-top: 8px; }
-      .price { font-size: 32px; }
-      .indicators { grid-template-columns: 1fr 1fr; }
-      .chart-wrap { height: 160px; }
-      .ath-drawdown { font-size: 32px; }
-      .fg-score { font-size: 32px; }
-      .ath-table td { font-size: 11px; padding: 7px 8px; }
-      .etf-name h1 { font-size: 16px; }
-      .fg-bar-labels { font-size: 8px; }
-      .calc-grid   { grid-template-columns: 1fr; }
-      .calc-grid-2 { grid-template-columns: 1fr; }
+
+      /* Header */
+      .header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 20px;
+        padding-bottom: 28px;
+        margin-bottom: 28px;
+      }
+      .header-right { width: 100%; }
+      .price { font-size: 42px; }
+      .price-change { font-size: 13px; }
+
+      /* Signal-Box (Seite 1) */
+      .signal-box { padding: 20px 0; margin-bottom: 24px; gap: 14px; }
+      .signal-title { font-size: 15px; }
+      .signal-desc  { font-size: 13px; margin-top: 4px; }
+
+      /* 52-Wochen */
+      .week52-section { padding: 20px 0; margin-bottom: 24px; }
+      .week52-header  { font-size: 11px; margin-bottom: 10px; }
+      .week52-footer  { font-size: 11px; }
+
+      /* Chart */
+      .chart-wrap { height: 180px; }
+      .chart-header { margin-bottom: 12px; }
+
+      /* Range-Buttons */
+      .range-btns { flex-wrap: wrap; gap: 6px; padding-top: 12px; }
+      .range-btn  { font-size: 12px; padding: 6px 14px; }
+
+      /* Page-Label */
+      .page-label { font-size: 11px; margin-bottom: 32px; }
+
+      /* Indikatoren: 2 Spalten, mehr Luft */
+      .indicators { grid-template-columns: 1fr 1fr; gap: 0; }
+      .indicator-box { padding: 22px 0; }
+      .ind-label { font-size: 11px; margin-bottom: 10px; }
+      .ind-value { font-size: 28px; }
+      .ind-sub   { font-size: 12px; margin-top: 6px; }
+
+      /* ETF-Name */
+      .etf-name h1 { font-size: 17px; }
+      .etf-name p  { font-size: 13px; }
+
+      /* ATH-Box */
+      .ath-box { padding: 24px 0; margin-bottom: 24px; }
+      .ath-top { gap: 16px; margin-bottom: 18px; }
+      .ath-drawdown { font-size: 38px; }
+      .ath-meta { font-size: 13px; }
+      .ath-table td { font-size: 13px; padding: 11px 8px; }
+
+      /* Fear & Greed / CAPE */
+      .fg-box   { padding: 24px 0; margin-bottom: 24px; }
+      .fg-top   { gap: 16px; margin-bottom: 16px; }
+      .fg-score { font-size: 38px; }
+      .fg-meta  { font-size: 13px; }
+      .fg-bar-labels { font-size: 10px; }
+
+      /* Rechner */
+      .calc-box    { padding: 0 0 8px 0; }
+      .calc-grid   { grid-template-columns: 1fr; gap: 14px; margin-bottom: 16px; }
+      .calc-grid-2 { grid-template-columns: 1fr; gap: 14px; margin-bottom: 16px; }
+      .calc-field label { font-size: 11px; }
+      .calc-input  { font-size: 16px; padding: 12px 14px; }
+      .calc-input-static { font-size: 16px; padding: 12px 14px; }
+      .calc-results { grid-template-columns: 1fr 1fr; gap: 0; padding-top: 0; }
+      .calc-result-item  { padding: 16px 0; }
+      .calc-result-label { font-size: 11px; }
+      .calc-result-value { font-size: 22px; }
+
+      /* Signal-Matrix */
+      .signal-matrix { margin-bottom: 28px; }
+      .signal-matrix td { padding: 15px 0; font-size: 13px; }
+      .sig-name { width: 38%; font-size: 13px; }
+      .sig-val  { width: 20%; font-size: 13px; }
+      .sig-status { width: 42%; font-size: 13px; }
+
+      /* Kaufmoment-Karte */
+      .buy-card    { padding: 32px 0 24px; }
+      .buy-card-label { font-size: 11px; margin-bottom: 12px; }
+      .buy-verdict { font-size: 30px; }
+      .buy-score-line { font-size: 13px; margin-bottom: 14px; }
+      .buy-bullets { font-size: 13px; line-height: 2.1; }
     }
+
     @media (min-width: 641px) and (max-width: 900px) {
-      .page { padding: 32px 24px; }
+      .page { padding: 32px 28px; }
       .indicators { grid-template-columns: 1fr 1fr; }
       .calc-grid  { grid-template-columns: 1fr 1fr; }
     }
@@ -1362,17 +1443,22 @@
     })(performance.now());
   }
 
-  // Mausrad — ein Tick = eine Seite
+  // Mausrad — ein Tick = eine Seite (nur Desktop)
   _pagesEl.addEventListener('wheel', e => {
+    if (window.innerWidth <= 640) return;
     e.preventDefault();
     if (_isAnim) return;
     scrollToPage(_curIdx + (e.deltaY > 0 ? 1 : -1));
   }, { passive: false });
 
-  // Touch — wischen
+  // Touch-Snap — nur Desktop (Mobile scrollt nativ)
   let _ty0 = 0;
-  _pagesEl.addEventListener('touchstart', e => { _ty0 = e.touches[0].clientY; }, { passive: true });
-  _pagesEl.addEventListener('touchend',   e => {
+  _pagesEl.addEventListener('touchstart', e => {
+    if (window.innerWidth <= 640) return;
+    _ty0 = e.touches[0].clientY;
+  }, { passive: true });
+  _pagesEl.addEventListener('touchend', e => {
+    if (window.innerWidth <= 640) return;
     const d = _ty0 - e.changedTouches[0].clientY;
     if (Math.abs(d) > 40) scrollToPage(_curIdx + (d > 0 ? 1 : -1));
   }, { passive: true });
