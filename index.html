@@ -597,7 +597,7 @@
   // ── Helpers ────────────────────────────────────────────────
 
   async function fetchYahoo(ticker, range, interval) {
-    const url = `https://query1.finance.yahoo.com/v8/finance/chart/${ticker}?range=${range}&interval=${interval}&includePrePost=false`;
+    const url = `https://query1.finance.yahoo.com/v8/finance/chart/${ticker}?range=${range}&interval=${interval}&includePrePost=false&_t=${Date.now()}`;
     const res = await fetch(PROXY + encodeURIComponent(url));
     if (!res.ok) throw new Error(`HTTP ${res.status}`);
     const data = await res.json();
@@ -611,7 +611,7 @@
 
   async function fetchLSData() {
     const instrId = 1045625;
-    const url = `https://www.ls-tc.de/_rpc/json/instrument/chart/dataForInstrument?container=chart1&instrumentId=${instrId}&marketId=1&quotetype=mid&series=intraday%2Chistory&type=&localeId=2`;
+    const url = `https://www.ls-tc.de/_rpc/json/instrument/chart/dataForInstrument?container=chart1&instrumentId=${instrId}&marketId=1&quotetype=mid&series=intraday%2Chistory&type=&localeId=2&_t=${Date.now()}`;
     const res = await fetch(PROXY + encodeURIComponent(url), {
       headers: { 'X-Requested-With': 'XMLHttpRequest' }
     });
@@ -1324,16 +1324,16 @@
   setTimeout(loadEURUSD,     2500);
 
   // Auto-Refresh
-  setInterval(load,           15 * 1000);
-  setInterval(loadWeeklyRSI,  3 * 60 * 1000);
-  setInterval(loadFearGreed,  2 * 60 * 1000);
-  setInterval(loadValuation, 10 * 60 * 1000);
-  setInterval(loadVIX,        5 * 60 * 1000);
-  setInterval(loadEURUSD,     5 * 60 * 1000);
+  setInterval(refreshLSPrice, 10 * 1000);           // L&S Preis alle 10s
+  setInterval(load,            5 * 60 * 1000);       // Indikatoren alle 5 Min
+  setInterval(loadWeeklyRSI,   3 * 60 * 1000);
+  setInterval(loadFearGreed,   2 * 60 * 1000);
+  setInterval(loadValuation,  10 * 60 * 1000);
+  setInterval(loadVIX,         5 * 60 * 1000);
+  setInterval(loadEURUSD,      5 * 60 * 1000);
   setInterval(() => { if (currentRange === 'live') loadIntraday(); }, 30 * 1000);
   setTimeout(loadLongTermReturn, 3000);
   setInterval(loadLongTermReturn, 30 * 24 * 60 * 60 * 1000);
-  setInterval(refreshLSPrice,    60 * 1000); // L&S Preis alle 60s
 
   // ─── Snappy Page Navigation ──────────────────────────────────────────────
   const _pagesEl = document.getElementById('pages');
