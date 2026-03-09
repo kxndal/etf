@@ -29,14 +29,11 @@
     .pages {
       height: 100vh;
       overflow-y: scroll;
-      scroll-snap-type: y mandatory;
       -webkit-overflow-scrolling: touch;
     }
 
     .page {
       height: 100vh;
-      scroll-snap-align: start;
-      scroll-snap-stop: always;
       display: flex;
       align-items: center;
       justify-content: center;
@@ -1346,7 +1343,7 @@
     _dotEls.forEach((d, j) => d.classList.toggle('active', i === j));
   }
 
-  function scrollToPage(idx, dur = 300) {
+  function scrollToPage(idx, dur = 450) {
     if (idx < 0 || idx >= _pageEls.length || _isAnim) return;
     _isAnim = true;
     _curIdx = idx;
@@ -1355,7 +1352,8 @@
     const targetY = idx * _pagesEl.clientHeight;
     const dist    = targetY - startY;
     const t0      = performance.now();
-    function ease(t) { return t < 0.5 ? 2*t*t : -1+(4-2*t)*t; }
+    // easeOutExpo: startet mit voller Kraft, bremst exponentiell — 75% in 90ms
+    function ease(t) { return t >= 1 ? 1 : 1 - Math.pow(2, -10 * t); }
     (function step(now) {
       const p = Math.min((now - t0) / dur, 1);
       _pagesEl.scrollTop = startY + dist * ease(p);
