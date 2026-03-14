@@ -548,7 +548,7 @@
       <div class="fg-box">
         <div class="fg-top">
           <div class="fg-score loading-shimmer" id="fg-score">50</div>
-          <div class="fg-meta">CNN Fear &amp; Greed · <span id="fg-label">Wird geladen...</span></div>
+          <div class="fg-meta">US Fear &amp; Greed (CNN) · <span id="fg-label">Wird geladen...</span></div>
         </div>
         <div class="fg-bar-wrap">
           <div class="fg-bar-track">
@@ -562,7 +562,7 @@
       <div class="fg-box">
         <div class="fg-top">
           <div class="fg-score loading-shimmer" id="pe-value">--</div>
-          <div class="fg-meta">Welt-Markt KGV · <span id="pe-source">wird geladen...</span></div>
+          <div class="fg-meta">S&amp;P 500 CAPE (Shiller) · <span id="pe-source">wird geladen...</span></div>
         </div>
         <div id="pe-deviation" style="font-size:18px;font-weight:600;color:#555;margin-bottom:14px;">—</div>
       </div>
@@ -639,8 +639,8 @@
           <tr><td class="sig-name">RSI täglich</td>     <td class="sig-val" id="sm-rsi-val">—</td>    <td class="sig-status" id="sm-rsi-status">—</td></tr>
           <tr><td class="sig-name">RSI wöchentlich</td> <td class="sig-val" id="sm-wrsi-val">—</td>   <td class="sig-status" id="sm-wrsi-status">—</td></tr>
           <tr><td class="sig-name">ATH-Abstand</td>     <td class="sig-val" id="sm-ath-val">—</td>    <td class="sig-status" id="sm-ath-status">—</td></tr>
-          <tr><td class="sig-name">Fear &amp; Greed</td><td class="sig-val" id="sm-fg-val">—</td>     <td class="sig-status" id="sm-fg-status">—</td></tr>
-          <tr><td class="sig-name">Shiller CAPE</td>    <td class="sig-val" id="sm-cape-val">—</td>   <td class="sig-status" id="sm-cape-status">—</td></tr>
+          <tr><td class="sig-name">US Fear &amp; Greed</td><td class="sig-val" id="sm-fg-val">—</td>     <td class="sig-status" id="sm-fg-status">—</td></tr>
+          <tr><td class="sig-name">S&amp;P 500 CAPE</td>    <td class="sig-val" id="sm-cape-val">—</td>   <td class="sig-status" id="sm-cape-status">—</td></tr>
         </table>
       </div>
       <div class="buy-card" id="buy-card">
@@ -816,8 +816,8 @@
     const diff = ((price - ma200) / ma200) * 100;
     const zone = getRSIZone(rsi);
     if (diff < 0)  return { level: 'green',  title: '✓ Szenario C – Günstig',          desc: `Kurs ${diff.toFixed(1)}% unter GD200 · RSI ${rsi.toFixed(1)} – ${zone}` };
-    if (diff < 5)  return { level: 'green',  title: '✓ Szenario B – Guter Kaufmoment', desc: `Kurs nahe GD200 (+${diff.toFixed(1)}%) · RSI ${rsi.toFixed(1)} – ${zone}` };
-    if (diff < 10) return { level: 'yellow', title: '~ Neutral – Leicht erhöht',        desc: `Kurs +${diff.toFixed(1)}% über GD200 · RSI ${rsi.toFixed(1)} – ${zone}` };
+    if (diff < 8)  return { level: 'green',  title: '✓ Szenario B – Guter Kaufmoment', desc: `Kurs nahe GD200 (+${diff.toFixed(1)}%) · RSI ${rsi.toFixed(1)} – ${zone}` };
+    if (diff < 15) return { level: 'yellow', title: '~ Neutral – Leicht erhöht',        desc: `Kurs +${diff.toFixed(1)}% über GD200 · RSI ${rsi.toFixed(1)} – ${zone}` };
     return           { level: 'red',    title: '✕ Szenario A – Markt überhitzt',    desc: `Kurs +${diff.toFixed(1)}% über GD200 · RSI ${rsi.toFixed(1)} – ${zone}` };
   }
 
@@ -1073,9 +1073,9 @@
       const v = `${d >= 0 ? '+' : ''}${d.toFixed(1)} %`;
       let s, c, l;
       if      (d <  0)  { s=2; c='green';  l='Unter GD200 – Kaufzone'; }
-      else if (d <  5)  { s=2; c='green';  l='GD200-Niveau – Gut'; }
-      else if (d < 10)  { s=1; c='yellow'; l='Leicht erhöht'; }
-      else if (d < 20)  { s=0; c='orange'; l='Deutlich erhöht'; }
+      else if (d <  8)  { s=2; c='green';  l='GD200-Niveau – Gut'; }
+      else if (d < 15)  { s=1; c='yellow'; l='Leicht erhöht'; }
+      else if (d < 25)  { s=0; c='orange'; l='Deutlich erhöht'; }
       else              { s=0; c='red';    l='Stark überhitzt'; }
       total += setSigRow('sm-gd200-val', 'sm-gd200-status', v, s, c, l); avail += 2;
     }
@@ -1083,23 +1083,23 @@
     if (sigValues.rsi !== null) {
       const r = sigValues.rsi;
       let s, c, l;
-      if      (r < 30) { s=2; c='green';  l='Überverkauft – Kaufzone'; }
-      else if (r < 40) { s=2; c='green';  l='Angst – Kaufsignal'; }
+      if      (r < 30) { s=1; c='green';  l='Überverkauft – Kaufzone'; }
+      else if (r < 40) { s=1; c='green';  l='Angst – Kaufsignal'; }
       else if (r < 50) { s=1; c='yellow'; l='Leichte Abkühlung'; }
-      else if (r < 70) { s=1; c='yellow'; l='Bullisch / Neutral'; }
+      else if (r < 70) { s=0; c='yellow'; l='Bullisch / Neutral'; }
       else             { s=0; c='red';    l='Überkauft – Vorsicht'; }
-      total += setSigRow('sm-rsi-val', 'sm-rsi-status', r.toFixed(1), s, c, l); avail += 2;
+      total += setSigRow('sm-rsi-val', 'sm-rsi-status', r.toFixed(1), s, c, l); avail += 1;
     }
 
     if (sigValues.wrsi !== null) {
       const r = sigValues.wrsi;
       let s, c, l;
-      if      (r < 30) { s=2; c='green';  l='Überverkauft – Kaufzone'; }
-      else if (r < 40) { s=2; c='green';  l='Angst – Kaufsignal'; }
-      else if (r < 50) { s=1; c='yellow'; l='Leichte Abkühlung'; }
+      if      (r < 30) { s=3; c='green';  l='Überverkauft – Kaufzone'; }
+      else if (r < 40) { s=3; c='green';  l='Angst – Kaufsignal'; }
+      else if (r < 50) { s=2; c='yellow'; l='Leichte Abkühlung'; }
       else if (r < 70) { s=1; c='yellow'; l='Bullisch / Neutral'; }
       else             { s=0; c='red';    l='Überkauft – Vorsicht'; }
-      total += setSigRow('sm-wrsi-val', 'sm-wrsi-status', r.toFixed(1), s, c, l); avail += 2;
+      total += setSigRow('sm-wrsi-val', 'sm-wrsi-status', r.toFixed(1), s, c, l); avail += 3;
     }
 
     if (sigValues.athPct !== null) {
@@ -1109,18 +1109,18 @@
       if      (a >= 20) { s=2; c='green';  l='Großer Drawdown – Kaufchance'; }
       else if (a >= 10) { s=2; c='green';  l='Mittlerer Drawdown – Gut'; }
       else if (a >=  5) { s=1; c='yellow'; l='Leichter Drawdown'; }
-      else              { s=0; c='orange'; l='Nahe ATH – kein Rabatt'; }
+      else              { s=1; c='yellow'; l='Nahe ATH – normal für FTSE All-World'; }
       total += setSigRow('sm-ath-val', 'sm-ath-status', v, s, c, l); avail += 2;
     }
 
     if (sigValues.fg !== null) {
       const f = sigValues.fg;
       let s, c, l;
-      if      (f <  25) { s=2; c='green';  l='Extreme Angst – Kaufzone'; }
-      else if (f <  45) { s=2; c='green';  l='Angst – Kaufsignal'; }
-      else if (f <  55) { s=1; c='yellow'; l='Neutral'; }
-      else if (f <  75) { s=0; c='orange'; l='Gier – Vorsicht'; }
-      else              { s=0; c='red';    l='Extreme Gier – meiden'; }
+      if      (f <  25) { s=2; c='green';  l='Extreme Angst – Kaufzone (US)'; }
+      else if (f <  45) { s=2; c='green';  l='Angst – Kaufsignal (US)'; }
+      else if (f <  55) { s=1; c='yellow'; l='Neutral (US)'; }
+      else if (f <  75) { s=0; c='orange'; l='Gier – Vorsicht (US)'; }
+      else              { s=0; c='red';    l='Extreme Gier – Vorsicht (US)'; }
       total += setSigRow('sm-fg-val', 'sm-fg-status', Math.round(f).toString(), s, c, l); avail += 2;
     }
 
@@ -1128,11 +1128,11 @@
       const d = sigValues.capeDev;
       const v = `${d >= 0 ? '+' : ''}${d.toFixed(1)} %`;
       let s, c, l;
-      if      (d < -10) { s=2; c='green';  l='Günstig bewertet'; }
-      else if (d <   0) { s=1; c='yellow'; l='Fair bewertet'; }
-      else if (d <  25) { s=0; c='orange'; l='Leicht überbewertet'; }
-      else              { s=0; c='red';    l='Stark überbewertet'; }
-      total += setSigRow('sm-cape-val', 'sm-cape-status', v, s, c, l); avail += 2;
+      if      (d < -10) { s=1; c='green';  l='Günstig (S&P 500 Referenz)'; }
+      else if (d <   0) { s=1; c='yellow'; l='Fair (S&P 500 Referenz)'; }
+      else if (d <  25) { s=0; c='orange'; l='Erhöht – FTSE enthält günstigere Märkte'; }
+      else              { s=0; c='red';    l='Hoch – FTSE enthält günstigere Märkte'; }
+      total += setSigRow('sm-cape-val', 'sm-cape-status', v, s, c, l); avail += 1;
     }
 
     if (avail > 0) updateKaufmoment(total, avail);
