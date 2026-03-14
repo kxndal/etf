@@ -32,14 +32,35 @@
       overflow: hidden;
     }
 
+    /* ── Top Search Bar ──────────────────────────────────────── */
+    #top-search-bar {
+      position: fixed; top: 0; left: 0; right: 0; height: 44px; z-index: 300;
+      background: #fff; border-bottom: 1px solid #f0f0ec;
+      display: flex; align-items: center; padding: 0 16px; gap: 10px;
+    }
+    #top-search-bar .ts-icon { font-size: 14px; color: #9ca3af; flex-shrink: 0; }
+    #top-search-input {
+      flex: 1; border: none; outline: none; font-size: 13px; font-family: inherit;
+      color: #0a0a0a; background: transparent;
+    }
+    #top-search-input::placeholder { color: #d1d5db; }
+    #top-search-drop {
+      position: fixed; top: 44px; left: 0; right: 0; z-index: 299;
+      background: #fff; border-bottom: 1px solid #e5e7eb;
+      box-shadow: 0 8px 24px rgba(0,0,0,0.10); display: none;
+      max-height: 60vh; overflow-y: auto;
+    }
+    /* reuse .search-item styles */
+
     .pages {
-      height: 100vh;
+      height: calc(100vh - 44px);
+      margin-top: 44px;
       overflow-y: scroll;
       -webkit-overflow-scrolling: touch;
     }
 
     .page {
-      height: 100vh;
+      height: calc(100vh - 44px);
       display: flex;
       align-items: center;
       justify-content: center;
@@ -354,7 +375,7 @@
       /* Seiten stapeln sich — kein Snap auf Mobile */
       .page {
         height: auto;
-        min-height: 100svh;
+        min-height: calc(100svh - 44px);
         padding: 44px 22px 60px;
         align-items: flex-start;
         border-bottom: 1px solid #f0f0ec;
@@ -520,8 +541,15 @@
   <a class="dot" data-page="3" href="#pg-4"></a>
   <a class="dot" data-page="4" href="#pg-5"></a>
   <a class="dot" data-page="5" href="#pg-6"></a>
-  <a class="dot" data-page="6" href="#pg-7"></a>
 </nav>
+
+<div id="top-search-bar">
+  <span class="ts-icon">⌕</span>
+  <input id="top-search-input" type="text" placeholder="ETF suchen…" autocomplete="off" spellcheck="false"
+    oninput="onSearchInput(this.value)" onfocus="if(this.value.trim()) document.getElementById('top-search-drop').style.display='block'">
+  <span id="top-search-clear" style="display:none;font-size:12px;color:#9ca3af;cursor:pointer;padding:4px;" onclick="document.getElementById('top-search-input').value='';document.getElementById('top-search-drop').style.display='none';this.style.display='none'">✕</span>
+</div>
+<div id="top-search-drop"></div>
 
 <div class="pages" id="pages">
 
@@ -760,26 +788,6 @@
       <div class="footer">
         <div class="footer-disclaimer">Keine Anlageberatung. Alle Angaben ohne Gewähr. Daten: Yahoo Finance, Lang &amp; Schwarz, CNN, multpl.com.</div>
         <div id="footer-update">Letzte Aktualisierung: —</div>
-      </div>
-    </div>
-  </section>
-
-  <!-- PAGE 7: ETF Suche -->
-  <section class="page" id="pg-7">
-    <div class="page-inner">
-      <div class="page-label">ETF Suche</div>
-      <div class="search-wrap">
-        <span class="search-icon">⌕</span>
-        <input class="search-input" id="search-input" type="text"
-          placeholder="Name, Ticker oder ISIN…" autocomplete="off" spellcheck="false"
-          oninput="onSearchInput(this.value)">
-      </div>
-      <div class="search-dropdown" id="search-dropdown"></div>
-      <div class="etf-active-bar" id="etf-active-bar">
-        <div class="etf-active-label">Aktuell analysiert</div>
-        <div class="etf-active-name" id="etf-active-name"></div>
-        <div class="etf-active-ticker" id="etf-active-ticker"></div>
-        <button class="etf-back-btn" onclick="switchETF('VWCE.DE','VWCE','Vanguard FTSE All-World UCITS ETF · Acc','IE00BK5BQT80')">← Zurück zu VWCE</button>
       </div>
     </div>
   </section>
@@ -1648,7 +1656,9 @@
 
   function onSearchInput(val) {
     clearTimeout(_searchTimer);
-    const dd = document.getElementById('search-dropdown');
+    const dd  = document.getElementById('top-search-drop');
+    const clr = document.getElementById('top-search-clear');
+    if (clr) clr.style.display = val ? 'block' : 'none';
     if (!val.trim()) { dd.style.display = 'none'; return; }
     dd.style.display = 'block';
     dd.innerHTML = '<div class="search-hint">Suche…</div>';
@@ -1656,7 +1666,7 @@
   }
 
   async function doSearch(query) {
-    const dd = document.getElementById('search-dropdown');
+    const dd = document.getElementById('top-search-drop');
     try {
       const url = `https://query1.finance.yahoo.com/v1/finance/search?q=${encodeURIComponent(query)}&quotesCount=12&newsCount=0&listsCount=0`;
       const res  = await proxyFetch(url);
@@ -1685,8 +1695,11 @@
   }
 
   function selectETF(ticker, name, fullName) {
-    document.getElementById('search-dropdown').style.display = 'none';
-    document.getElementById('search-input').value = '';
+    document.getElementById('top-search-drop').style.display = 'none';
+    const inp = document.getElementById('top-search-input');
+    if (inp) { inp.value = ''; inp.blur(); }
+    const clr = document.getElementById('top-search-clear');
+    if (clr) clr.style.display = 'none';
     switchETF(ticker, name, fullName);
     scrollToPage(0);
   }
@@ -1713,14 +1726,19 @@
     // Fund facts: only for VWCE
     document.querySelector('.fund-facts').style.display = isVWCE ? '' : 'none';
 
-    // Active bar on search page
-    const bar = document.getElementById('etf-active-bar');
+    // Show active ticker chip in top bar
+    let badge = document.getElementById('ts-badge');
     if (!isVWCE) {
-      document.getElementById('etf-active-name').textContent   = fullName;
-      document.getElementById('etf-active-ticker').textContent = ticker;
-      bar.style.display = 'block';
-    } else {
-      bar.style.display = 'none';
+      if (!badge) {
+        badge = document.createElement('span');
+        badge.id = 'ts-badge';
+        badge.style.cssText = 'font-size:11px;font-weight:700;color:#9ca3af;cursor:pointer;white-space:nowrap;flex-shrink:0;';
+        badge.onclick = () => switchETF('VWCE.DE','VWCE','Vanguard FTSE All-World UCITS ETF · Acc','IE00BK5BQT80');
+        document.getElementById('top-search-bar').appendChild(badge);
+      }
+      badge.textContent = ticker.split('.')[0] + ' ✕';
+    } else if (badge) {
+      badge.remove();
     }
 
     // Reset and reload
@@ -1869,6 +1887,13 @@
 
   // Dot-Klicks
   _dotEls.forEach((dot, i) => dot.addEventListener('click', e => { e.preventDefault(); scrollToPage(i); }));
+
+  // Close top search dropdown on outside click
+  document.addEventListener('click', e => {
+    if (!e.target.closest('#top-search-bar') && !e.target.closest('#top-search-drop')) {
+      document.getElementById('top-search-drop').style.display = 'none';
+    }
+  });
 
   // ─── Tooltip Popup ───────────────────────────────────────────────────────
   const _tipPopup = document.getElementById('tip-popup');
