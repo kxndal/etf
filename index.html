@@ -659,7 +659,9 @@
 <script>
   const TICKER   = 'VWCE.DE';
   const LS_ISIN  = 'IE00BK5BQT80';
-  const PROXY    = 'https://api.allorigins.win/raw?url=';
+  const PROXY    = (location.hostname === 'localhost' || location.hostname === '127.0.0.1')
+    ? '/proxy?url='
+    : 'https://api.allorigins.win/raw?url=';
 
   let allTimestamps      = [];
   let allCloses          = [];
