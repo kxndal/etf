@@ -7,6 +7,12 @@
   <meta http-equiv="Pragma" content="no-cache" />
   <meta http-equiv="Expires" content="0" />
   <title>VWCE ETF Dashboard</title>
+  <meta name="description" content="VWCE ETF Dashboard – Kurs, Indikatoren &amp; Kaufmoment-Analyse für den Vanguard FTSE All-World">
+  <link rel="manifest" href="manifest.json">
+  <meta name="theme-color" content="#0a0a0a">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black">
+  <meta name="apple-mobile-web-app-title" content="VWCE">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&display=swap" rel="stylesheet">
@@ -301,7 +307,26 @@
     .calc-result-value.green { color: #16a34a; }
     .calc-result-value.red   { color: #dc2626; }
 
-    .footer { margin-top: 16px; font-size: 10px; color: #d1d5db; text-align: right; }
+    .footer { margin-top: 16px; font-size: 10px; color: #d1d5db; text-align: right; line-height: 1.9; }
+    .footer-disclaimer { color: #9ca3af; font-weight: 500; }
+
+    /* Tooltip */
+    .tip {
+      display: inline-flex; align-items: center; justify-content: center;
+      width: 13px; height: 13px; border-radius: 50%;
+      background: #f3f4f6; color: #9ca3af; font-size: 8px; font-weight: 700;
+      border: none; cursor: pointer; padding: 0; margin-left: 4px;
+      vertical-align: middle; font-family: inherit; flex-shrink: 0; line-height: 1;
+    }
+    .tip:hover { background: #e5e7eb; color: #374151; }
+    #tip-popup {
+      position: fixed; bottom: 28px; left: 50%; transform: translateX(-50%);
+      background: #0a0a0a; color: #fff; padding: 10px 16px; border-radius: 10px;
+      font-size: 12px; line-height: 1.55; max-width: 280px; text-align: center;
+      z-index: 9999; pointer-events: none;
+      opacity: 0; transition: opacity 0.2s;
+      box-shadow: 0 4px 16px rgba(0,0,0,0.25);
+    }
 
     .loading-shimmer {
       background: linear-gradient(90deg, #f3f4f6 25%, #e5e7eb 50%, #f3f4f6 75%);
@@ -491,6 +516,7 @@
         <button class="range-btn" data-range="1j"   onclick="setRange('1j')">1J</button>
         <button class="range-btn" data-range="5j"   onclick="setRange('5j')">5J</button>
         <button class="range-btn" data-range="max"  onclick="setRange('max')">Max</button>
+        <button class="range-btn" data-range="drawdown" onclick="setRange('drawdown')">Drawdown</button>
         <span id="range-perf" class="range-perf"></span>
       </div>
     </div>
@@ -502,34 +528,39 @@
       <div class="page-label">Technische Indikatoren</div>
       <div class="indicators">
         <div class="indicator-box">
-          <div class="ind-label">200-Tage MA</div>
+          <div class="ind-label">200-Tage MA <button class="tip" data-tip="Gleitender Durchschnitt 200 Tage. Kurs unter MA = historisch günstig; deutlich drüber = erhöhtes Niveau.">?</button></div>
           <div class="ind-value" id="ma200"><span class="loading-shimmer">€000</span></div>
           <div class="ind-sub"   id="ma200-sub"></div>
         </div>
         <div class="indicator-box">
-          <div class="ind-label">RSI – Täglich</div>
+          <div class="ind-label">RSI – Täglich <button class="tip" data-tip="Relative Strength Index (14 Tage). Unter 30 = überverkauft (Kaufzone), über 70 = überkauft (Vorsicht).">?</button></div>
           <div class="ind-value" id="rsi"><span class="loading-shimmer">00.0</span></div>
           <div class="ind-sub"   id="rsi-sub"></div>
         </div>
         <div class="indicator-box">
-          <div class="ind-label">RSI – Wöchentlich</div>
+          <div class="ind-label">RSI – Wöchentlich <button class="tip" data-tip="Wöchentlicher RSI (14 Kerzen). Für langfristige ETF-Anleger zuverlässiger als der Tages-RSI.">?</button></div>
           <div class="ind-value" id="wrsi"><span class="loading-shimmer">00.0</span></div>
           <div class="ind-sub"   id="wrsi-sub"></div>
         </div>
         <div class="indicator-box">
-          <div class="ind-label">VIX</div>
+          <div class="ind-label">VIX <button class="tip" data-tip="Volatilitätsindex des S&P 500. Über 20 = erhöhte Unsicherheit, über 30 = Panik – oft ein Kaufsignal.">?</button></div>
           <div class="ind-value" id="vix-value"><span class="loading-shimmer">00.0</span></div>
           <div class="ind-sub"   id="vix-sub">Volatilität</div>
         </div>
         <div class="indicator-box">
-          <div class="ind-label">EUR / USD</div>
+          <div class="ind-label">EUR / USD <button class="tip" data-tip="VWCE ist in USD denominiert. Starker USD = höherer VWCE-Kurs in EUR. Relevant für Renditeberechnung.">?</button></div>
           <div class="ind-value" id="eurusd-value" style="font-size:22px;"><span class="loading-shimmer">0.0000</span></div>
           <div class="ind-sub"   id="eurusd-sub">Wechselkurs</div>
         </div>
         <div class="indicator-box">
-          <div class="ind-label">MACD</div>
+          <div class="ind-label">MACD <button class="tip" data-tip="Moving Average Convergence Divergence (12/26/9). Über Signallinie = bullisch, darunter = bärisch.">?</button></div>
           <div class="ind-value" id="macd-value"><span class="loading-shimmer">0.00</span></div>
           <div class="ind-sub"   id="macd-sub">wird berechnet...</div>
+        </div>
+        <div class="indicator-box">
+          <div class="ind-label">Sharpe Ratio <button class="tip" data-tip="Risikoadjustierte Rendite (1 Jahr, Rf=2.5%). Über 1 gut, über 2 sehr gut, unter 0 schlechter als risikolos.">?</button></div>
+          <div class="ind-value" id="sharpe-value"><span class="loading-shimmer">0.00</span></div>
+          <div class="ind-sub"   id="sharpe-sub">wird berechnet…</div>
         </div>
       </div>
     </div>
@@ -635,12 +666,12 @@
       <div class="page-label">Signale &amp; Kaufmoment</div>
       <div class="signal-matrix">
         <table>
-          <tr><td class="sig-name">GD200-Abstand</td>  <td class="sig-val" id="sm-gd200-val">—</td>  <td class="sig-status" id="sm-gd200-status">—</td></tr>
-          <tr><td class="sig-name">RSI täglich</td>     <td class="sig-val" id="sm-rsi-val">—</td>    <td class="sig-status" id="sm-rsi-status">—</td></tr>
-          <tr><td class="sig-name">RSI wöchentlich</td> <td class="sig-val" id="sm-wrsi-val">—</td>   <td class="sig-status" id="sm-wrsi-status">—</td></tr>
-          <tr><td class="sig-name">ATH-Abstand</td>     <td class="sig-val" id="sm-ath-val">—</td>    <td class="sig-status" id="sm-ath-status">—</td></tr>
-          <tr><td class="sig-name">US Fear &amp; Greed</td><td class="sig-val" id="sm-fg-val">—</td>     <td class="sig-status" id="sm-fg-status">—</td></tr>
-          <tr><td class="sig-name">S&amp;P 500 CAPE</td>    <td class="sig-val" id="sm-cape-val">—</td>   <td class="sig-status" id="sm-cape-status">—</td></tr>
+          <tr><td class="sig-name">GD200-Abstand <button class="tip" data-tip="Abstand VWCE-Kurs zum 200-Tage-Durchschnitt. Unter GD200 = historisch günstig für Zukäufe.">?</button></td>  <td class="sig-val" id="sm-gd200-val">—</td>  <td class="sig-status" id="sm-gd200-status">—</td></tr>
+          <tr><td class="sig-name">RSI täglich <button class="tip" data-tip="Kurzfristiger Momentum-Indikator. Unter 40 = Abkühlung, unter 30 = Kaufzone. Weniger gewichtet.">?</button></td>     <td class="sig-val" id="sm-rsi-val">—</td>    <td class="sig-status" id="sm-rsi-status">—</td></tr>
+          <tr><td class="sig-name">RSI wöchentlich <button class="tip" data-tip="Mittelfristiger RSI (14 Wochen). Für ETF-Langzeitanleger das verlässlichere Signal. Höher gewichtet.">?</button></td> <td class="sig-val" id="sm-wrsi-val">—</td>   <td class="sig-status" id="sm-wrsi-status">—</td></tr>
+          <tr><td class="sig-name">ATH-Abstand <button class="tip" data-tip="Entfernung vom Allzeithoch. Neue ATHs sind beim FTSE All-World normal — kein Warnsignal für sich allein.">?</button></td>     <td class="sig-val" id="sm-ath-val">—</td>    <td class="sig-status" id="sm-ath-status">—</td></tr>
+          <tr><td class="sig-name">US Fear &amp; Greed <button class="tip" data-tip="CNN-Sentiment-Index für US-Märkte (0–100). Misst Stimmung im S&P 500 — indirekt übertragbar auf VWCE.">?</button></td><td class="sig-val" id="sm-fg-val">—</td>     <td class="sig-status" id="sm-fg-status">—</td></tr>
+          <tr><td class="sig-name">S&amp;P 500 CAPE <button class="tip" data-tip="Shiller-KGV des S&P 500 (~60% von VWCE). Hohe Werte = US teuer, aber EM/Europa/Japan oft günstiger bewertet.">?</button></td>    <td class="sig-val" id="sm-cape-val">—</td>   <td class="sig-status" id="sm-cape-status">—</td></tr>
         </table>
       </div>
       <div class="buy-card" id="buy-card">
@@ -650,11 +681,16 @@
         <div class="buy-score-bar-wrap"><div class="buy-score-bar" id="buy-score-bar" style="width:0%"></div></div>
         <div class="buy-bullets" id="buy-bullets"></div>
       </div>
-      <div class="footer" id="footer">Letzte Aktualisierung: —</div>
+      <div class="footer">
+        <div class="footer-disclaimer">Keine Anlageberatung. Alle Angaben ohne Gewähr. Daten: Yahoo Finance, Lang &amp; Schwarz, CNN, multpl.com.</div>
+        <div id="footer-update">Letzte Aktualisierung: —</div>
+      </div>
     </div>
   </section>
 
 </div>
+
+<div id="tip-popup"></div>
 
 <script>
   const TICKER   = 'VWCE.DE';
@@ -699,6 +735,7 @@
   let extCloses          = {};
   let chartInstance      = null;
   let currentRange       = '3m';
+  let _chartIsDrawdown   = false;
   let lsInstrumentId     = null;
   let currentPrice       = 0;
 
@@ -816,6 +853,11 @@
     });
   }
 
+  function calcDrawdown(closes) {
+    let ath = -Infinity;
+    return closes.map(c => { if (c > ath) ath = c; return ((c - ath) / ath) * 100; });
+  }
+
   function getRSIZone(rsi) {
     if (rsi >= 70) return 'Überkauft (Euphorie)';
     if (rsi >= 50) return 'Bullisch / Neutral';
@@ -865,6 +907,46 @@
 
   function renderChart(range) {
     let labels, prices, maLine, bbUpper, bbLower;
+
+    if (range === 'drawdown') {
+      if (!allCloses.length) return;
+      const ddData = calcDrawdown(allCloses);
+      const ddLabels = allTimestamps.map(ts =>
+        new Date(ts * 1000).toLocaleDateString('de-DE', { month: 'short', year: '2-digit' })
+      );
+      if (chartInstance && !_chartIsDrawdown) { chartInstance.destroy(); chartInstance = null; }
+      _chartIsDrawdown = true;
+      if (chartInstance) {
+        chartInstance.data.labels = ddLabels;
+        chartInstance.data.datasets[0].data = ddData;
+        chartInstance.update('none');
+        return;
+      }
+      chartInstance = new Chart(document.getElementById('priceChart').getContext('2d'), {
+        type: 'line',
+        data: {
+          labels: ddLabels,
+          datasets: [{ label: 'Drawdown', data: ddData, borderColor: '#ef4444', borderWidth: 1.5, pointRadius: 0, tension: 0.3, fill: { target: 'origin', below: 'rgba(239,68,68,0.12)' } }]
+        },
+        options: {
+          responsive: true, maintainAspectRatio: false,
+          interaction: { mode: 'index', intersect: false },
+          plugins: {
+            legend: { display: false },
+            tooltip: { backgroundColor: '#1a1a1a', borderColor: '#333', borderWidth: 1, titleColor: '#888', bodyColor: '#fff', padding: 10,
+              callbacks: { label: ctx => `Drawdown: ${ctx.parsed.y?.toFixed(1) ?? '—'}%` } }
+          },
+          scales: {
+            x: { grid: { color: '#f0f0ec' }, ticks: { color: '#9ca3af', maxTicksLimit: 6, maxRotation: 0, font: { size: 10 } } },
+            y: { grid: { color: '#f0f0ec' }, ticks: { color: '#9ca3af', font: { size: 10 }, callback: v => `${v.toFixed(0)}%` }, position: 'right' }
+          }
+        }
+      });
+      return;
+    }
+
+    if (_chartIsDrawdown && chartInstance) { chartInstance.destroy(); chartInstance = null; }
+    _chartIsDrawdown = false;
 
     if (range === 'live') {
       if (!intradayCloses.length) return;
@@ -951,6 +1033,13 @@
   function updateRangePerf(range) {
     const el = document.getElementById('range-perf');
     if (!el) return;
+    if (range === 'drawdown') {
+      if (!allCloses.length) { el.textContent = ''; return; }
+      const maxDd = Math.min(...calcDrawdown(allCloses));
+      el.textContent = `Max: ${maxDd.toFixed(1)}%`;
+      el.className = 'range-perf down';
+      return;
+    }
     let first, last;
     if (range === 'live') {
       if (!intradayCloses.length) { el.textContent = ''; return; }
@@ -993,6 +1082,8 @@
     } else if (range === 'max') {
       if (extCloses['max'] && extCloses['max'].length) { renderChart('max'); updateRangePerf('max'); }
       else loadExtended('max', '1mo', 'max');
+    } else if (range === 'drawdown') {
+      if (allCloses.length) { renderChart('drawdown'); updateRangePerf('drawdown'); }
     } else {
       if (allCloses.length) { renderChart(range); updateRangePerf(range); }
     }
@@ -1291,6 +1382,24 @@
         document.getElementById('macd-sub').textContent = bull ? '↑ Bullisch' : '↓ Bärisch';
       }
 
+      // Sharpe Ratio (annualized, last 252 days, Rf=2.5%)
+      const recentC = allCloses.slice(-253);
+      if (recentC.length >= 50) {
+        const rets = [];
+        for (let i = 1; i < recentC.length; i++) rets.push((recentC[i] - recentC[i-1]) / recentC[i-1]);
+        const mean = rets.reduce((a,b) => a+b, 0) / rets.length;
+        const std  = Math.sqrt(rets.reduce((a,b) => a + (b-mean)**2, 0) / rets.length);
+        const sharpe = std > 0 ? (mean - 0.025/252) / std * Math.sqrt(252) : 0;
+        const shEl = document.getElementById('sharpe-value');
+        shEl.textContent = sharpe.toFixed(2);
+        shEl.classList.remove('loading-shimmer');
+        const shSub = document.getElementById('sharpe-sub');
+        if      (sharpe >= 2)  { shEl.style.color = '#22c55e'; shSub.textContent = 'Sehr gut'; }
+        else if (sharpe >= 1)  { shEl.style.color = '#86efac'; shSub.textContent = 'Gut'; }
+        else if (sharpe >= 0)  { shEl.style.color = '#d97706'; shSub.textContent = 'Mäßig'; }
+        else                   { shEl.style.color = '#ef4444'; shSub.textContent = 'Schlecht'; }
+      }
+
       if (ma200 !== null && rsi !== null) {
         const sig = getSignal(price, ma200, rsi);
         const box = document.getElementById('signal-box');
@@ -1307,7 +1416,7 @@
       updateRangePerf(currentRange);
       calcPortfolio();
 
-      document.getElementById('footer').textContent =
+      document.getElementById('footer-update').textContent =
         `Letzte Aktualisierung: ${new Date().toLocaleTimeString('de-DE')} · Kurs: ${priceSource} · Chart/Indikatoren: Xetra`;
 
     } catch (err) {
@@ -1504,6 +1613,22 @@
 
   // Dot-Klicks
   _dotEls.forEach((dot, i) => dot.addEventListener('click', e => { e.preventDefault(); scrollToPage(i); }));
+
+  // ─── Tooltip Popup ───────────────────────────────────────────────────────
+  const _tipPopup = document.getElementById('tip-popup');
+  document.addEventListener('click', e => {
+    const btn = e.target.closest('.tip');
+    if (!btn) return;
+    _tipPopup.textContent = btn.dataset.tip;
+    _tipPopup.style.opacity = '1';
+    clearTimeout(_tipPopup._t);
+    _tipPopup._t = setTimeout(() => { _tipPopup.style.opacity = '0'; }, 3500);
+  });
+
+  // ─── Service Worker (PWA) ────────────────────────────────────────────────
+  if ('serviceWorker' in navigator) {
+    navigator.serviceWorker.register('sw.js').catch(() => {});
+  }
 </script>
 </body>
 </html>
