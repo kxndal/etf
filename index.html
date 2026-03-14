@@ -452,6 +452,59 @@
       .buy-bullets { font-size: 13px; line-height: 2.1; }
     }
 
+    /* ── ETF Search ─────────────────────────────────────────── */
+    .search-wrap { position: relative; margin-bottom: 8px; }
+    .search-input {
+      width: 100%; padding: 13px 16px 13px 40px;
+      border: 1px solid #e5e7eb; border-radius: 12px;
+      font-size: 15px; font-family: inherit; outline: none;
+      background: #fff; color: #0a0a0a;
+    }
+    .search-input:focus { border-color: #0a0a0a; box-shadow: 0 0 0 3px rgba(0,0,0,0.06); }
+    .search-icon {
+      position: absolute; left: 13px; top: 50%; transform: translateY(-50%);
+      color: #9ca3af; font-size: 15px; pointer-events: none;
+    }
+    .search-dropdown {
+      border: 1px solid #e5e7eb; border-radius: 12px; overflow: hidden;
+      margin-top: 6px; display: none; background: #fff;
+      box-shadow: 0 4px 16px rgba(0,0,0,0.08);
+    }
+    .search-item {
+      padding: 13px 16px; cursor: pointer; border-bottom: 1px solid #f0f0ec;
+      display: flex; align-items: center; gap: 12px; transition: background 0.1s;
+    }
+    .search-item:last-child { border-bottom: none; }
+    .search-item:hover { background: #f9fafb; }
+    .search-item-logo {
+      width: 28px; height: 28px; border-radius: 6px; overflow: hidden;
+      background: #f3f4f6; flex-shrink: 0; display: flex; align-items: center;
+      justify-content: center; font-size: 8px; font-weight: 800; color: #9ca3af;
+    }
+    .search-item-logo img { width: 100%; height: 100%; object-fit: cover; display: block; }
+    .search-item-ticker { font-size: 11px; font-weight: 700; color: #9ca3af; min-width: 56px; }
+    .search-item-name { font-size: 13px; color: #0a0a0a; flex: 1; }
+    .search-item-exch { font-size: 11px; color: #d1d5db; }
+    .search-hint { padding: 14px 16px; font-size: 12px; color: #9ca3af; }
+
+    .etf-active-bar {
+      margin-top: 32px; padding: 16px 0; border-top: 1px solid #f0f0ec;
+      display: none;
+    }
+    .etf-active-label { font-size: 10px; color: #9ca3af; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 8px; }
+    .etf-active-name { font-size: 20px; font-weight: 400; font-family: 'Instrument Serif', Georgia, serif; color: #0a0a0a; margin-bottom: 3px; }
+    .etf-active-ticker { font-size: 12px; color: #9ca3af; margin-bottom: 14px; }
+    .etf-back-btn {
+      background: transparent; border: 1px solid #e5e7eb; border-radius: 20px;
+      padding: 7px 16px; font-size: 12px; font-family: inherit; cursor: pointer;
+      color: #374151; transition: all 0.15s;
+    }
+    .etf-back-btn:hover { background: #f5f5f3; border-color: #d1d5db; }
+
+    @media (max-width: 640px) {
+      .search-input { font-size: 16px; }
+    }
+
     @media (min-width: 641px) and (max-width: 900px) {
       .page { padding: 32px 28px; }
       .indicators { grid-template-columns: 1fr 1fr; }
@@ -467,6 +520,7 @@
   <a class="dot" data-page="3" href="#pg-4"></a>
   <a class="dot" data-page="4" href="#pg-5"></a>
   <a class="dot" data-page="5" href="#pg-6"></a>
+  <a class="dot" data-page="6" href="#pg-7"></a>
 </nav>
 
 <div class="pages" id="pages">
@@ -710,14 +764,36 @@
     </div>
   </section>
 
+  <!-- PAGE 7: ETF Suche -->
+  <section class="page" id="pg-7">
+    <div class="page-inner">
+      <div class="page-label">ETF Suche</div>
+      <div class="search-wrap">
+        <span class="search-icon">⌕</span>
+        <input class="search-input" id="search-input" type="text"
+          placeholder="Name, Ticker oder ISIN…" autocomplete="off" spellcheck="false"
+          oninput="onSearchInput(this.value)">
+      </div>
+      <div class="search-dropdown" id="search-dropdown"></div>
+      <div class="etf-active-bar" id="etf-active-bar">
+        <div class="etf-active-label">Aktuell analysiert</div>
+        <div class="etf-active-name" id="etf-active-name"></div>
+        <div class="etf-active-ticker" id="etf-active-ticker"></div>
+        <button class="etf-back-btn" onclick="switchETF('VWCE.DE','VWCE','Vanguard FTSE All-World UCITS ETF · Acc','IE00BK5BQT80')">← Zurück zu VWCE</button>
+      </div>
+    </div>
+  </section>
+
 </div>
 
 <div id="tip-popup"></div>
 
 <script>
-  const TICKER   = 'VWCE.DE';
-  const LS_ISIN  = 'IE00BK5BQT80';
-  const IS_LOCAL = (location.hostname === 'localhost' || location.hostname === '127.0.0.1');
+  let   TICKER      = 'VWCE.DE';
+  const VWCE_TICKER = 'VWCE.DE';
+  const LS_ISIN     = 'IE00BK5BQT80';
+  let   _etfIsVWCE  = true;
+  const IS_LOCAL    = (location.hostname === 'localhost' || location.hostname === '127.0.0.1');
   const PROXIES  = IS_LOCAL
     ? ['/proxy?url=']
     : [
@@ -796,6 +872,7 @@
   }
 
   async function refreshLSPrice() {
+    if (!_etfIsVWCE) return;
     try {
       const { price, prevClose } = await fetchLSData();
       if (!price || isNaN(price)) return;
@@ -1355,16 +1432,20 @@
       allTimestamps = pairs.map(p => p.t);
       allCloses     = pairs.map(p => p.c);
 
-      // Versuche L&S Live-Preis; Fallback auf Yahoo
+      // Versuche L&S Live-Preis (nur VWCE); Fallback auf Yahoo
       let price, prevClose;
-      let priceSource = 'Yahoo Finance (Xetra)';
-      try {
-        const ls = await fetchLSData();
-        price       = ls.price;
-        prevClose   = ls.prevClose ?? (allCloses.length >= 2 ? allCloses[allCloses.length - 2] : ls.price);
-        priceSource = 'Lang & Schwarz';
-      } catch (lsErr) {
-        console.warn('L&S nicht verfügbar, Fallback Yahoo:', lsErr.message);
+      let priceSource = 'Yahoo Finance';
+      if (_etfIsVWCE) {
+        try {
+          const ls = await fetchLSData();
+          price       = ls.price;
+          prevClose   = ls.prevClose ?? (allCloses.length >= 2 ? allCloses[allCloses.length - 2] : ls.price);
+          priceSource = 'Lang & Schwarz';
+        } catch (lsErr) {
+          price     = result.meta.regularMarketPrice;
+          prevClose = allCloses.length >= 2 ? allCloses[allCloses.length - 2] : price;
+        }
+      } else {
         price     = result.meta.regularMarketPrice;
         prevClose = allCloses.length >= 2 ? allCloses[allCloses.length - 2] : price;
       }
@@ -1559,6 +1640,139 @@
       document.getElementById('eurusd-value').textContent = '—';
       document.getElementById('eurusd-value').classList.remove('loading-shimmer');
     }
+  }
+
+  // ── ETF Search & Switch ────────────────────────────────────
+
+  let _searchTimer = null;
+
+  function onSearchInput(val) {
+    clearTimeout(_searchTimer);
+    const dd = document.getElementById('search-dropdown');
+    if (!val.trim()) { dd.style.display = 'none'; return; }
+    dd.style.display = 'block';
+    dd.innerHTML = '<div class="search-hint">Suche…</div>';
+    _searchTimer = setTimeout(() => doSearch(val.trim()), 380);
+  }
+
+  async function doSearch(query) {
+    const dd = document.getElementById('search-dropdown');
+    try {
+      const url = `https://query1.finance.yahoo.com/v1/finance/search?q=${encodeURIComponent(query)}&quotesCount=12&newsCount=0&listsCount=0`;
+      const res  = await proxyFetch(url);
+      const data = await res.json();
+      const hits = (data.quotes || []).filter(q => q.quoteType === 'ETF').slice(0, 8);
+      if (!hits.length) { dd.innerHTML = '<div class="search-hint">Keine ETFs gefunden</div>'; return; }
+      dd.innerHTML = hits.map(q => {
+        const sym    = q.symbol || '';
+        const name   = (q.shortname || q.longname || sym).replace(/"/g, '&quot;');
+        const full   = (q.longname  || q.shortname || sym).replace(/"/g, '&quot;');
+        const exch   = q.exchDisp || q.exchange || '';
+        const short  = sym.split('.')[0];
+        return `<div class="search-item" onclick="selectETF('${sym}','${name.replace(/'/g,"\\'")}','${full.replace(/'/g,"\\'")}')">
+          <div class="search-item-logo" id="sil-${short}">
+            <img src="https://api.elbstream.com/logos/ticker/${short}"
+              onerror="this.parentElement.textContent='${short.slice(0,4)}'">
+          </div>
+          <span class="search-item-ticker">${sym}</span>
+          <span class="search-item-name">${name}</span>
+          <span class="search-item-exch">${exch}</span>
+        </div>`;
+      }).join('');
+    } catch (e) {
+      dd.innerHTML = '<div class="search-hint" style="color:#dc2626">Fehler: ' + e.message + '</div>';
+    }
+  }
+
+  function selectETF(ticker, name, fullName) {
+    document.getElementById('search-dropdown').style.display = 'none';
+    document.getElementById('search-input').value = '';
+    switchETF(ticker, name, fullName);
+    scrollToPage(0);
+  }
+
+  function switchETF(ticker, name, fullName, isin) {
+    const isVWCE = ticker === VWCE_TICKER;
+    TICKER     = ticker;
+    _etfIsVWCE = isVWCE;
+
+    // Update header
+    const shortName = name.length > 12 ? name.slice(0, 10) + '…' : name;
+    document.querySelector('.etf-name h1').textContent = ticker.split('.')[0];
+    document.querySelector('.etf-name p').textContent  = fullName;
+
+    // Update logo
+    const logoEl = document.querySelector('.etf-icon');
+    const shortTick = ticker.split('.')[0];
+    const logoSrc = isin
+      ? `https://api.elbstream.com/logos/isin/${isin}`
+      : `https://api.elbstream.com/logos/ticker/${shortTick}`;
+    logoEl.innerHTML = `<img src="${logoSrc}" alt="${shortTick}"
+      onerror="this.parentElement.innerHTML='<span style=\\'display:flex;align-items:center;justify-content:center;width:100%;height:100%;background:#0a0a0a;color:#fff;font-size:9px;font-weight:800;\\'>${shortTick.slice(0,4)}</span>'">`;
+
+    // Fund facts: only for VWCE
+    document.querySelector('.fund-facts').style.display = isVWCE ? '' : 'none';
+
+    // Active bar on search page
+    const bar = document.getElementById('etf-active-bar');
+    if (!isVWCE) {
+      document.getElementById('etf-active-name').textContent   = fullName;
+      document.getElementById('etf-active-ticker').textContent = ticker;
+      bar.style.display = 'block';
+    } else {
+      bar.style.display = 'none';
+    }
+
+    // Reset and reload
+    resetForSwitch();
+    load();
+    setTimeout(loadWeeklyRSI, 500);
+    if (isVWCE) { setTimeout(loadFundFacts, 800); }
+  }
+
+  function resetForSwitch() {
+    currentPrice = 0;
+    allTimestamps = []; allCloses = [];
+    intradayTimestamps = []; intradayCloses = [];
+    extTimestamps = {}; extCloses = {};
+    if (chartInstance) { chartInstance.destroy(); chartInstance = null; }
+    _chartIsDrawdown = false;
+    Object.keys(sigValues).forEach(k => sigValues[k] = null);
+    spRate = 7;
+
+    const shimmer = t => `<span class="loading-shimmer">${t}</span>`;
+    document.getElementById('price').innerHTML          = shimmer('€000.00');
+    document.getElementById('price-change').textContent = '';
+    document.getElementById('price-change').className   = 'price-change';
+    document.getElementById('ma200').innerHTML          = shimmer('€000');
+    document.getElementById('ma200-sub').textContent    = '';
+    document.getElementById('rsi').innerHTML            = shimmer('00.0');
+    document.getElementById('rsi-sub').textContent      = '';
+    document.getElementById('wrsi').innerHTML           = shimmer('00.0');
+    document.getElementById('wrsi-sub').textContent     = '';
+    document.getElementById('macd-value').innerHTML     = shimmer('0.00');
+    document.getElementById('macd-sub').textContent     = 'wird berechnet...';
+    document.getElementById('sharpe-value').innerHTML   = shimmer('0.00');
+    document.getElementById('sharpe-sub').textContent   = 'wird berechnet…';
+    document.getElementById('ath-drawdown').textContent = '-0.0%';
+    document.getElementById('ath-drawdown').className   = 'ath-drawdown loading-shimmer';
+    document.getElementById('ath-value').textContent    = '€—';
+    document.getElementById('signal-box').className     = 'signal-box loading';
+    document.getElementById('signal-title').textContent = 'Daten werden geladen...';
+    document.getElementById('signal-desc').textContent  = 'Bitte warten';
+    ['sm-gd200-val','sm-rsi-val','sm-wrsi-val','sm-ath-val','sm-fg-val','sm-cape-val'].forEach(id => {
+      const el = document.getElementById(id); if (el) el.textContent = '—';
+    });
+    ['sm-gd200-status','sm-rsi-status','sm-wrsi-status','sm-ath-status','sm-fg-status','sm-cape-status'].forEach(id => {
+      const el = document.getElementById(id); if (el) el.innerHTML = '—';
+    });
+    document.getElementById('buy-verdict').textContent  = 'Wird berechnet…';
+    document.getElementById('buy-score-line').textContent = '';
+    document.getElementById('buy-bullets').innerHTML    = '';
+    document.getElementById('buy-score-bar').style.width = '0%';
+    document.getElementById('buy-card').className       = 'buy-card';
+    document.getElementById('range-perf').textContent   = '';
+    document.getElementById('sp-rate-display').textContent = '—';
   }
 
   // ── Init ───────────────────────────────────────────────────
