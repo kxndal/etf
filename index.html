@@ -159,6 +159,15 @@
     .range-btn:hover  { background: #f5f5f3; color: #374151; border-color: #d1d5db; }
     .range-btn.active { background: #0a0a0a; border-color: #0a0a0a; color: #fff; }
 
+    /* Fund Facts */
+    .fund-facts {
+      display: grid; grid-template-columns: repeat(6, 1fr);
+      padding: 12px 0; border-bottom: 1px solid #f0f0ec; margin-bottom: 18px;
+    }
+    .fund-fact { display: flex; flex-direction: column; gap: 4px; }
+    .fund-fact-label { font-size: 9px; color: #9ca3af; text-transform: uppercase; letter-spacing: 0.8px; }
+    .fund-fact-value { font-size: 11px; font-weight: 700; color: #0a0a0a; }
+
     /* Indicators */
     .indicators { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px; margin-bottom: 20px; }
     .indicator-box {
@@ -353,6 +362,11 @@
       .page:last-child { border-bottom: none; }
       .page-dots { display: none; }
 
+      /* Fund Facts */
+      .fund-facts { grid-template-columns: repeat(3, 1fr); row-gap: 12px; padding: 14px 0; margin-bottom: 20px; }
+      .fund-fact-label { font-size: 10px; }
+      .fund-fact-value { font-size: 12px; }
+
       /* Header */
       .header {
         flex-direction: column;
@@ -472,6 +486,14 @@
           <div class="price" id="price"><span class="loading-shimmer">€000.00</span></div>
           <div class="price-change" id="price-change"></div>
         </div>
+      </div>
+      <div class="fund-facts">
+        <div class="fund-fact"><div class="fund-fact-label">TER</div><div class="fund-fact-value">0,19% p.a.</div></div>
+        <div class="fund-fact"><div class="fund-fact-label">Ausschüttung</div><div class="fund-fact-value">Thesaurierend</div></div>
+        <div class="fund-fact"><div class="fund-fact-label">Replikation</div><div class="fund-fact-value">Physisch</div></div>
+        <div class="fund-fact"><div class="fund-fact-label">Fondsgröße</div><div class="fund-fact-value" id="ff-size">—</div></div>
+        <div class="fund-fact"><div class="fund-fact-label">Aufgelegt</div><div class="fund-fact-value">23.07.2019</div></div>
+        <div class="fund-fact"><div class="fund-fact-label">Positionen</div><div class="fund-fact-value" id="ff-holdings">—</div></div>
       </div>
       <div id="error-box" class="error-msg" style="display:none;"></div>
       <div class="signal-box loading" id="signal-box">
@@ -1489,6 +1511,30 @@
     }
   }
 
+  async function loadFundFacts() {
+    try {
+      const url = `https://query1.finance.yahoo.com/v10/finance/quoteSummary/${TICKER}?modules=summaryDetail,defaultKeyStatistics`;
+      const res  = await proxyFetch(url);
+      const data = await res.json();
+      const sd   = data.quoteSummary.result[0].summaryDetail;
+      const ks   = data.quoteSummary.result[0].defaultKeyStatistics;
+      const assets = sd?.totalAssets?.raw;
+      if (assets) {
+        const mrd = assets / 1e9;
+        document.getElementById('ff-size').textContent = `€${mrd.toFixed(1)} Mrd.`;
+      }
+      const shares = ks?.sharesOutstanding?.raw;
+      if (shares && currentPrice) {
+        const mrd2 = (shares * currentPrice) / 1e9;
+        document.getElementById('ff-size').textContent = `€${mrd2.toFixed(1)} Mrd.`;
+      }
+    } catch {}
+    const szEl = document.getElementById('ff-size');
+    if (szEl.textContent === '—') szEl.textContent = '~€31 Mrd.';
+    // Holdings: static (FTSE All-World ~3.700, aktualisiert seltener)
+    document.getElementById('ff-holdings').textContent = '~3.700';
+  }
+
   async function loadVIX() {
     try {
       const result = await fetchYahoo('^VIX', '1d', '1d');
@@ -1534,6 +1580,7 @@
   setTimeout(loadWeeklyRSI,  500);
   setTimeout(loadFearGreed,  1000);
   setTimeout(loadValuation,  1500);
+  setTimeout(loadFundFacts,  1800);
   setTimeout(loadVIX,        2000);
   setTimeout(loadEURUSD,     2500);
 
