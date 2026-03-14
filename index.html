@@ -669,13 +669,23 @@
       ];
   let _proxyIdx = 0;
 
+  const _BAD_PROXY = /^(edge:|too many|rate limit|access denied)/i;
+
   async function proxyFetch(url, options = {}) {
     const start = _proxyIdx;
     for (let i = 0; i < PROXIES.length; i++) {
       const proxy = PROXIES[(start + i) % PROXIES.length];
       try {
         const res = await fetch(proxy + encodeURIComponent(url), options);
-        if (res.ok) { _proxyIdx = (start + i + 1) % PROXIES.length; return res; }
+        if (!res.ok) continue;
+        const text = await res.text();
+        if (_BAD_PROXY.test(text.trim().slice(0, 60))) continue;
+        _proxyIdx = (start + i + 1) % PROXIES.length;
+        return {
+          ok: true,
+          text: () => Promise.resolve(text),
+          json: () => Promise.resolve(JSON.parse(text)),
+        };
       } catch {}
     }
     throw new Error('Alle Proxies fehlgeschlagen');
