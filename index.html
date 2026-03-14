@@ -659,9 +659,16 @@
 <script>
   const TICKER   = 'VWCE.DE';
   const LS_ISIN  = 'IE00BK5BQT80';
-  const PROXY    = (location.hostname === 'localhost' || location.hostname === '127.0.0.1')
-    ? '/proxy?url='
-    : 'https://api.allorigins.win/raw?url=';
+  const IS_LOCAL = (location.hostname === 'localhost' || location.hostname === '127.0.0.1');
+  const PROXIES  = IS_LOCAL
+    ? ['/proxy?url=']
+    : [
+        'https://api.allorigins.win/raw?url=',
+        'https://corsproxy.io/?',
+        'https://api.codetabs.com/v1/proxy?quest=',
+      ];
+  let _proxyIdx = 0;
+  function nextProxy() { return PROXIES[_proxyIdx++ % PROXIES.length]; }
 
   let allTimestamps      = [];
   let allCloses          = [];
@@ -678,7 +685,7 @@
 
   async function fetchYahoo(ticker, range, interval) {
     const url = `https://query1.finance.yahoo.com/v8/finance/chart/${ticker}?range=${range}&interval=${interval}&includePrePost=false`;
-    const res = await fetch(PROXY + encodeURIComponent(url));
+    const res = await fetch(nextProxy() + encodeURIComponent(url));
     if (!res.ok) throw new Error(`HTTP ${res.status}`);
     const data = await res.json();
     const result = data.chart.result[0];
@@ -692,7 +699,7 @@
   async function fetchLSData() {
     const instrId = 1045625;
     const url = `https://www.ls-tc.de/_rpc/json/instrument/chart/dataForInstrument?container=chart1&instrumentId=${instrId}&marketId=1&quotetype=mid&series=intraday%2Chistory&type=&localeId=2&_t=${Date.now()}`;
-    const res = await fetch(PROXY + encodeURIComponent(url), {
+    const res = await fetch(nextProxy() + encodeURIComponent(url), {
       headers: { 'X-Requested-With': 'XMLHttpRequest' }
     });
     if (!res.ok) throw new Error(`LS HTTP ${res.status}`);
@@ -1317,7 +1324,7 @@
 
   async function loadFearGreed() {
     try {
-      const res  = await fetch(PROXY + encodeURIComponent('https://production.dataviz.cnn.io/index/fearandgreed/graphdata'));
+      const res  = await fetch(nextProxy() + encodeURIComponent('https://production.dataviz.cnn.io/index/fearandgreed/graphdata'));
       if (!res.ok) throw new Error(`HTTP ${res.status}`);
       const data = await res.json();
       updateFearGreed(data.fear_and_greed.score, data.fear_and_greed.rating);
@@ -1331,7 +1338,7 @@
   const PE_AVG = 17;
   async function loadValuation() {
     try {
-      const res  = await fetch(PROXY + encodeURIComponent('https://www.multpl.com/shiller-pe/'));
+      const res  = await fetch(nextProxy() + encodeURIComponent('https://www.multpl.com/shiller-pe/'));
       if (!res.ok) throw new Error(`HTTP ${res.status}`);
       const html  = await res.text();
       const match = html.match(/Current Shiller PE Ratio is ([\d.]+)/);
