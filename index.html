@@ -808,6 +808,7 @@
       changeEl.textContent = `${change >= 0 ? '+' : ''}${change.toFixed(2)} (${changePct >= 0 ? '+' : ''}${changePct.toFixed(2)}%) heute`;
       changeEl.className   = 'price-change ' + (change >= 0 ? 'up' : 'down');
       calcPortfolio();
+      updateFundSize();
     } catch (e) {
       console.warn('L&S Preis-Refresh fehlgeschlagen:', e.message);
     }
@@ -1511,27 +1512,21 @@
     }
   }
 
-  async function loadFundFacts() {
-    try {
-      const url = `https://query1.finance.yahoo.com/v10/finance/quoteSummary/${TICKER}?modules=summaryDetail,defaultKeyStatistics`;
-      const res  = await proxyFetch(url);
-      const data = await res.json();
-      const sd   = data.quoteSummary.result[0].summaryDetail;
-      const ks   = data.quoteSummary.result[0].defaultKeyStatistics;
-      const assets = sd?.totalAssets?.raw;
-      if (assets) {
-        const mrd = assets / 1e9;
-        document.getElementById('ff-size').textContent = `€${mrd.toFixed(1)} Mrd.`;
-      }
-      const shares = ks?.sharesOutstanding?.raw;
-      if (shares && currentPrice) {
-        const mrd2 = (shares * currentPrice) / 1e9;
-        document.getElementById('ff-size').textContent = `€${mrd2.toFixed(1)} Mrd.`;
-      }
-    } catch {}
-    const szEl = document.getElementById('ff-size');
-    if (szEl.textContent === '—') szEl.textContent = '~€31 Mrd.';
-    // Holdings: static (FTSE All-World ~3.700, aktualisiert seltener)
+  // VWCE.DE Anteile im Umlauf — ändert sich langsam (±5% p.a. durch ETF-Flows)
+  // Aktualisieren wenn Vanguard neue Zahlen veröffentlicht. Stand: März 2026
+  const VWCE_SHARES_OUTSTANDING = 213_400_000;
+
+  function updateFundSize() {
+    const el = document.getElementById('ff-size');
+    if (!el) return;
+    if (currentPrice > 0) {
+      const mrd = (VWCE_SHARES_OUTSTANDING * currentPrice) / 1e9;
+      el.textContent = `~€${mrd.toFixed(1)} Mrd.`;
+    }
+  }
+
+  function loadFundFacts() {
+    updateFundSize();
     document.getElementById('ff-holdings').textContent = '~3.700';
   }
 
