@@ -546,7 +546,9 @@
 <div id="top-search-bar">
   <span class="ts-icon">⌕</span>
   <input id="top-search-input" type="text" placeholder="ETF suchen…" autocomplete="off" spellcheck="false"
-    oninput="onSearchInput(this.value)" onfocus="if(this.value.trim()) document.getElementById('top-search-drop').style.display='block'">
+    oninput="onSearchInput(this.value)"
+    onfocus="if(this.value.trim()) document.getElementById('top-search-drop').style.display='block'"
+    onkeydown="if(event.key==='Enter'){event.preventDefault();tryDirectTicker(this.value.trim());}">
   <span id="top-search-clear" style="display:none;font-size:12px;color:#9ca3af;cursor:pointer;padding:4px;" onclick="document.getElementById('top-search-input').value='';document.getElementById('top-search-drop').style.display='none';this.style.display='none'">✕</span>
 </div>
 <div id="top-search-drop"></div>
@@ -570,11 +572,11 @@
         </div>
       </div>
       <div class="fund-facts">
-        <div class="fund-fact"><div class="fund-fact-label">TER</div><div class="fund-fact-value">0,19% p.a.</div></div>
-        <div class="fund-fact"><div class="fund-fact-label">Ausschüttung</div><div class="fund-fact-value">Thesaurierend</div></div>
-        <div class="fund-fact"><div class="fund-fact-label">Replikation</div><div class="fund-fact-value">Physisch</div></div>
+        <div class="fund-fact"><div class="fund-fact-label">TER</div><div class="fund-fact-value" id="ff-ter">—</div></div>
+        <div class="fund-fact"><div class="fund-fact-label">Ausschüttung</div><div class="fund-fact-value" id="ff-dist">—</div></div>
+        <div class="fund-fact"><div class="fund-fact-label">Replikation</div><div class="fund-fact-value" id="ff-rep">—</div></div>
         <div class="fund-fact"><div class="fund-fact-label">Fondsgröße</div><div class="fund-fact-value" id="ff-size">—</div></div>
-        <div class="fund-fact"><div class="fund-fact-label">Aufgelegt</div><div class="fund-fact-value">23.07.2019</div></div>
+        <div class="fund-fact"><div class="fund-fact-label">Aufgelegt</div><div class="fund-fact-value" id="ff-inception">—</div></div>
         <div class="fund-fact"><div class="fund-fact-label">Positionen</div><div class="fund-fact-value" id="ff-holdings">—</div></div>
       </div>
       <div id="error-box" class="error-msg" style="display:none;"></div>
@@ -1527,6 +1529,7 @@
       renderChart(currentRange);
       updateRangePerf(currentRange);
       calcPortfolio();
+      loadFundFacts(result.meta);
 
       document.getElementById('footer-update').textContent =
         `Letzte Aktualisierung: ${new Date().toLocaleTimeString('de-DE')} · Kurs: ${priceSource} · Chart/Indikatoren: Xetra`;
@@ -1606,6 +1609,7 @@
   const VWCE_SHARES_OUTSTANDING = 213_400_000;
 
   function updateFundSize() {
+    if (!_etfIsVWCE) return;
     const el = document.getElementById('ff-size');
     if (!el) return;
     if (currentPrice > 0) {
@@ -1614,9 +1618,47 @@
     }
   }
 
-  function loadFundFacts() {
-    updateFundSize();
-    document.getElementById('ff-holdings').textContent = '~3.700';
+  function loadFundFacts(meta) {
+    // Aufgelegt — from Yahoo meta (works for all ETFs)
+    if (meta && meta.firstTradeDateEpochUtc) {
+      const d = new Date(meta.firstTradeDateEpochUtc * 1000);
+      document.getElementById('ff-inception').textContent =
+        d.toLocaleDateString('de-DE', { day:'2-digit', month:'2-digit', year:'numeric' });
+    }
+
+    const labels = document.querySelectorAll('.fund-fact-label');
+    if (_etfIsVWCE) {
+      if (labels[0]) labels[0].textContent = 'TER';
+      if (labels[1]) labels[1].textContent = 'Ausschüttung';
+      if (labels[2]) labels[2].textContent = 'Replikation';
+      document.getElementById('ff-ter').textContent      = '0,19% p.a.';
+      document.getElementById('ff-dist').textContent     = 'Thesaurierend';
+      document.getElementById('ff-rep').textContent      = 'Physisch';
+      document.getElementById('ff-holdings').textContent = '~3.700';
+      updateFundSize();
+    } else {
+      // For other ETFs: show currency & exchange instead of VWCE-specific fields
+      if (labels[0]) labels[0].textContent = 'Währung';
+      if (labels[1]) labels[1].textContent = 'Börse';
+      if (labels[2]) labels[2].textContent = 'Replikation';
+      if (meta) {
+        document.getElementById('ff-ter').textContent  = meta.currency || '—';
+        document.getElementById('ff-dist').textContent = meta.exchangeName || meta.fullExchangeName || '—';
+      }
+      document.getElementById('ff-rep').textContent      = '—';
+      document.getElementById('ff-holdings').textContent = '—';
+      // Fondsgröße: use sharesOutstanding × price from meta if available
+      const sizeEl = document.getElementById('ff-size');
+      if (sizeEl && meta && meta.regularMarketPrice) {
+        const shares = meta.sharesOutstanding;
+        if (shares && shares > 0) {
+          const mrd = (shares * meta.regularMarketPrice) / 1e9;
+          sizeEl.textContent = `~€${mrd.toFixed(1)} Mrd.`;
+        } else {
+          sizeEl.textContent = '—';
+        }
+      }
+    }
   }
 
   async function loadVIX() {
@@ -1667,31 +1709,53 @@
 
   async function doSearch(query) {
     const dd = document.getElementById('top-search-drop');
-    try {
-      const url = `https://query1.finance.yahoo.com/v1/finance/search?q=${encodeURIComponent(query)}&quotesCount=12&newsCount=0&listsCount=0`;
-      const res  = await proxyFetch(url);
-      const data = await res.json();
-      const hits = (data.quotes || []).filter(q => q.quoteType === 'ETF').slice(0, 8);
-      if (!hits.length) { dd.innerHTML = '<div class="search-hint">Keine ETFs gefunden</div>'; return; }
-      dd.innerHTML = hits.map(q => {
-        const sym    = q.symbol || '';
-        const name   = (q.shortname || q.longname || sym).replace(/"/g, '&quot;');
-        const full   = (q.longname  || q.shortname || sym).replace(/"/g, '&quot;');
-        const exch   = q.exchDisp || q.exchange || '';
-        const short  = sym.split('.')[0];
-        return `<div class="search-item" onclick="selectETF('${sym}','${name.replace(/'/g,"\\'")}','${full.replace(/'/g,"\\'")}')">
-          <div class="search-item-logo" id="sil-${short}">
-            <img src="https://api.elbstream.com/logos/ticker/${short}"
-              onerror="this.parentElement.textContent='${short.slice(0,4)}'">
-          </div>
-          <span class="search-item-ticker">${sym}</span>
-          <span class="search-item-name">${name}</span>
-          <span class="search-item-exch">${exch}</span>
-        </div>`;
-      }).join('');
-    } catch (e) {
-      dd.innerHTML = '<div class="search-hint" style="color:#dc2626">Fehler: ' + e.message + '</div>';
+    // Try query1 then query2 as fallback
+    const hosts = ['https://query1.finance.yahoo.com', 'https://query2.finance.yahoo.com'];
+    let data = null;
+    for (const host of hosts) {
+      try {
+        const url = `${host}/v1/finance/search?q=${encodeURIComponent(query)}&quotesCount=12&newsCount=0&listsCount=0`;
+        const res  = await proxyFetch(url);
+        data = await res.json();
+        if (data && data.quotes) break;
+      } catch {}
     }
+    if (!data) {
+      dd.innerHTML = `<div class="search-hint">Keine Suchergebnisse. Enter drücken um "${query}" direkt zu laden.</div>`;
+      return;
+    }
+    const hits = (data.quotes || []).filter(q => q.quoteType === 'ETF').slice(0, 8);
+    if (!hits.length) {
+      dd.innerHTML = `<div class="search-hint">Keine ETFs gefunden. Enter drücken um "${query}" direkt zu laden.</div>`;
+      return;
+    }
+    dd.innerHTML = hits.map(q => {
+      const sym    = q.symbol || '';
+      const name   = (q.shortname || q.longname || sym).replace(/"/g, '&quot;');
+      const full   = (q.longname  || q.shortname || sym).replace(/"/g, '&quot;');
+      const exch   = q.exchDisp || q.exchange || '';
+      const short  = sym.split('.')[0];
+      return `<div class="search-item" onclick="selectETF('${sym}','${name.replace(/'/g,"\\'")}','${full.replace(/'/g,"\\'")}')">
+        <div class="search-item-logo" id="sil-${short}">
+          <img src="https://api.elbstream.com/logos/ticker/${short}"
+            onerror="this.parentElement.textContent='${short.slice(0,4)}'">
+        </div>
+        <span class="search-item-ticker">${sym}</span>
+        <span class="search-item-name">${name}</span>
+        <span class="search-item-exch">${exch}</span>
+      </div>`;
+    }).join('');
+  }
+
+  // Load ticker directly (e.g. when search API fails or user presses Enter)
+  function tryDirectTicker(query) {
+    if (!query) return;
+    const dd = document.getElementById('top-search-drop');
+    // Normalize: uppercase, add .DE if no dot (assume Xetra)
+    let ticker = query.toUpperCase();
+    if (!ticker.includes('.')) ticker += '.DE';
+    dd.style.display = 'none';
+    selectETF(ticker, ticker.split('.')[0], ticker.split('.')[0]);
   }
 
   function selectETF(ticker, name, fullName) {
@@ -1723,8 +1787,10 @@
     logoEl.innerHTML = `<img src="${logoSrc}" alt="${shortTick}"
       onerror="this.parentElement.innerHTML='<span style=\\'display:flex;align-items:center;justify-content:center;width:100%;height:100%;background:#0a0a0a;color:#fff;font-size:9px;font-weight:800;\\'>${shortTick.slice(0,4)}</span>'">`;
 
-    // Fund facts: only for VWCE
-    document.querySelector('.fund-facts').style.display = isVWCE ? '' : 'none';
+    // Reset fund facts to shimmer while loading
+    ['ff-ter','ff-dist','ff-rep','ff-size','ff-inception','ff-holdings'].forEach(id => {
+      const el = document.getElementById(id); if (el) el.textContent = '—';
+    });
 
     // Show active ticker chip in top bar
     let badge = document.getElementById('ts-badge');
@@ -1745,7 +1811,6 @@
     resetForSwitch();
     load();
     setTimeout(loadWeeklyRSI, 500);
-    if (isVWCE) { setTimeout(loadFundFacts, 800); }
   }
 
   function resetForSwitch() {
@@ -1807,7 +1872,6 @@
   setTimeout(loadWeeklyRSI,  500);
   setTimeout(loadFearGreed,  1000);
   setTimeout(loadValuation,  1500);
-  setTimeout(loadFundFacts,  1800);
   setTimeout(loadVIX,        2000);
   setTimeout(loadEURUSD,     2500);
 
