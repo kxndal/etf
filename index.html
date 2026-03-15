@@ -1620,10 +1620,14 @@
 
   function loadFundFacts(meta) {
     // Aufgelegt — from Yahoo meta (works for all ETFs)
-    if (meta && meta.firstTradeDateEpochUtc) {
-      const d = new Date(meta.firstTradeDateEpochUtc * 1000);
+    const tradeEpoch = meta && (meta.firstTradeDate || meta.firstTradeDateEpochUtc);
+    if (tradeEpoch) {
+      const d = new Date(tradeEpoch * 1000);
       document.getElementById('ff-inception').textContent =
         d.toLocaleDateString('de-DE', { day:'2-digit', month:'2-digit', year:'numeric' });
+    } else {
+      const el = document.getElementById('ff-inception');
+      if (el) el.textContent = '—';
     }
 
     const labels = document.querySelectorAll('.fund-fact-label');
