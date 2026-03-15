@@ -859,12 +859,32 @@
 
   // ── Helpers ────────────────────────────────────────────────
 
+  const _CACHE_TTL = 5 * 60 * 1000; // 5 Minuten
+
+  function _cacheGet(key) {
+    try {
+      const raw = localStorage.getItem('yf_' + key);
+      if (!raw) return null;
+      const { ts, data } = JSON.parse(raw);
+      if (Date.now() - ts > _CACHE_TTL) { localStorage.removeItem('yf_' + key); return null; }
+      return data;
+    } catch { return null; }
+  }
+
+  function _cacheSet(key, data) {
+    try { localStorage.setItem('yf_' + key, JSON.stringify({ ts: Date.now(), data })); } catch {}
+  }
+
   async function fetchYahoo(ticker, range, interval) {
+    const cacheKey = `${ticker}_${range}_${interval}`;
+    const cached = _cacheGet(cacheKey);
+    if (cached) return cached;
     const url = `https://query1.finance.yahoo.com/v8/finance/chart/${ticker}?range=${range}&interval=${interval}&includePrePost=false`;
     const res = await proxyFetch(url);
     const data = await res.json();
     const result = data.chart.result[0];
     if (!result) throw new Error('Keine Daten');
+    _cacheSet(cacheKey, result);
     return result;
   }
 
