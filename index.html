@@ -34,33 +34,32 @@
 
     /* ── Top Search Bar ──────────────────────────────────────── */
     #top-search-bar {
-      position: fixed; top: 0; left: 0; right: 0; height: 44px; z-index: 300;
+      position: fixed; top: 0; left: 0; right: 0; height: 52px; z-index: 300;
       background: #fff; border-bottom: 1px solid #f0f0ec;
       display: flex; align-items: center; padding: 0 16px; gap: 10px;
     }
-    #top-search-bar .ts-icon { font-size: 14px; color: #9ca3af; flex-shrink: 0; }
+    #top-search-bar .ts-icon { font-size: 16px; color: #9ca3af; flex-shrink: 0; line-height: 1; }
     #top-search-input {
       flex: 1; border: none; outline: none; font-size: 16px; font-family: inherit;
       color: #0a0a0a; background: transparent;
     }
-    #top-search-input::placeholder { color: #d1d5db; }
+    #top-search-input::placeholder { color: #c4c4c4; }
     #top-search-drop {
-      position: fixed; top: 44px; left: 0; right: 0; z-index: 299;
-      background: #fff; border-bottom: 1px solid #e5e7eb;
-      box-shadow: 0 8px 24px rgba(0,0,0,0.10); display: none;
-      max-height: 60vh; overflow-y: auto;
+      position: fixed; top: 52px; left: 0; right: 0; z-index: 299;
+      background: #fff; display: none;
+      max-height: calc(100vh - 52px); overflow-y: auto;
+      box-shadow: 0 12px 32px rgba(0,0,0,0.12);
     }
-    /* reuse .search-item styles */
 
     .pages {
-      height: calc(100vh - 44px);
-      margin-top: 44px;
+      height: calc(100vh - 52px);
+      margin-top: 52px;
       overflow-y: scroll;
       -webkit-overflow-scrolling: touch;
     }
 
     .page {
-      height: calc(100vh - 44px);
+      height: calc(100vh - 52px);
       display: flex;
       align-items: center;
       justify-content: center;
@@ -375,7 +374,7 @@
       /* Seiten stapeln sich — kein Snap auf Mobile */
       .page {
         height: auto;
-        min-height: calc(100svh - 44px);
+        min-height: calc(100svh - 52px);
         padding: 44px 22px 60px;
         align-items: flex-start;
         border-bottom: 1px solid #f0f0ec;
@@ -492,21 +491,26 @@
       box-shadow: 0 4px 16px rgba(0,0,0,0.08);
     }
     .search-item {
-      padding: 13px 16px; cursor: pointer; border-bottom: 1px solid #f0f0ec;
-      display: flex; align-items: center; gap: 12px; transition: background 0.1s;
+      padding: 14px 16px; cursor: pointer; border-bottom: 1px solid #f5f5f3;
+      display: flex; align-items: center; gap: 14px; transition: background 0.12s;
     }
     .search-item:last-child { border-bottom: none; }
-    .search-item:hover { background: #f9fafb; }
+    .search-item:hover, .search-item:active { background: #fafaf8; }
     .search-item-logo {
-      width: 28px; height: 28px; border-radius: 6px; overflow: hidden;
+      width: 36px; height: 36px; border-radius: 8px; overflow: hidden;
       background: #f3f4f6; flex-shrink: 0; display: flex; align-items: center;
-      justify-content: center; font-size: 8px; font-weight: 800; color: #9ca3af;
+      justify-content: center; font-size: 9px; font-weight: 800; color: #6b7280;
     }
-    .search-item-logo img { width: 100%; height: 100%; object-fit: cover; display: block; }
-    .search-item-ticker { font-size: 11px; font-weight: 700; color: #9ca3af; min-width: 56px; }
-    .search-item-name { font-size: 13px; color: #0a0a0a; flex: 1; }
-    .search-item-exch { font-size: 11px; color: #d1d5db; }
-    .search-hint { padding: 14px 16px; font-size: 12px; color: #9ca3af; }
+    .search-item-logo img { width: 100%; height: 100%; object-fit: contain; display: block; padding: 2px; }
+    .search-item-info { flex: 1; min-width: 0; }
+    .search-item-ticker { font-size: 13px; font-weight: 700; color: #0a0a0a; }
+    .search-item-name { font-size: 12px; color: #6b7280; margin-top: 1px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .search-item-exch { font-size: 11px; color: #c4c4c4; flex-shrink: 0; }
+    .search-hint { padding: 20px 16px; font-size: 13px; color: #9ca3af; text-align: center; }
+    .search-overlay {
+      position: fixed; inset: 52px 0 0 0; z-index: 298;
+      background: rgba(0,0,0,0.15); display: none;
+    }
 
     .etf-active-bar {
       margin-top: 32px; padding: 16px 0; border-top: 1px solid #f0f0ec;
@@ -547,11 +551,12 @@
   <span class="ts-icon">⌕</span>
   <input id="top-search-input" type="text" placeholder="ETF suchen…" autocomplete="off" spellcheck="false"
     oninput="onSearchInput(this.value)"
-    onfocus="if(this.value.trim()) document.getElementById('top-search-drop').style.display='block'"
+    onfocus="if(this.value.trim()) openSearch()"
     onkeydown="if(event.key==='Enter'){event.preventDefault();tryDirectTicker(this.value.trim());}">
-  <span id="top-search-clear" style="display:none;font-size:12px;color:#9ca3af;cursor:pointer;padding:4px;" onclick="document.getElementById('top-search-input').value='';document.getElementById('top-search-drop').style.display='none';this.style.display='none'">✕</span>
+  <span id="top-search-clear" style="display:none;font-size:18px;color:#c4c4c4;cursor:pointer;padding:4px;line-height:1;" onclick="closeSearch()">✕</span>
 </div>
 <div id="top-search-drop"></div>
+<div class="search-overlay" id="search-overlay" onclick="closeSearch()"></div>
 
 <div class="pages" id="pages">
 
@@ -1732,74 +1737,93 @@
 
   let _searchTimer = null;
 
+  // EU-Börsen = UCITS ETFs handelbar in Deutschland
+  const _EU_EXCHANGES = new Set(['GER','MUN','STU','HAM','HAN','DUS','BER','FRA','VIE','AMS','PAR','MIL','STO','OSL','HEL','CPH','LSE','XET','EBS','SWX']);
+
+  function openSearch() {
+    document.getElementById('top-search-drop').style.display = 'block';
+    document.getElementById('search-overlay').style.display = 'block';
+  }
+
+  function closeSearch() {
+    document.getElementById('top-search-drop').style.display = 'none';
+    document.getElementById('search-overlay').style.display = 'none';
+    const inp = document.getElementById('top-search-input');
+    if (inp) { inp.value = ''; inp.blur(); }
+    document.getElementById('top-search-clear').style.display = 'none';
+    document.getElementById('top-search-drop').innerHTML = '';
+  }
+
   function onSearchInput(val) {
     clearTimeout(_searchTimer);
-    const dd  = document.getElementById('top-search-drop');
     const clr = document.getElementById('top-search-clear');
     if (clr) clr.style.display = val ? 'block' : 'none';
-    if (!val.trim()) { dd.style.display = 'none'; return; }
-    dd.style.display = 'block';
-    dd.innerHTML = '<div class="search-hint">Suche…</div>';
-    _searchTimer = setTimeout(() => doSearch(val.trim()), 380);
+    if (!val.trim()) { closeSearch(); return; }
+    openSearch();
+    document.getElementById('top-search-drop').innerHTML =
+      '<div class="search-hint">Suche läuft…</div>';
+    _searchTimer = setTimeout(() => doSearch(val.trim()), 350);
   }
 
   async function doSearch(query) {
     const dd = document.getElementById('top-search-drop');
-    // Try query1 then query2 as fallback
-    const hosts = ['https://query1.finance.yahoo.com', 'https://query2.finance.yahoo.com'];
+    // Race query1 + query2 in parallel
     let data = null;
-    for (const host of hosts) {
-      try {
-        const url = `${host}/v1/finance/search?q=${encodeURIComponent(query)}&quotesCount=12&newsCount=0&listsCount=0`;
-        const res  = await proxyFetch(url);
-        data = await res.json();
-        if (data && data.quotes) break;
-      } catch {}
-    }
-    if (!data) {
-      dd.innerHTML = `<div class="search-hint">Keine Suchergebnisse. Enter drücken um "${query}" direkt zu laden.</div>`;
-      return;
-    }
-    const hits = (data.quotes || []).filter(q => q.quoteType === 'ETF').slice(0, 8);
+    try {
+      const results = await Promise.any(
+        ['https://query1.finance.yahoo.com', 'https://query2.finance.yahoo.com'].map(host =>
+          proxyFetch(`${host}/v1/finance/search?q=${encodeURIComponent(query)}&quotesCount=20&newsCount=0&listsCount=0`)
+            .then(r => r.json())
+            .then(d => { if (!d || !d.quotes) throw new Error('empty'); return d; })
+        )
+      );
+      data = results;
+    } catch {}
+
+    // Filter: ETF only, EU/UCITS exchanges only
+    const hits = ((data && data.quotes) || [])
+      .filter(q => q.quoteType === 'ETF' && _EU_EXCHANGES.has(q.exchange))
+      .slice(0, 10);
+
     if (!hits.length) {
-      dd.innerHTML = `<div class="search-hint">Keine ETFs gefunden. Enter drücken um "${query}" direkt zu laden.</div>`;
+      dd.innerHTML = `<div class="search-hint">Keine UCITS-ETFs gefunden.<br>Tipp: Ticker direkt eingeben und Enter drücken.</div>`;
       return;
     }
+
     dd.innerHTML = hits.map(q => {
-      const sym    = q.symbol || '';
-      const name   = (q.shortname || q.longname || sym).replace(/"/g, '&quot;');
-      const full   = (q.longname  || q.shortname || sym).replace(/"/g, '&quot;');
-      const exch   = q.exchDisp || q.exchange || '';
-      const short  = sym.split('.')[0];
-      return `<div class="search-item" onclick="selectETF('${sym}','${name.replace(/'/g,"\\'")}','${full.replace(/'/g,"\\'")}')">
-        <div class="search-item-logo" id="sil-${short}">
-          <img src="https://api.elbstream.com/logos/ticker/${short}"
+      const sym   = q.symbol || '';
+      const name  = (q.shortname || q.longname || sym).replace(/</g,'&lt;').replace(/>/g,'&gt;');
+      const full  = (q.longname  || q.shortname || sym).replace(/</g,'&lt;').replace(/>/g,'&gt;');
+      const exch  = q.exchDisp || q.exchange || '';
+      const short = sym.split('.')[0];
+      const safeSym  = sym.replace(/'/g, "\\'");
+      const safeName = name.replace(/'/g, "\\'");
+      const safeFull = full.replace(/'/g, "\\'");
+      return `<div class="search-item" onclick="selectETF('${safeSym}','${safeName}','${safeFull}')">
+        <div class="search-item-logo">
+          <img src="https://api.elbstream.com/logos/ticker/${short}" alt="${short}"
             onerror="this.parentElement.textContent='${short.slice(0,4)}'">
         </div>
-        <span class="search-item-ticker">${sym}</span>
-        <span class="search-item-name">${name}</span>
+        <div class="search-item-info">
+          <div class="search-item-ticker">${sym}</div>
+          <div class="search-item-name">${name}</div>
+        </div>
         <span class="search-item-exch">${exch}</span>
       </div>`;
     }).join('');
   }
 
-  // Load ticker directly (e.g. when search API fails or user presses Enter)
   function tryDirectTicker(query) {
     if (!query) return;
-    const dd = document.getElementById('top-search-drop');
-    // Normalize: uppercase, add .DE if no dot (assume Xetra)
-    let ticker = query.toUpperCase();
+    let ticker = query.toUpperCase().trim();
     if (!ticker.includes('.')) ticker += '.DE';
-    dd.style.display = 'none';
-    selectETF(ticker, ticker.split('.')[0], ticker.split('.')[0]);
+    closeSearch();
+    switchETF(ticker, ticker.split('.')[0], ticker.split('.')[0]);
+    scrollToPage(0);
   }
 
   function selectETF(ticker, name, fullName) {
-    document.getElementById('top-search-drop').style.display = 'none';
-    const inp = document.getElementById('top-search-input');
-    if (inp) { inp.value = ''; inp.blur(); }
-    const clr = document.getElementById('top-search-clear');
-    if (clr) clr.style.display = 'none';
+    closeSearch();
     switchETF(ticker, name, fullName);
     scrollToPage(0);
   }
