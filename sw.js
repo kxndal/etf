@@ -1,20 +1,21 @@
-const CACHE = 'vwce-v1';
-const STATIC = ['/', '/index.html'];
+const CACHE = 'vwce-v2';
 
 self.addEventListener('install', e => {
-  e.waitUntil(caches.open(CACHE).then(c => c.addAll(STATIC)).then(() => self.skipWaiting()));
+  e.waitUntil(self.skipWaiting());
 });
 
 self.addEventListener('activate', e => {
-  e.waitUntil(caches.keys().then(keys =>
-    Promise.all(keys.filter(k => k !== CACHE).map(k => caches.delete(k)))
-  ).then(() => self.clients.claim()));
+  e.waitUntil(
+    caches.keys()
+      .then(keys => Promise.all(keys.map(k => caches.delete(k))))
+      .then(() => self.clients.claim())
+  );
 });
 
 self.addEventListener('fetch', e => {
-  // Only cache same-origin requests; pass through API/proxy calls
+  // Pass through all non-same-origin requests (API/proxy)
   if (!e.request.url.startsWith(self.location.origin)) return;
-  e.respondWith(
-    caches.match(e.request).then(cached => cached || fetch(e.request))
-  );
+  // Always fetch HTML fresh from network — never serve cached
+  if (e.request.destination === 'document') return;
+  // Everything else: pass through without caching
 });
