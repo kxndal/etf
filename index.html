@@ -577,12 +577,12 @@
         </div>
       </div>
       <div class="fund-facts">
-        <div class="fund-fact"><div class="fund-fact-label">TER</div><div class="fund-fact-value" id="ff-ter">—</div></div>
-        <div class="fund-fact"><div class="fund-fact-label">Ausschüttung</div><div class="fund-fact-value" id="ff-dist">—</div></div>
-        <div class="fund-fact"><div class="fund-fact-label">Replikation</div><div class="fund-fact-value" id="ff-rep">—</div></div>
+        <div class="fund-fact"><div class="fund-fact-label" id="ffl-1">TER</div><div class="fund-fact-value" id="ff-ter">—</div></div>
+        <div class="fund-fact"><div class="fund-fact-label" id="ffl-2">Ausschüttung</div><div class="fund-fact-value" id="ff-dist">—</div></div>
+        <div class="fund-fact"><div class="fund-fact-label" id="ffl-3">Replikation</div><div class="fund-fact-value" id="ff-rep">—</div></div>
         <div class="fund-fact"><div class="fund-fact-label">Fondsgröße</div><div class="fund-fact-value" id="ff-size">—</div></div>
         <div class="fund-fact"><div class="fund-fact-label">Aufgelegt</div><div class="fund-fact-value" id="ff-inception">—</div></div>
-        <div class="fund-fact"><div class="fund-fact-label">Positionen</div><div class="fund-fact-value" id="ff-holdings">—</div></div>
+        <div class="fund-fact"><div class="fund-fact-label" id="ffl-6">Positionen</div><div class="fund-fact-value" id="ff-holdings">—</div></div>
       </div>
       <div id="error-box" class="error-msg" style="display:none;"></div>
       <div class="signal-box loading" id="signal-box">
@@ -864,15 +864,15 @@
 
   // ── Helpers ────────────────────────────────────────────────
 
-  const _CACHE_TTL = 5 * 60 * 1000; // 5 Minuten
+  const _CACHE_TTL  = 10 * 60 * 1000; // 10 Minuten (frisch genug)
+  const _CACHE_STALE = 60 * 60 * 1000; // 1 Stunde (stale aber zeigbar)
 
   function _cacheGet(key) {
     try {
       const raw = localStorage.getItem('yf_' + key);
       if (!raw) return null;
-      const { ts, data } = JSON.parse(raw);
-      if (Date.now() - ts > _CACHE_TTL) { localStorage.removeItem('yf_' + key); return null; }
-      return data;
+      const parsed = JSON.parse(raw);
+      return parsed; // { ts, data } — Caller prüft Alter selbst
     } catch { return null; }
   }
 
@@ -882,9 +882,22 @@
 
   async function fetchYahoo(ticker, range, interval) {
     const cacheKey = `${ticker}_${range}_${interval}`;
-    const cached = _cacheGet(cacheKey);
-    if (cached) return cached;
+    const cached   = _cacheGet(cacheKey);
+    const age      = cached ? Date.now() - cached.ts : Infinity;
+
+    // Stale-while-revalidate: frisch genug → sofort zurückgeben
+    if (cached && age < _CACHE_TTL) return cached.data;
+
     const url = `https://query1.finance.yahoo.com/v8/finance/chart/${ticker}?range=${range}&interval=${interval}&includePrePost=false`;
+
+    // Stale vorhanden aber abgelaufen → sofort zurückgeben, im Hintergrund aktualisieren
+    if (cached && age < _CACHE_STALE) {
+      proxyFetch(url).then(r => r.json())
+        .then(d => { const r = d && d.chart && d.chart.result && d.chart.result[0]; if (r) _cacheSet(cacheKey, r); })
+        .catch(() => {});
+      return cached.data;
+    }
+
     const res = await proxyFetch(url);
     const data = await res.json();
     const result = data.chart.result[0];
@@ -1658,46 +1671,59 @@
   function loadFundFacts(meta) {
     // Aufgelegt — from Yahoo meta (works for all ETFs)
     const tradeEpoch = meta && (meta.firstTradeDate || meta.firstTradeDateEpochUtc);
-    if (tradeEpoch) {
-      const d = new Date(tradeEpoch * 1000);
-      document.getElementById('ff-inception').textContent =
-        d.toLocaleDateString('de-DE', { day:'2-digit', month:'2-digit', year:'numeric' });
-    } else {
-      const el = document.getElementById('ff-inception');
-      if (el) el.textContent = '—';
-    }
+    document.getElementById('ff-inception').textContent = tradeEpoch
+      ? new Date(tradeEpoch * 1000).toLocaleDateString('de-DE', { day:'2-digit', month:'2-digit', year:'numeric' })
+      : '—';
 
-    const labels = document.querySelectorAll('.fund-fact-label');
     if (_etfIsVWCE) {
-      if (labels[0]) labels[0].textContent = 'TER';
-      if (labels[1]) labels[1].textContent = 'Ausschüttung';
-      if (labels[2]) labels[2].textContent = 'Replikation';
-      document.getElementById('ff-ter').textContent      = '0,19% p.a.';
-      document.getElementById('ff-dist').textContent     = 'Thesaurierend';
-      document.getElementById('ff-rep').textContent      = 'Physisch';
+      document.getElementById('ffl-1').textContent      = 'TER';
+      document.getElementById('ffl-2').textContent      = 'Ausschüttung';
+      document.getElementById('ffl-3').textContent      = 'Replikation';
+      document.getElementById('ffl-6').textContent      = 'Positionen';
+      document.getElementById('ff-ter').textContent     = '0,19% p.a.';
+      document.getElementById('ff-dist').textContent    = 'Thesaurierend';
+      document.getElementById('ff-rep').textContent     = 'Physisch';
       document.getElementById('ff-holdings').textContent = '~3.700';
       updateFundSize();
     } else {
-      // For other ETFs: show currency & exchange instead of VWCE-specific fields
-      if (labels[0]) labels[0].textContent = 'Währung';
-      if (labels[1]) labels[1].textContent = 'Börse';
-      if (labels[2]) labels[2].textContent = 'Replikation';
-      if (meta) {
-        document.getElementById('ff-ter').textContent  = meta.currency || '—';
-        document.getElementById('ff-dist').textContent = meta.exchangeName || meta.fullExchangeName || '—';
+      // Dynamic fields for any ETF
+      document.getElementById('ffl-1').textContent = 'Währung';
+      document.getElementById('ffl-2').textContent = 'Börse';
+      document.getElementById('ffl-3').textContent = '1J-Rendite';
+      document.getElementById('ffl-6').textContent = 'Volatilität';
+      document.getElementById('ff-ter').textContent  = (meta && meta.currency) || '—';
+      document.getElementById('ff-dist').textContent = (meta && (meta.fullExchangeName || meta.exchangeName)) || '—';
+
+      // 1J-Rendite aus den geladenen Kursen berechnen
+      if (allCloses.length >= 2) {
+        const end   = allCloses[allCloses.length - 1];
+        const start = allCloses[Math.max(0, allCloses.length - 253)];
+        const perf  = ((end - start) / start) * 100;
+        document.getElementById('ff-rep').textContent = `${perf >= 0 ? '+' : ''}${perf.toFixed(1)}%`;
+      } else {
+        document.getElementById('ff-rep').textContent = '—';
       }
-      document.getElementById('ff-rep').textContent      = '—';
-      document.getElementById('ff-holdings').textContent = '—';
-      // Fondsgröße: use sharesOutstanding × price from meta if available
+
+      // Historische Volatilität (annualisiert, 1 Jahr)
+      if (allCloses.length >= 50) {
+        const recent = allCloses.slice(-253);
+        const rets   = [];
+        for (let i = 1; i < recent.length; i++) rets.push((recent[i] - recent[i-1]) / recent[i-1]);
+        const mean   = rets.reduce((a,b) => a+b, 0) / rets.length;
+        const std    = Math.sqrt(rets.reduce((a,b) => a + (b-mean)**2, 0) / rets.length);
+        document.getElementById('ff-holdings').textContent = `${(std * Math.sqrt(252) * 100).toFixed(1)}%`;
+      } else {
+        document.getElementById('ff-holdings').textContent = '—';
+      }
+
+      // Fondsgröße: sharesOutstanding × price (wenn verfügbar)
       const sizeEl = document.getElementById('ff-size');
-      if (sizeEl && meta && meta.regularMarketPrice) {
-        const shares = meta.sharesOutstanding;
-        if (shares && shares > 0) {
-          const mrd = (shares * meta.regularMarketPrice) / 1e9;
-          sizeEl.textContent = `~€${mrd.toFixed(1)} Mrd.`;
-        } else {
-          sizeEl.textContent = '—';
-        }
+      const shares = meta && meta.sharesOutstanding;
+      const price  = meta && meta.regularMarketPrice;
+      if (shares > 0 && price > 0) {
+        sizeEl.textContent = `~€${((shares * price) / 1e9).toFixed(1)} Mrd.`;
+      } else {
+        sizeEl.textContent = '—';
       }
     }
   }
@@ -1737,8 +1763,20 @@
 
   let _searchTimer = null;
 
-  // EU-Börsen = UCITS ETFs handelbar in Deutschland
-  const _EU_EXCHANGES = new Set(['GER','MUN','STU','HAM','HAN','DUS','BER','FRA','VIE','AMS','PAR','MIL','STO','OSL','HEL','CPH','LSE','XET','EBS','SWX']);
+  // EU-Börsen = UCITS ETFs handelbar in Deutschland (Yahoo Finance exchange codes)
+  const _EU_EXCHANGES = new Set([
+    'GER','ETR','MUN','STU','HAM','HAN','DUS','BER','FRA', // Deutschland (Xetra + Regionalbörsen)
+    'VIE',                                                   // Österreich
+    'AMS','ENX',                                             // Niederlande (Euronext)
+    'PAR','EPA',                                             // Frankreich
+    'MIL','BIT',                                             // Italien
+    'STO','OMX',                                             // Schweden
+    'OSL',                                                   // Norwegen
+    'HEL',                                                   // Finnland
+    'CPH',                                                   // Dänemark
+    'LSE','IOB',                                             // London
+    'EBS','SWX','SWL',                                       // Schweiz
+  ]);
 
   function openSearch() {
     document.getElementById('top-search-drop').style.display = 'block';
@@ -2014,10 +2052,10 @@
   // Dot-Klicks
   _dotEls.forEach((dot, i) => dot.addEventListener('click', e => { e.preventDefault(); scrollToPage(i); }));
 
-  // Close top search dropdown on outside click
+  // Close search on outside click (overlay handles this via onclick, backup here)
   document.addEventListener('click', e => {
-    if (!e.target.closest('#top-search-bar') && !e.target.closest('#top-search-drop')) {
-      document.getElementById('top-search-drop').style.display = 'none';
+    if (!e.target.closest('#top-search-bar') && !e.target.closest('#top-search-drop') && !e.target.closest('#search-overlay')) {
+      closeSearch();
     }
   });
 
