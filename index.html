@@ -127,12 +127,14 @@
     .header-right { text-align: right; }
 
     .etf-icon {
-      width: 40px; height: 40px;
-      border-radius: 10px;
+      width: 52px; height: 52px;
+      border-radius: 12px;
       overflow: hidden;
       flex-shrink: 0;
+      background: #f3f4f6;
+      display: flex; align-items: center; justify-content: center;
     }
-    .etf-icon img { width: 100%; height: 100%; display: block; object-fit: cover; }
+    .etf-icon img { width: 100%; height: 100%; display: block; object-fit: contain; padding: 4px; }
 
     .etf-name h1 { font-size: 17px; font-weight: 700; color: #0a0a0a; }
     .etf-name p  { font-size: 12px; color: #9ca3af; margin-top: 2px; }
@@ -1937,20 +1939,18 @@
     {t:'XDWD.DE', i:'IE00BJ0KDQ92', n:'Xtrackers MSCI World Swap',        ter:'0,19%', type:'Acc',  is:'Xtrackers', aum:'~€15 Mrd.',  k:'msci world swap'},
     {t:'HMWO.DE', i:'IE00B4X9L533', n:'HSBC MSCI World',                  ter:'0,15%', type:'Acc',  is:'HSBC',      aum:'~€4 Mrd.',   k:'msci world'},
     {t:'LCWD.DE', i:'IE00BK5BQV03', n:'L&G Global Equity',                ter:'0,10%', type:'Acc',  is:'L&G',       aum:'~€3 Mrd.',   k:'world global equity'},
-    {t:'SPYW.DE', i:'IE00B3YCGJ38', n:'SPDR MSCI World',                  ter:'0,12%', type:'Acc',  is:'SPDR',      aum:'~€2 Mrd.',   k:'msci world'},
-    {t:'IQQW.DE', i:'IE00B4L5Y983', n:'iShares MSCI World',               ter:'0,50%', type:'Dist', is:'iShares',   aum:'~€12 Mrd.',  k:'msci world dist'},
+    {t:'SPYW.DE', i:'IE00B5M1WJ87', n:'SPDR S&P Euro Div Aristocrats',    ter:'0,30%', type:'Dist', is:'SPDR',      aum:'~€1 Mrd.',   k:'dividende dividend euro aristocrats spdr'},
+    {t:'IQQW.DE', i:'IE00B0M62Q58', n:'iShares MSCI World',               ter:'0,50%', type:'Dist', is:'iShares',   aum:'~€12 Mrd.',  k:'msci world dist ausschüttend'},
     // ── S&P 500 ───────────────────────────────────────────────────────────────
     {t:'SXR8.DE', i:'IE00B5BMR087', n:'iShares Core S&P 500',             ter:'0,07%', type:'Acc',  is:'iShares',   aum:'~€85 Mrd.',  k:'sp500 s&p 500 usa'},
     {t:'VUAA.AS', i:'IE00BFMXXD54', n:'Vanguard S&P 500',                 ter:'0,07%', type:'Acc',  is:'Vanguard',  aum:'~€45 Mrd.',  k:'sp500 s&p 500 usa'},
     {t:'VUSA.AS', i:'IE00B3XXRP09', n:'Vanguard S&P 500 Dist',            ter:'0,07%', type:'Dist', is:'Vanguard',  aum:'~€40 Mrd.',  k:'sp500 s&p 500 usa ausschüttend'},
     {t:'XSPX.DE', i:'LU0490618542', n:'Xtrackers S&P 500 Swap',           ter:'0,15%', type:'Acc',  is:'Xtrackers', aum:'~€5 Mrd.',   k:'sp500 s&p 500 swap usa'},
-    {t:'H4ZF.DE', i:'IE00B3YCGJ38', n:'HSBC S&P 500',                    ter:'0,09%', type:'Acc',  is:'HSBC',      aum:'~€3 Mrd.',   k:'sp500 s&p 500 usa'},
+    {t:'H4ZF.DE', i:'IE00B5KQNG97', n:'HSBC S&P 500',                    ter:'0,09%', type:'Acc',  is:'HSBC',      aum:'~€3 Mrd.',   k:'sp500 s&p 500 usa'},
     {t:'CSPX.L',  i:'IE00B5BMR087', n:'iShares Core S&P 500 (LSE)',       ter:'0,07%', type:'Acc',  is:'iShares',   aum:'~€50 Mrd.',  k:'sp500 s&p 500 usa'},
     // ── NASDAQ ────────────────────────────────────────────────────────────────
-    {t:'SXRV.DE', i:'IE00B3WJKG14', n:'iShares Nasdaq 100',               ter:'0,33%', type:'Acc',  is:'iShares',   aum:'~€12 Mrd.',  k:'nasdaq 100 tech usa'},
-    {t:'XNAS.DE', i:'LU0908500753', n:'Xtrackers Nasdaq 100 Swap',        ter:'0,20%', type:'Acc',  is:'Xtrackers', aum:'~€2 Mrd.',   k:'nasdaq 100 tech swap'},
+    {t:'XNAS.DE', i:'IE00BMFKG444', n:'Xtrackers Nasdaq 100',             ter:'0,20%', type:'Acc',  is:'Xtrackers', aum:'~€3 Mrd.',   k:'nasdaq 100 tech usa xtrackers'},
     {t:'QDVE.DE', i:'IE00B3WJKG14', n:'iShares S&P 500 Info Tech',        ter:'0,15%', type:'Acc',  is:'iShares',   aum:'~€5 Mrd.',   k:'tech technologie sp500 it'},
-    {t:'LGIT.DE', i:'IE00B3WJKG14', n:'L&G Global Technology',            ter:'0,49%', type:'Acc',  is:'L&G',       aum:'~€1 Mrd.',   k:'tech technologie global'},
     // ── Emerging Markets ──────────────────────────────────────────────────────
     {t:'EIMI.DE', i:'IE00BKM4GZ66', n:'iShares Core MSCI EM IMI',         ter:'0,18%', type:'Acc',  is:'iShares',   aum:'~€25 Mrd.',  k:'emerging markets em schwellenländer'},
     {t:'IUSQ.DE', i:'IE00BKM4GZ66', n:'iShares Core MSCI EM IMI',         ter:'0,18%', type:'Acc',  is:'iShares',   aum:'~€25 Mrd.',  k:'emerging markets em'},
@@ -1961,7 +1961,7 @@
     {t:'EXW1.DE', i:'IE0008471009',  n:'iShares Core EURO STOXX 50',      ter:'0,10%', type:'Acc',  is:'iShares',   aum:'~€15 Mrd.',  k:'euro stoxx 50 europa europe'},
     {t:'EXSA.DE', i:'DE0002635307',  n:'iShares STOXX Europe 600',        ter:'0,20%', type:'Dist', is:'iShares',   aum:'~€8 Mrd.',   k:'stoxx 600 europa europe'},
     {t:'XESC.DE', i:'LU0322253906',  n:'Xtrackers Euro Stoxx 50 Swap',    ter:'0,09%', type:'Acc',  is:'Xtrackers', aum:'~€8 Mrd.',   k:'euro stoxx 50 europa swap'},
-    {t:'MEUD.PA', i:'LU0908500753',  n:'Lyxor Core MSCI EMU',             ter:'0,12%', type:'Acc',  is:'Lyxor',     aum:'~€3 Mrd.',   k:'emu eurozone europa'},
+    {t:'MEUD.PA', i:'LU0908500753',  n:'Amundi Core Stoxx Europe 600',    ter:'0,07%', type:'Acc',  is:'Amundi',    aum:'~€4 Mrd.',   k:'stoxx 600 europa europe amundi'},
     // ── DAX / Deutschland ─────────────────────────────────────────────────────
     {t:'EXS1.DE', i:'DE0005933931',  n:'iShares Core DAX',                ter:'0,16%', type:'Acc',  is:'iShares',   aum:'~€8 Mrd.',   k:'dax deutschland germany'},
     {t:'DBXD.DE', i:'LU0274211480',  n:'Xtrackers DAX Swap',              ter:'0,09%', type:'Acc',  is:'Xtrackers', aum:'~€5 Mrd.',   k:'dax deutschland germany swap'},
@@ -1969,7 +1969,7 @@
     // ── Dividende ─────────────────────────────────────────────────────────────
     {t:'VHYL.AS', i:'IE00B8GKDB10',  n:'Vanguard FTSE All-World High Div',ter:'0,29%', type:'Dist', is:'Vanguard',  aum:'~€6 Mrd.',   k:'dividende dividend high yield world'},
     {t:'TDIV.DE', i:'IE00B3B8Q275',  n:'VanEck Morningstar Dev Div Leaders',ter:'0,38%',type:'Dist',is:'VanEck',    aum:'~€3 Mrd.',   k:'dividende dividend developed'},
-    {t:'ISPA.DE', i:'IE0008471009',  n:'iShares EURO Dividend',           ter:'0,40%', type:'Dist', is:'iShares',   aum:'~€1 Mrd.',   k:'dividende dividend euro'},
+    {t:'ISPA.DE', i:'DE000A0F5UH1',  n:'iShares STOXX Global Dividend 100',ter:'0,46%', type:'Dist', is:'iShares',   aum:'~€2 Mrd.',   k:'dividende dividend global stoxx'},
     {t:'DX2J.DE', i:'IE00B652H904',  n:'Xtrackers MSCI World High Div',   ter:'0,25%', type:'Dist', is:'Xtrackers', aum:'~€2 Mrd.',   k:'dividende dividend world'},
     // ── Anleihen ──────────────────────────────────────────────────────────────
     {t:'IBCX.DE', i:'IE00B0M62X26',  n:'iShares Core EUR Govt Bond',      ter:'0,09%', type:'Acc',  is:'iShares',   aum:'~€4 Mrd.',   k:'anleihen bonds euro government'},
@@ -1982,7 +1982,7 @@
     {t:'SGLD.L',  i:'JE00B588CD54',  n:'Invesco Physical Gold',           ter:'0,12%', type:'Acc',  is:'Invesco',   aum:'~€12 Mrd.',  k:'gold physisch'},
     // ── Nachhaltigkeit / ESG ──────────────────────────────────────────────────
     {t:'SUSW.DE', i:'IE00BYX2JD69',  n:'iShares MSCI World SRI',          ter:'0,20%', type:'Acc',  is:'iShares',   aum:'~€3 Mrd.',   k:'esg sri nachhaltig world'},
-    {t:'SUWU.DE', i:'IE00BYX2JD69',  n:'UBS MSCI World SRI',              ter:'0,22%', type:'Acc',  is:'UBS',       aum:'~€2 Mrd.',   k:'esg sri nachhaltig world'},
+    {t:'IQQN.DE', i:'IE00BMVB5P51',  n:'iShares Nasdaq-100 ESG',          ter:'0,22%', type:'Acc',  is:'iShares',   aum:'~€1 Mrd.',   k:'nasdaq 100 esg tech nachhaltig'},
     {t:'EUNN.DE', i:'IE00BYVJRP78',  n:'iShares MSCI EM SRI',             ter:'0,25%', type:'Acc',  is:'iShares',   aum:'~€1 Mrd.',   k:'esg sri nachhaltig emerging markets'},
     // ── Faktor / Smart Beta ───────────────────────────────────────────────────
     {t:'IWMO.DE', i:'IE00BP3QZ825',  n:'iShares MSCI World Momentum',     ter:'0,30%', type:'Acc',  is:'iShares',   aum:'~€4 Mrd.',   k:'faktor momentum world'},
@@ -2059,6 +2059,24 @@
     </div>`;
   }
 
+  // JSONP-based Yahoo Finance autocomplete — bypasses CORS completely
+  function _yahooJsonpSearch(query) {
+    return new Promise((resolve, reject) => {
+      const id = '_yf' + Date.now();
+      const cleanup = () => { try { delete window[id]; } catch {} document.getElementById(id)?.remove(); };
+      const timer = setTimeout(() => { cleanup(); reject(new Error('timeout')); }, 5000);
+      window[id] = (data) => {
+        clearTimeout(timer); cleanup();
+        resolve(data.ResultSet?.Result || []);
+      };
+      const s = document.createElement('script');
+      s.id = id;
+      s.onerror = () => { clearTimeout(timer); cleanup(); reject(new Error('load error')); };
+      s.src = `https://autoc.finance.yahoo.com/autoc?query=${encodeURIComponent(query)}&callback=${id}`;
+      document.head.appendChild(s);
+    });
+  }
+
   let _yahooSearchTimer = null;
 
   function doSearch(query) {
@@ -2093,29 +2111,32 @@
     if (!dd || dd.style.display === 'none') return;
     const localTickers = new Set(localResults.map(e => e.t.toUpperCase()));
     try {
-      const url = `https://query1.finance.yahoo.com/v1/finance/search?q=${encodeURIComponent(query)}&quotesCount=15&newsCount=0&listsCount=0&enableFuzzyQuery=false`;
-      const res  = await proxyFetch(url);
-      const data = await res.json();
-      const quotes = (data.quotes || [])
-        .filter(q => q.typeDisp === 'ETF' && _UCITS_EXCH.test(q.symbol) && !localTickers.has(q.symbol.toUpperCase()))
+      // JSONP = no CORS issues, works on any browser/device
+      let rawResults = await _yahooJsonpSearch(query);
+      // Fallback: try proxy if JSONP fails
+      if (!rawResults.length) {
+        const url = `https://query1.finance.yahoo.com/v1/finance/search?q=${encodeURIComponent(query)}&quotesCount=15&newsCount=0&listsCount=0`;
+        const res  = await proxyFetch(url);
+        const data = await res.json();
+        rawResults = (data.quotes || []).map(q => ({ symbol: q.symbol, name: q.longname || q.shortname, type: q.typeDisp }));
+      }
+      const quotes = rawResults
+        .filter(r => (r.type === 'ETF' || r.typeDisp === 'ETF') && _UCITS_EXCH.test(r.symbol) && !localTickers.has(r.symbol.toUpperCase()))
         .slice(0, 6);
       if (!quotes.length) {
-        // No Yahoo results — update hint if no local results either
         if (!localResults.length) {
           dd.innerHTML = `<div class="search-hint">Kein ETF gefunden.<br><span style="color:#0a0a0a;font-weight:600;">${query.toUpperCase()}</span> direkt laden? → Enter drücken</div>`;
         }
         return;
       }
-      const extraHtml = quotes.map(q => {
-        const sym   = q.symbol;
+      const extraHtml = quotes.map(r => {
+        const sym   = r.symbol;
         const short = sym.split('.')[0];
-        const name  = q.longname || q.shortname || short;
+        const name  = r.name || r.longname || short;
         return _buildSearchItem(sym, short, name, '', '', false, '');
       }).join('');
       const label = `<div class="search-section-label">${localResults.length ? 'Weitere ETFs' : 'Online-Suche'}</div>`;
-      dd.innerHTML = (localResults.length
-        ? dd.innerHTML
-        : '') + label + extraHtml;
+      dd.innerHTML = (localResults.length ? dd.innerHTML : '') + label + extraHtml;
     } catch {
       if (!localResults.length) {
         dd.innerHTML = `<div class="search-hint">Kein ETF gefunden.<br><span style="color:#0a0a0a;font-weight:600;">${query.toUpperCase()}</span> direkt laden? → Enter drücken</div>`;
