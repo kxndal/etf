@@ -833,7 +833,7 @@
   const VWCE_TICKER = 'VWCE.DE';
   const LS_ISIN     = 'IE00BK5BQT80';
   let   _etfIsVWCE  = true;
-  let   _currentDbEtf = ETF_DB.find(e => e.t === 'VWCE.DE');
+  let   _currentDbEtf = null; // set after ETF_DB is defined
   const IS_LOCAL    = (location.hostname === 'localhost' || location.hostname === '127.0.0.1');
   const PROXIES  = IS_LOCAL
     ? ['/proxy?url=']
@@ -1993,6 +1993,7 @@
     {t:'IQQP.DE', i:'IE00B1FZS350',  n:'iShares STOXX Europe 600 RE',     ter:'0,40%', type:'Dist', is:'iShares',   aum:'~€1 Mrd.',   k:'immobilien reit real estate europa'},
     {t:'XREA.DE', i:'LU0489337005',  n:'Xtrackers FTSE Dev Europe RE',    ter:'0,33%', type:'Acc',  is:'Xtrackers', aum:'~€0,5 Mrd.', k:'immobilien reit real estate europa'},
   ];
+  _currentDbEtf = ETF_DB.find(e => e.t === VWCE_TICKER) || null;
 
   function openSearch() {
     document.getElementById('top-search-drop').style.display = 'block';
