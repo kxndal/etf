@@ -2049,17 +2049,23 @@
     return `<span style="display:flex;align-items:center;justify-content:center;width:100%;height:100%;background:${bg};color:#fff;font-size:${Math.round(s*0.27)}px;font-weight:800;letter-spacing:-0.5px">${label}</span>`;
   }
 
+  // Called from img onerror — avoids HTML-escaping issues with badge HTML
+  function _logoFallback(el, issuer, short, size) {
+    const isin = el.dataset.isin;
+    if (el.dataset.tried !== '1' && isin) {
+      el.dataset.tried = '1';
+      el.src = `https://api.elbstream.com/logos/isin/${isin}`;
+    } else {
+      el.parentElement.innerHTML = _issuerBadge(issuer, short, size);
+    }
+  }
+
   function _logoHtml(isin, short, issuer, size) {
     const s = size || 36;
-    // For known issuers: always show badge (100% accurate, no wrong logo possible)
-    if (issuer && _ISSUER_COLOR[issuer]) {
-      return _issuerBadge(issuer, short, s);
-    }
-    // For unknown issuers (online search results): try elbstream ticker, fallback to abbreviation
-    const fbStyle = `display:flex;align-items:center;justify-content:center;width:100%;height:100%;background:#e5e7eb;color:#374151;font-size:${Math.round(s*0.27)}px;font-weight:800;`;
-    const fallback = `<span style=\\'${fbStyle}\\'>${short.slice(0,4)}</span>`;
-    return `<img src="https://api.elbstream.com/logos/ticker/${short}" alt="${short}" style="width:100%;height:100%;object-fit:contain;padding:4px"
-      onerror="this.parentElement.innerHTML='${fallback}'">`;
+    const tickerUrl = `https://api.elbstream.com/logos/ticker/${short}`;
+    return `<img src="${tickerUrl}" alt="${short}" data-isin="${isin||''}"
+      style="width:100%;height:100%;object-fit:contain;padding:4px"
+      onerror="_logoFallback(this,'${(issuer||'').replace(/'/g,"\\'")}','${short}',${s})">`;
   }
 
   function _buildSearchItem(ticker, short, name, isin, ter, typeAcc, issuer) {
@@ -2301,9 +2307,7 @@
 
   // Initial loads (staggered to avoid simultaneous proxy requests)
   if (!_etfRestored) {
-    // Set VWCE ISIN in URL if no other ETF loaded
-    if (!location.search) history.replaceState({}, '', '?isin=IE00BK5BQT80');
-    load();
+    switchETF(VWCE_TICKER, 'VWCE', 'Vanguard FTSE All-World UCITS ETF · Acc', LS_ISIN);
   }
   setTimeout(loadWeeklyRSI,  500);
   setTimeout(loadFearGreed,  1000);
