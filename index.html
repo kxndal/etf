@@ -2033,6 +2033,35 @@
     return -1;
   }
 
+  // Issuer → brand color for accurate, always-correct logo badges
+  const _ISSUER_COLOR = {
+    'iShares':'#000000', 'Vanguard':'#c0392b', 'Xtrackers':'#003087',
+    'Amundi':'#00a651', 'Lyxor':'#00a651', 'SPDR':'#004990',
+    'VanEck':'#f5821f', 'WisdomTree':'#ef8200', 'HSBC':'#db0011',
+    'Invesco':'#006fcf', 'UBS':'#e2001a', 'L&G':'#004f9f',
+    'Deutsche Börse':'#005f9e', 'Deka':'#00963e',
+  };
+
+  function _issuerBadge(issuer, short, size) {
+    const s = size || 36;
+    const bg = _ISSUER_COLOR[issuer] || '#374151';
+    const label = (issuer || short).slice(0, issuer?.includes(' ') ? 2 : 3).toUpperCase();
+    return `<span style="display:flex;align-items:center;justify-content:center;width:100%;height:100%;background:${bg};color:#fff;font-size:${Math.round(s*0.27)}px;font-weight:800;letter-spacing:-0.5px">${label}</span>`;
+  }
+
+  function _logoHtml(isin, short, issuer, size) {
+    const s = size || 36;
+    // For known issuers: always show badge (100% accurate, no wrong logo possible)
+    if (issuer && _ISSUER_COLOR[issuer]) {
+      return _issuerBadge(issuer, short, s);
+    }
+    // For unknown issuers (online search results): try elbstream ticker, fallback to abbreviation
+    const fbStyle = `display:flex;align-items:center;justify-content:center;width:100%;height:100%;background:#e5e7eb;color:#374151;font-size:${Math.round(s*0.27)}px;font-weight:800;`;
+    const fallback = `<span style=\\'${fbStyle}\\'>${short.slice(0,4)}</span>`;
+    return `<img src="https://api.elbstream.com/logos/ticker/${short}" alt="${short}" style="width:100%;height:100%;object-fit:contain;padding:4px"
+      onerror="this.parentElement.innerHTML='${fallback}'">`;
+  }
+
   function _buildSearchItem(ticker, short, name, isin, ter, typeAcc, issuer) {
     const typeClass = typeAcc ? 'acc' : 'dist';
     const typeLabel = typeAcc ? 'Thesaurierend' : 'Ausschüttend';
@@ -2044,10 +2073,7 @@
     const terTag = ter ? `<span class="search-item-tag ter">TER ${ter}</span>` : '';
     const typeTag = ter ? `<span class="search-item-tag ${typeClass}">${typeLabel}</span>` : '';
     return `<div class="search-item" onclick="selectETF('${safeTicker}','${short}','${safeName}','${isin||''}')">
-      <div class="search-item-logo">
-        <img src="${logoSrc}" alt="${short}"
-          onerror="this.src='https://api.elbstream.com/logos/ticker/${short}';this.onerror=()=>this.parentElement.textContent='${short.slice(0,4)}'">
-      </div>
+      <div class="search-item-logo">${_logoHtml(isin, short, issuer, 36)}</div>
       <div class="search-item-info">
         <div class="search-item-name">${name}</div>
         <div class="search-item-top">
@@ -2146,14 +2172,11 @@
     document.querySelector('.etf-name h1').textContent = ticker.split('.')[0];
     document.querySelector('.etf-name p').textContent  = fullName;
 
-    // Update logo
+    // Update logo — use issuer-accurate logo from DB, elbstream for online-search ETFs
     const logoEl = document.querySelector('.etf-icon');
     const shortTick = ticker.split('.')[0];
-    const logoSrc = isin
-      ? `https://api.elbstream.com/logos/isin/${isin}`
-      : `https://api.elbstream.com/logos/ticker/${shortTick}`;
-    logoEl.innerHTML = `<img src="${logoSrc}" alt="${shortTick}"
-      onerror="this.parentElement.innerHTML='<span style=\\'display:flex;align-items:center;justify-content:center;width:100%;height:100%;background:#0a0a0a;color:#fff;font-size:9px;font-weight:800;\\'>${shortTick.slice(0,4)}</span>'">`;
+    const issuerName = _currentDbEtf?.is || '';
+    logoEl.innerHTML = _logoHtml(isin, shortTick, issuerName, 52);
 
     // Reset fund facts to shimmer while loading
     ['ff-ter','ff-dist','ff-rep','ff-size','ff-inception','ff-holdings'].forEach(id => {
@@ -2189,8 +2212,9 @@
       history.replaceState({}, '', location.pathname);
     }
 
-    // Reset and reload
+    // Reset and reload — show DB data immediately, Yahoo data fills in later
     resetForSwitch();
+    loadFundFacts(null);
     load();
     setTimeout(loadWeeklyRSI, 500);
   }
