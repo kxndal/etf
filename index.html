@@ -99,11 +99,20 @@
       background: #d1d5db;
       transition: background 0.2s, transform 0.2s;
       text-decoration: none;
+      position: relative;
     }
     .dot.active {
       background: #0a0a0a;
       transform: scale(1.4);
     }
+    .dot::before {
+      content: attr(data-label);
+      position: absolute; right: 16px; top: 50%; transform: translateY(-50%);
+      background: #0a0a0a; color: #fff; font-size: 10px; font-weight: 600;
+      padding: 3px 8px; border-radius: 4px; white-space: nowrap;
+      opacity: 0; pointer-events: none; transition: opacity 0.15s;
+    }
+    .dot:hover::before { opacity: 1; }
 
     /* Header */
     .header {
@@ -539,12 +548,12 @@
 </head>
 <body>
 <nav class="page-dots" id="page-dots">
-  <a class="dot active" data-page="0" href="#pg-1"></a>
-  <a class="dot" data-page="1" href="#pg-2"></a>
-  <a class="dot" data-page="2" href="#pg-3"></a>
-  <a class="dot" data-page="3" href="#pg-4"></a>
-  <a class="dot" data-page="4" href="#pg-5"></a>
-  <a class="dot" data-page="5" href="#pg-6"></a>
+  <a class="dot active" data-page="0" data-label="Übersicht" href="#pg-1"></a>
+  <a class="dot" data-page="1" data-label="Indikatoren" href="#pg-2"></a>
+  <a class="dot" data-page="2" data-label="Sentiment" href="#pg-3"></a>
+  <a class="dot" data-page="3" data-label="Portfolio" href="#pg-4"></a>
+  <a class="dot" data-page="4" data-label="Sparplan" href="#pg-5"></a>
+  <a class="dot" data-page="5" data-label="Analyse" href="#pg-6"></a>
 </nav>
 
 <div id="top-search-bar">
@@ -673,6 +682,11 @@
           <div class="ind-value" id="sharpe-value"><span class="loading-shimmer">0.00</span></div>
           <div class="ind-sub"   id="sharpe-sub">wird berechnet…</div>
         </div>
+        <div class="indicator-box">
+          <div class="ind-label">Hist. Volatilität <button class="tip" data-tip="Annualisierte historische Volatilität (1 Jahr). Unter 15% = ruhig, 15–25% = normal, über 25% = turbulent.">?</button></div>
+          <div class="ind-value" id="hvol-value"><span class="loading-shimmer">00.0</span></div>
+          <div class="ind-sub"   id="hvol-sub">wird berechnet…</div>
+        </div>
       </div>
     </div>
   </section>
@@ -732,6 +746,10 @@
           <div class="calc-result-item"><div class="calc-result-label">Gewinn / Verlust</div><div class="calc-result-value" id="pt-gain">—</div></div>
           <div class="calc-result-item"><div class="calc-result-label">Performance</div>      <div class="calc-result-value" id="pt-gainpct">—</div></div>
         </div>
+        <div id="pt-chart-wrap" style="display:none;margin-top:20px;">
+          <div style="font-size:11px;font-weight:600;color:#9ca3af;text-transform:uppercase;letter-spacing:1px;margin-bottom:10px;">Positionsentwicklung (1J)</div>
+          <div class="chart-wrap"><canvas id="pt-chart"></canvas></div>
+        </div>
       </div>
     </div>
   </section>
@@ -757,7 +775,7 @@
             <input class="calc-input" type="number" id="sp-years" value="30" min="1" max="50" oninput="calcSparplan()">
           </div>
           <div class="calc-field">
-            <label>Ø Rendite p.a. (VWCE)</label>
+            <label>Ø Rendite p.a. (<span id="sp-ticker-label">VWCE</span>)</label>
             <div class="calc-input-static" id="sp-rate-display">—</div>
           </div>
         </div>
@@ -1301,6 +1319,8 @@
 
   // ── Portfolio ──────────────────────────────────────────────
 
+  let _ptChart = null;
+
   function calcPortfolio() {
     const shares   = parseFloat(document.getElementById('pt-shares').value);
     const avgPrice = parseFloat(document.getElementById('pt-avgprice').value);
@@ -1320,6 +1340,60 @@
     gainEl.className      = `calc-result-value ${gain >= 0 ? 'green' : 'red'}`;
     gainPctEl.textContent = `${gainPct >= 0 ? '+' : ''}${gainPct.toFixed(2)}%`;
     gainPctEl.className   = `calc-result-value ${gainPct >= 0 ? 'green' : 'red'}`;
+
+    // Mini portfolio chart — last 1 year of position value vs invested
+    if (allCloses.length >= 10) {
+      const slice     = allCloses.slice(-253);
+      const tsSlice   = allTimestamps.slice(-253);
+      const posValues = slice.map(c => shares * c);
+      const labels    = tsSlice.map(t => {
+        const d = new Date(t * 1000);
+        return `${d.getDate()}.${d.getMonth()+1}.`;
+      });
+      const wrap = document.getElementById('pt-chart-wrap');
+      wrap.style.display = 'block';
+      const canvas = document.getElementById('pt-chart');
+      if (_ptChart) { _ptChart.destroy(); _ptChart = null; }
+      const isGain = posValues[posValues.length - 1] >= invested;
+      _ptChart = new Chart(canvas, {
+        type: 'line',
+        data: {
+          labels,
+          datasets: [
+            {
+              data: posValues,
+              borderColor: isGain ? '#22c55e' : '#ef4444',
+              borderWidth: 1.5,
+              pointRadius: 0,
+              fill: true,
+              backgroundColor: isGain ? 'rgba(34,197,94,0.06)' : 'rgba(239,68,68,0.06)',
+              tension: 0.3,
+            },
+            {
+              data: new Array(posValues.length).fill(invested),
+              borderColor: '#d1d5db',
+              borderWidth: 1,
+              borderDash: [4, 3],
+              pointRadius: 0,
+              fill: false,
+            }
+          ]
+        },
+        options: {
+          responsive: true, maintainAspectRatio: false,
+          animation: false,
+          plugins: { legend: { display: false }, tooltip: {
+            callbacks: { label: ctx => `€${ctx.parsed.y.toLocaleString('de-DE', {minimumFractionDigits:2,maximumFractionDigits:2})}` }
+          }},
+          scales: {
+            x: { display: false },
+            y: { display: true, position: 'right', grid: { color: '#f0f0ec' },
+              ticks: { font: { size: 10 }, color: '#9ca3af',
+                callback: v => `€${(v/1000).toFixed(0)}k` } }
+          }
+        }
+      });
+    }
   }
 
 
@@ -1564,6 +1638,23 @@
         else                   { shEl.style.color = '#ef4444'; shSub.textContent = 'Schlecht'; }
       }
 
+      // Historische Volatilität (annualisiert)
+      if (recentC.length >= 50) {
+        const hRets = [];
+        for (let i = 1; i < recentC.length; i++) hRets.push((recentC[i] - recentC[i-1]) / recentC[i-1]);
+        const hMean = hRets.reduce((a,b) => a+b, 0) / hRets.length;
+        const hStd  = Math.sqrt(hRets.reduce((a,b) => a + (b-hMean)**2, 0) / hRets.length);
+        const hvol  = hStd * Math.sqrt(252) * 100;
+        const hEl   = document.getElementById('hvol-value');
+        const hSub  = document.getElementById('hvol-sub');
+        hEl.textContent = `${hvol.toFixed(1)}%`;
+        hEl.classList.remove('loading-shimmer');
+        if      (hvol < 12) { hEl.style.color = '#22c55e'; hSub.textContent = 'Sehr ruhig'; }
+        else if (hvol < 18) { hEl.style.color = '#86efac'; hSub.textContent = 'Ruhig'; }
+        else if (hvol < 25) { hEl.style.color = '#d97706'; hSub.textContent = 'Normal'; }
+        else                { hEl.style.color = '#ef4444'; hSub.textContent = 'Turbulent'; }
+      }
+
       if (ma200 !== null && rsi !== null) {
         const sig = getSignal(price, ma200, rsi);
         const box = document.getElementById('signal-box');
@@ -1614,21 +1705,57 @@
     }
   }
 
+  const _EXT_CACHE_TTL = 24 * 60 * 60 * 1000; // 24 Stunden für externe Sentiment-Daten
+
+  function _extCacheGet(key) {
+    try { const r = JSON.parse(localStorage.getItem('ext_' + key)); return r || null; } catch { return null; }
+  }
+  function _extCacheSet(key, data) {
+    try { localStorage.setItem('ext_' + key, JSON.stringify({ ts: Date.now(), data })); } catch {}
+  }
+
+  function _cacheAgeLabel(ts) {
+    const h = Math.floor((Date.now() - ts) / 3_600_000);
+    if (h < 1) return 'vor < 1 Std.';
+    return `vor ${h} Std.`;
+  }
+
   async function loadFearGreed() {
+    const cached = _extCacheGet('fg');
+    // Show cached value immediately if available
+    if (cached) {
+      updateFearGreed(cached.data.score, cached.data.rating);
+      document.getElementById('fg-label').textContent =
+        cached.data.rating + (Date.now() - cached.ts > 3_600_000 ? ` · Stand: ${_cacheAgeLabel(cached.ts)}` : '');
+      if (Date.now() - cached.ts < _EXT_CACHE_TTL) return; // Fresh enough
+    }
     try {
       const res  = await proxyFetch('https://production.dataviz.cnn.io/index/fearandgreed/graphdata');
       if (!res.ok) throw new Error(`HTTP ${res.status}`);
       const data = await res.json();
-      updateFearGreed(data.fear_and_greed.score, data.fear_and_greed.rating);
-    } catch (err) {
-      document.getElementById('fg-score').textContent = '—';
-      document.getElementById('fg-score').classList.remove('loading-shimmer');
-      document.getElementById('fg-label').textContent = 'Nicht verfügbar';
+      const score  = data.fear_and_greed.score;
+      const rating = data.fear_and_greed.rating;
+      _extCacheSet('fg', { score, rating });
+      updateFearGreed(score, rating);
+    } catch {
+      if (!cached) {
+        document.getElementById('fg-score').textContent = '—';
+        document.getElementById('fg-score').classList.remove('loading-shimmer');
+        document.getElementById('fg-label').textContent = 'Nicht verfügbar';
+      }
     }
   }
 
   const PE_AVG = 17;
   async function loadValuation() {
+    const cached = _extCacheGet('cape');
+    // Show cached value immediately if available
+    if (cached) {
+      _applyValuation(cached.data.pe, cached.data.dev);
+      document.getElementById('pe-source').textContent =
+        'S&P 500 Shiller CAPE' + (Date.now() - cached.ts > 3_600_000 ? ` · Stand: ${_cacheAgeLabel(cached.ts)}` : '');
+      if (Date.now() - cached.ts < _EXT_CACHE_TTL) return;
+    }
     try {
       const res  = await proxyFetch('https://www.multpl.com/shiller-pe/');
       if (!res.ok) throw new Error(`HTTP ${res.status}`);
@@ -1638,20 +1765,27 @@
       const pe  = parseFloat(match[1]);
       if (isNaN(pe) || pe < 5 || pe > 100) throw new Error('ungültiger Wert');
       const dev = ((pe - PE_AVG) / PE_AVG) * 100;
-      const peEl = document.getElementById('pe-value');
-      peEl.textContent = pe.toFixed(1);
-      peEl.classList.remove('loading-shimmer');
-      const devEl = document.getElementById('pe-deviation');
-      devEl.textContent = `${dev >= 0 ? '+' : ''}${dev.toFixed(1)}% vs. Ø ${PE_AVG}`;
-      devEl.style.color = dev > 25 ? '#ef4444' : dev >= 0 ? '#f97316' : dev >= -10 ? '#86efac' : '#22c55e';
+      _extCacheSet('cape', { pe, dev });
+      _applyValuation(pe, dev);
       document.getElementById('pe-source').textContent = 'S&P 500 Shiller CAPE · multpl.com';
-      sigValues.capeDev = dev;
-      updateSignalMatrix();
-    } catch (err) {
-      document.getElementById('pe-value').textContent = '—';
-      document.getElementById('pe-value').classList.remove('loading-shimmer');
-      document.getElementById('pe-source').textContent = 'Nicht verfügbar';
+    } catch {
+      if (!cached) {
+        document.getElementById('pe-value').textContent = '—';
+        document.getElementById('pe-value').classList.remove('loading-shimmer');
+        document.getElementById('pe-source').textContent = 'Nicht verfügbar';
+      }
     }
+  }
+
+  function _applyValuation(pe, dev) {
+    const peEl = document.getElementById('pe-value');
+    peEl.textContent = pe.toFixed(1);
+    peEl.classList.remove('loading-shimmer');
+    const devEl = document.getElementById('pe-deviation');
+    devEl.textContent = `${dev >= 0 ? '+' : ''}${dev.toFixed(1)}% vs. Ø ${PE_AVG}`;
+    devEl.style.color = dev > 25 ? '#ef4444' : dev >= 0 ? '#f97316' : dev >= -10 ? '#86efac' : '#22c55e';
+    sigValues.capeDev = dev;
+    updateSignalMatrix();
   }
 
   // VWCE.DE Anteile im Umlauf — ändert sich langsam (±5% p.a. durch ETF-Flows)
@@ -1905,6 +2039,13 @@
       badge.remove();
     }
 
+    // Update sparplan label
+    const spLabel = document.getElementById('sp-ticker-label');
+    if (spLabel) spLabel.textContent = ticker.split('.')[0];
+
+    // Save as favorite
+    try { localStorage.setItem('last-etf', JSON.stringify({ ticker, name, fullName, isin: isin || null })); } catch {}
+
     // Reset and reload
     resetForSwitch();
     load();
@@ -1937,6 +2078,13 @@
     document.getElementById('macd-sub').textContent     = 'wird berechnet...';
     document.getElementById('sharpe-value').innerHTML   = shimmer('0.00');
     document.getElementById('sharpe-sub').textContent   = 'wird berechnet…';
+    const hvolEl = document.getElementById('hvol-value');
+    if (hvolEl) { hvolEl.innerHTML = shimmer('00.0'); hvolEl.style.color = ''; }
+    const hvolSub = document.getElementById('hvol-sub');
+    if (hvolSub) hvolSub.textContent = 'wird berechnet…';
+    if (_ptChart) { _ptChart.destroy(); _ptChart = null; }
+    const ptWrap = document.getElementById('pt-chart-wrap');
+    if (ptWrap) ptWrap.style.display = 'none';
     document.getElementById('ath-drawdown').textContent = '-0.0%';
     document.getElementById('ath-drawdown').className   = 'ath-drawdown loading-shimmer';
     document.getElementById('ath-value').textContent    = '€—';
@@ -1967,8 +2115,18 @@
   if (savedAvg    > 0) document.getElementById('pt-avgprice').value = savedAvg;
   calcSparplan();
 
+  // Restore last-used ETF — switchETF calls load() internally, so skip manual load() below
+  let _etfRestored = false;
+  try {
+    const saved = JSON.parse(localStorage.getItem('last-etf'));
+    if (saved && saved.ticker && saved.ticker !== VWCE_TICKER) {
+      switchETF(saved.ticker, saved.name || saved.ticker.split('.')[0], saved.fullName || saved.ticker.split('.')[0], saved.isin || null);
+      _etfRestored = true;
+    }
+  } catch {}
+
   // Initial loads (staggered to avoid simultaneous proxy requests)
-  load();
+  if (!_etfRestored) load();
   setTimeout(loadWeeklyRSI,  500);
   setTimeout(loadFearGreed,  1000);
   setTimeout(loadValuation,  1500);
