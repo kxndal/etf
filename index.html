@@ -512,10 +512,17 @@
     }
     .search-item-logo img { width: 100%; height: 100%; object-fit: contain; display: block; padding: 2px; }
     .search-item-info { flex: 1; min-width: 0; }
+    .search-item-top { display: flex; align-items: baseline; gap: 8px; }
     .search-item-ticker { font-size: 13px; font-weight: 700; color: #0a0a0a; }
-    .search-item-name { font-size: 12px; color: #6b7280; margin-top: 1px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-    .search-item-exch { font-size: 11px; color: #c4c4c4; flex-shrink: 0; }
+    .search-item-isin { font-size: 11px; color: #9ca3af; }
+    .search-item-name { font-size: 12px; color: #6b7280; margin-top: 2px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .search-item-meta { display: flex; gap: 8px; margin-top: 3px; }
+    .search-item-tag { font-size: 10px; font-weight: 600; padding: 1px 6px; border-radius: 3px; }
+    .search-item-tag.ter { background: #f3f4f6; color: #6b7280; }
+    .search-item-tag.acc { background: #f0fdf4; color: #16a34a; }
+    .search-item-tag.dist { background: #eff6ff; color: #2563eb; }
     .search-hint { padding: 20px 16px; font-size: 13px; color: #9ca3af; text-align: center; }
+    .search-section-label { padding: 10px 16px 4px; font-size: 10px; font-weight: 700; color: #9ca3af; text-transform: uppercase; letter-spacing: 1px; background: #fafaf8; }
     .search-overlay {
       position: fixed; inset: 52px 0 0 0; z-index: 298;
       background: rgba(0,0,0,0.15); display: none;
@@ -1895,22 +1902,72 @@
 
   // ── ETF Search & Switch ────────────────────────────────────
 
-  let _searchTimer = null;
-
-  // EU-Börsen = UCITS ETFs handelbar in Deutschland (Yahoo Finance exchange codes)
-  const _EU_EXCHANGES = new Set([
-    'GER','ETR','MUN','STU','HAM','HAN','DUS','BER','FRA', // Deutschland (Xetra + Regionalbörsen)
-    'VIE',                                                   // Österreich
-    'AMS','ENX',                                             // Niederlande (Euronext)
-    'PAR','EPA',                                             // Frankreich
-    'MIL','BIT',                                             // Italien
-    'STO','OMX',                                             // Schweden
-    'OSL',                                                   // Norwegen
-    'HEL',                                                   // Finnland
-    'CPH',                                                   // Dänemark
-    'LSE','IOB',                                             // London
-    'EBS','SWX','SWL',                                       // Schweiz
-  ]);
+  // Kuratierte UCITS-ETF-Datenbank — sofortige Client-Side-Suche, kein API nötig
+  // Felder: ticker, isin, name, ter, type ('Acc'|'Dist'), issuer, tags (für Suche)
+  const ETF_DB = [
+    // ── Welt ──────────────────────────────────────────────────────────────────
+    {t:'VWCE.DE', i:'IE00BK5BQT80', n:'Vanguard FTSE All-World',          ter:'0,22%', type:'Acc',  is:'Vanguard',  k:'world acwi all world global'},
+    {t:'VWRL.AS', i:'IE00B3RBWM25', n:'Vanguard FTSE All-World',          ter:'0,22%', type:'Dist', is:'Vanguard',  k:'world acwi all world global ausschüttend'},
+    {t:'EUNL.DE', i:'IE00B4L5Y983', n:'iShares Core MSCI World',          ter:'0,20%', type:'Acc',  is:'iShares',   k:'msci world developed'},
+    {t:'XDWD.DE', i:'IE00BJ0KDQ92', n:'Xtrackers MSCI World Swap',        ter:'0,19%', type:'Acc',  is:'Xtrackers', k:'msci world swap'},
+    {t:'HMWO.DE', i:'IE00B4X9L533', n:'HSBC MSCI World',                  ter:'0,15%', type:'Acc',  is:'HSBC',      k:'msci world'},
+    {t:'LCWD.DE', i:'IE00BK5BQV03', n:'L&G Global Equity',                ter:'0,10%', type:'Acc',  is:'L&G',       k:'world global equity'},
+    {t:'SPYW.DE', i:'IE00B3YCGJ38', n:'SPDR MSCI World',                  ter:'0,12%', type:'Acc',  is:'SPDR',      k:'msci world'},
+    {t:'IQQW.DE', i:'IE00B4L5Y983', n:'iShares MSCI World',               ter:'0,50%', type:'Dist', is:'iShares',   k:'msci world dist'},
+    // ── S&P 500 ───────────────────────────────────────────────────────────────
+    {t:'SXR8.DE', i:'IE00B5BMR087', n:'iShares Core S&P 500',             ter:'0,07%', type:'Acc',  is:'iShares',   k:'sp500 s&p 500 usa'},
+    {t:'VUAA.AS', i:'IE00BFMXXD54', n:'Vanguard S&P 500',                 ter:'0,07%', type:'Acc',  is:'Vanguard',  k:'sp500 s&p 500 usa'},
+    {t:'VUSA.AS', i:'IE00B3XXRP09', n:'Vanguard S&P 500 Dist',            ter:'0,07%', type:'Dist', is:'Vanguard',  k:'sp500 s&p 500 usa ausschüttend'},
+    {t:'XSPX.DE', i:'LU0490618542', n:'Xtrackers S&P 500 Swap',           ter:'0,15%', type:'Acc',  is:'Xtrackers', k:'sp500 s&p 500 swap usa'},
+    {t:'H4ZF.DE', i:'IE00B3YCGJ38', n:'HSBC S&P 500',                    ter:'0,09%', type:'Acc',  is:'HSBC',      k:'sp500 s&p 500 usa'},
+    {t:'CSPX.L',  i:'IE00B5BMR087', n:'iShares Core S&P 500 (LSE)',       ter:'0,07%', type:'Acc',  is:'iShares',   k:'sp500 s&p 500 usa'},
+    // ── NASDAQ ────────────────────────────────────────────────────────────────
+    {t:'SXRV.DE', i:'IE00B3WJKG14', n:'iShares Nasdaq 100',               ter:'0,33%', type:'Acc',  is:'iShares',   k:'nasdaq 100 tech usa'},
+    {t:'XNAS.DE', i:'LU0908500753', n:'Xtrackers Nasdaq 100 Swap',        ter:'0,20%', type:'Acc',  is:'Xtrackers', k:'nasdaq 100 tech swap'},
+    {t:'QDVE.DE', i:'IE00B3WJKG14', n:'iShares S&P 500 Info Tech',        ter:'0,15%', type:'Acc',  is:'iShares',   k:'tech technologie sp500 it'},
+    {t:'LGIT.DE', i:'IE00B3WJKG14', n:'L&G Global Technology',            ter:'0,49%', type:'Acc',  is:'L&G',       k:'tech technologie global'},
+    // ── Emerging Markets ──────────────────────────────────────────────────────
+    {t:'EIMI.DE', i:'IE00BKM4GZ66', n:'iShares Core MSCI EM IMI',         ter:'0,18%', type:'Acc',  is:'iShares',   k:'emerging markets em schwellenländer'},
+    {t:'IUSQ.DE', i:'IE00BKM4GZ66', n:'iShares Core MSCI EM IMI',         ter:'0,18%', type:'Acc',  is:'iShares',   k:'emerging markets em'},
+    {t:'XMME.DE', i:'IE00BTJRMP35', n:'Xtrackers MSCI EM Swap',           ter:'0,20%', type:'Acc',  is:'Xtrackers', k:'emerging markets em swap'},
+    {t:'AEEM.PA', i:'FR0010959676', n:'Amundi MSCI Emerging Markets',     ter:'0,20%', type:'Acc',  is:'Amundi',    k:'emerging markets em'},
+    {t:'VFEM.AS', i:'IE00B3VVMM84', n:'Vanguard FTSE Emerging Markets',   ter:'0,22%', type:'Dist', is:'Vanguard',  k:'emerging markets em schwellenländer'},
+    // ── Europa ────────────────────────────────────────────────────────────────
+    {t:'EXW1.DE', i:'IE0008471009',  n:'iShares Core EURO STOXX 50',      ter:'0,10%', type:'Acc',  is:'iShares',   k:'euro stoxx 50 europa europe'},
+    {t:'EXSA.DE', i:'DE0002635307',  n:'iShares STOXX Europe 600',        ter:'0,20%', type:'Dist', is:'iShares',   k:'stoxx 600 europa europe'},
+    {t:'XESC.DE', i:'LU0322253906',  n:'Xtrackers Euro Stoxx 50 Swap',    ter:'0,09%', type:'Acc',  is:'Xtrackers', k:'euro stoxx 50 europa swap'},
+    {t:'MEUD.PA', i:'LU0908500753',  n:'Lyxor Core MSCI EMU',             ter:'0,12%', type:'Acc',  is:'Lyxor',     k:'emu eurozone europa'},
+    // ── DAX / Deutschland ─────────────────────────────────────────────────────
+    {t:'EXS1.DE', i:'DE0005933931',  n:'iShares Core DAX',                ter:'0,16%', type:'Acc',  is:'iShares',   k:'dax deutschland germany'},
+    {t:'DBXD.DE', i:'LU0274211480',  n:'Xtrackers DAX Swap',              ter:'0,09%', type:'Acc',  is:'Xtrackers', k:'dax deutschland germany swap'},
+    {t:'DXET.DE', i:'LU0252633754',  n:'Xtrackers DAX',                   ter:'0,09%', type:'Acc',  is:'Xtrackers', k:'dax deutschland germany'},
+    // ── Dividende ─────────────────────────────────────────────────────────────
+    {t:'VHYL.AS', i:'IE00B8GKDB10',  n:'Vanguard FTSE All-World High Div',ter:'0,29%', type:'Dist', is:'Vanguard',  k:'dividende dividend high yield world'},
+    {t:'TDIV.DE', i:'IE00B3B8Q275',  n:'VanEck Morningstar Dev Div Leaders',ter:'0,38%',type:'Dist',is:'VanEck',   k:'dividende dividend developed'},
+    {t:'ISPA.DE', i:'IE0008471009',  n:'iShares EURO Dividend',           ter:'0,40%', type:'Dist', is:'iShares',   k:'dividende dividend euro'},
+    {t:'DX2J.DE', i:'IE00B652H904',  n:'Xtrackers MSCI World High Div',   ter:'0,25%', type:'Dist', is:'Xtrackers', k:'dividende dividend world'},
+    // ── Anleihen ──────────────────────────────────────────────────────────────
+    {t:'IBCX.DE', i:'IE00B0M62X26',  n:'iShares Core EUR Govt Bond',      ter:'0,09%', type:'Acc',  is:'iShares',   k:'anleihen bonds euro government'},
+    {t:'EXX5.DE', i:'DE000A0H0785',  n:'iShares eb.rexx Gov Germany',     ter:'0,09%', type:'Dist', is:'iShares',   k:'anleihen bonds deutschland germany bundesanleihen'},
+    {t:'XGLE.DE', i:'LU0290357846',  n:'Xtrackers EUR Govt Bond',         ter:'0,15%', type:'Acc',  is:'Xtrackers', k:'anleihen bonds euro government'},
+    {t:'IEGE.DE', i:'IE00B4WXJJ64',  n:'iShares Global Govt Bond',        ter:'0,20%', type:'Acc',  is:'iShares',   k:'anleihen bonds global government'},
+    // ── Gold / Rohstoffe ──────────────────────────────────────────────────────
+    {t:'IGLN.DE', i:'IE00B8FHGS14',  n:'iShares Physical Gold',           ter:'0,12%', type:'Acc',  is:'iShares',   k:'gold physisch rohstoffe'},
+    {t:'4GLD.DE', i:'DE000A0S9GB0',  n:'Xetra-Gold',                      ter:'0,00%', type:'Acc',  is:'Deutsche Börse', k:'gold physisch xetra'},
+    {t:'SGLD.L',  i:'JE00B588CD54',  n:'Invesco Physical Gold',           ter:'0,12%', type:'Acc',  is:'Invesco',   k:'gold physisch'},
+    // ── Nachhaltigkeit / ESG ──────────────────────────────────────────────────
+    {t:'SUSW.DE', i:'IE00BYX2JD69',  n:'iShares MSCI World SRI',          ter:'0,20%', type:'Acc',  is:'iShares',   k:'esg sri nachhaltig world'},
+    {t:'SUWU.DE', i:'IE00BYX2JD69',  n:'UBS MSCI World SRI',              ter:'0,22%', type:'Acc',  is:'UBS',       k:'esg sri nachhaltig world'},
+    {t:'EUNN.DE', i:'IE00BYVJRP78',  n:'iShares MSCI EM SRI',             ter:'0,25%', type:'Acc',  is:'iShares',   k:'esg sri nachhaltig emerging markets'},
+    // ── Faktor / Smart Beta ───────────────────────────────────────────────────
+    {t:'IWMO.DE', i:'IE00BP3QZ825',  n:'iShares MSCI World Momentum',     ter:'0,30%', type:'Acc',  is:'iShares',   k:'faktor momentum world'},
+    {t:'IWQU.DE', i:'IE00BZ56RN96',  n:'iShares MSCI World Quality',      ter:'0,30%', type:'Acc',  is:'iShares',   k:'faktor quality qualität world'},
+    {t:'IWVL.DE', i:'IE00BP3QZB59',  n:'iShares MSCI World Value',        ter:'0,30%', type:'Acc',  is:'iShares',   k:'faktor value world'},
+    {t:'IFSW.DE', i:'IE00BD45HH21',  n:'iShares MSCI World Min Vol',      ter:'0,30%', type:'Acc',  is:'iShares',   k:'faktor minimum volatility world'},
+    // ── Immobilien ────────────────────────────────────────────────────────────
+    {t:'IQQP.DE', i:'IE00B1FZS350',  n:'iShares STOXX Europe 600 RE',     ter:'0,40%', type:'Dist', is:'iShares',   k:'immobilien reit real estate europa'},
+    {t:'XREA.DE', i:'LU0489337005',  n:'Xtrackers FTSE Dev Europe RE',    ter:'0,33%', type:'Acc',  is:'Xtrackers', k:'immobilien reit real estate europa'},
+  ];
 
   function openSearch() {
     document.getElementById('top-search-drop').style.display = 'block';
@@ -1927,60 +1984,68 @@
   }
 
   function onSearchInput(val) {
-    clearTimeout(_searchTimer);
     const clr = document.getElementById('top-search-clear');
     if (clr) clr.style.display = val ? 'block' : 'none';
     if (!val.trim()) { closeSearch(); return; }
     openSearch();
-    document.getElementById('top-search-drop').innerHTML =
-      '<div class="search-hint">Suche läuft…</div>';
-    _searchTimer = setTimeout(() => doSearch(val.trim()), 350);
+    doSearch(val.trim()); // instant — no API, no delay
   }
 
-  async function doSearch(query) {
+  function _searchScore(etf, q) {
+    const lq = q.toLowerCase();
+    const ticker = etf.t.split('.')[0].toLowerCase();
+    const isin   = etf.i.toLowerCase();
+    const name   = etf.n.toLowerCase();
+    const keys   = etf.k;
+    if (ticker === lq || isin === lq)             return 100;
+    if (ticker.startsWith(lq))                    return 90;
+    if (isin.startsWith(lq))                      return 85;
+    if (name.includes(lq))                        return 70 - name.indexOf(lq);
+    if (keys.includes(lq))                        return 50;
+    // partial word match
+    if (lq.length >= 3 && (ticker.includes(lq) || keys.split(' ').some(k => k.startsWith(lq)))) return 30;
+    return -1;
+  }
+
+  function doSearch(query) {
     const dd = document.getElementById('top-search-drop');
-    // Race query1 + query2 in parallel
-    let data = null;
-    try {
-      const results = await Promise.any(
-        ['https://query1.finance.yahoo.com', 'https://query2.finance.yahoo.com'].map(host =>
-          proxyFetch(`${host}/v1/finance/search?q=${encodeURIComponent(query)}&quotesCount=20&newsCount=0&listsCount=0`)
-            .then(r => r.json())
-            .then(d => { if (!d || !d.quotes) throw new Error('empty'); return d; })
-        )
-      );
-      data = results;
-    } catch {}
+    const q  = query.trim();
+    if (!q) return;
 
-    // Filter: ETF only, EU/UCITS exchanges only
-    const hits = ((data && data.quotes) || [])
-      .filter(q => q.quoteType === 'ETF' && _EU_EXCHANGES.has(q.exchange))
-      .slice(0, 10);
+    const scored = ETF_DB
+      .map(etf => ({ etf, score: _searchScore(etf, q) }))
+      .filter(x => x.score > 0)
+      .sort((a, b) => b.score - a.score)
+      .slice(0, 10)
+      .map(x => x.etf);
 
-    if (!hits.length) {
-      dd.innerHTML = `<div class="search-hint">Keine UCITS-ETFs gefunden.<br>Tipp: Ticker direkt eingeben und Enter drücken.</div>`;
+    if (!scored.length) {
+      dd.innerHTML = `<div class="search-hint">Kein ETF gefunden.<br><span style="color:#0a0a0a;font-weight:600;">${q.toUpperCase()}</span> direkt laden? → Enter drücken</div>`;
       return;
     }
 
-    dd.innerHTML = hits.map(q => {
-      const sym   = q.symbol || '';
-      const name  = (q.shortname || q.longname || sym).replace(/</g,'&lt;').replace(/>/g,'&gt;');
-      const full  = (q.longname  || q.shortname || sym).replace(/</g,'&lt;').replace(/>/g,'&gt;');
-      const exch  = q.exchDisp || q.exchange || '';
-      const short = sym.split('.')[0];
-      const safeSym  = sym.replace(/'/g, "\\'");
-      const safeName = name.replace(/'/g, "\\'");
-      const safeFull = full.replace(/'/g, "\\'");
-      return `<div class="search-item" onclick="selectETF('${safeSym}','${safeName}','${safeFull}')">
+    dd.innerHTML = scored.map(etf => {
+      const short = etf.t.split('.')[0];
+      const typeClass = etf.type === 'Acc' ? 'acc' : 'dist';
+      const typeLabel = etf.type === 'Acc' ? 'Thesaurierend' : 'Ausschüttend';
+      const safeTicker = etf.t.replace(/'/g,"\\'");
+      const safeName   = etf.n.replace(/'/g,"\\'");
+      return `<div class="search-item" onclick="selectETF('${safeTicker}','${short}','${safeName}','${etf.i}')">
         <div class="search-item-logo">
-          <img src="https://api.elbstream.com/logos/ticker/${short}" alt="${short}"
-            onerror="this.parentElement.textContent='${short.slice(0,4)}'">
+          <img src="https://api.elbstream.com/logos/isin/${etf.i}" alt="${short}"
+            onerror="this.src='https://api.elbstream.com/logos/ticker/${short}';this.onerror=()=>this.parentElement.textContent='${short.slice(0,4)}'">
         </div>
         <div class="search-item-info">
-          <div class="search-item-ticker">${sym}</div>
-          <div class="search-item-name">${name}</div>
+          <div class="search-item-top">
+            <span class="search-item-ticker">${short}</span>
+            <span class="search-item-isin">${etf.i}</span>
+          </div>
+          <div class="search-item-name">${etf.n} · ${etf.is}</div>
+          <div class="search-item-meta">
+            <span class="search-item-tag ter">TER ${etf.ter}</span>
+            <span class="search-item-tag ${typeClass}">${typeLabel}</span>
+          </div>
         </div>
-        <span class="search-item-exch">${exch}</span>
       </div>`;
     }).join('');
   }
@@ -1994,9 +2059,9 @@
     scrollToPage(0);
   }
 
-  function selectETF(ticker, name, fullName) {
+  function selectETF(ticker, name, fullName, isin) {
     closeSearch();
-    switchETF(ticker, name, fullName);
+    switchETF(ticker, name, fullName, isin);
     scrollToPage(0);
   }
 
