@@ -2059,24 +2059,6 @@
     </div>`;
   }
 
-  // JSONP-based Yahoo Finance autocomplete — bypasses CORS completely
-  function _yahooJsonpSearch(query) {
-    return new Promise((resolve, reject) => {
-      const id = '_yf' + Date.now();
-      const cleanup = () => { try { delete window[id]; } catch {} document.getElementById(id)?.remove(); };
-      const timer = setTimeout(() => { cleanup(); reject(new Error('timeout')); }, 5000);
-      window[id] = (data) => {
-        clearTimeout(timer); cleanup();
-        resolve(data.ResultSet?.Result || []);
-      };
-      const s = document.createElement('script');
-      s.id = id;
-      s.onerror = () => { clearTimeout(timer); cleanup(); reject(new Error('load error')); };
-      s.src = `https://autoc.finance.yahoo.com/autoc?query=${encodeURIComponent(query)}&callback=${id}`;
-      document.head.appendChild(s);
-    });
-  }
-
   let _yahooSearchTimer = null;
 
   function doSearch(query) {
@@ -2111,17 +2093,11 @@
     if (!dd || dd.style.display === 'none') return;
     const localTickers = new Set(localResults.map(e => e.t.toUpperCase()));
     try {
-      // JSONP = no CORS issues, works on any browser/device
-      let rawResults = await _yahooJsonpSearch(query);
-      // Fallback: try proxy if JSONP fails
-      if (!rawResults.length) {
-        const url = `https://query1.finance.yahoo.com/v1/finance/search?q=${encodeURIComponent(query)}&quotesCount=15&newsCount=0&listsCount=0`;
-        const res  = await proxyFetch(url);
-        const data = await res.json();
-        rawResults = (data.quotes || []).map(q => ({ symbol: q.symbol, name: q.longname || q.shortname, type: q.typeDisp }));
-      }
-      const quotes = rawResults
-        .filter(r => (r.type === 'ETF' || r.typeDisp === 'ETF') && _UCITS_EXCH.test(r.symbol) && !localTickers.has(r.symbol.toUpperCase()))
+      const url = `https://query1.finance.yahoo.com/v1/finance/search?q=${encodeURIComponent(query)}&quotesCount=15&newsCount=0&listsCount=0`;
+      const res  = await proxyFetch(url);
+      const data = await res.json();
+      const quotes = (data.quotes || [])
+        .filter(r => r.typeDisp?.toLowerCase() === 'etf' && _UCITS_EXCH.test(r.symbol) && !localTickers.has(r.symbol.toUpperCase()))
         .slice(0, 6);
       if (!quotes.length) {
         if (!localResults.length) {
@@ -2132,7 +2108,7 @@
       const extraHtml = quotes.map(r => {
         const sym   = r.symbol;
         const short = sym.split('.')[0];
-        const name  = r.name || r.longname || short;
+        const name  = r.longname || r.shortname || short;
         return _buildSearchItem(sym, short, name, '', '', false, '');
       }).join('');
       const label = `<div class="search-section-label">${localResults.length ? 'Weitere ETFs' : 'Online-Suche'}</div>`;
