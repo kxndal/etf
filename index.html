@@ -1527,8 +1527,9 @@
   async function loadLongTermReturn() {
     try {
       const result = await fetchYahoo(TICKER, '10y', '1mo');
-      const raw    = result.indicators.quote[0];
-      const pairs  = result.timestamp.map((t, i) => ({ t, c: raw.close[i] })).filter(p => p.c != null);
+      const raw    = result.indicators?.quote?.[0];
+      if (!raw) return;
+      const pairs  = (result.timestamp || []).map((t, i) => ({ t, c: raw.close?.[i] })).filter(p => p.c != null);
       if (pairs.length < 12) return;
       const ts    = pairs.map(p => p.t);
       const cls   = pairs.map(p => p.c);
@@ -1544,8 +1545,9 @@
   async function loadIntraday() {
     try {
       const result = await fetchYahoo(TICKER, '1d', '5m');
-      const raw    = result.indicators.quote[0];
-      const pairs  = result.timestamp.map((t, i) => ({ t, c: raw.close[i] })).filter(p => p.c != null);
+      const raw    = result.indicators?.quote?.[0];
+      if (!raw) return;
+      const pairs  = (result.timestamp || []).map((t, i) => ({ t, c: raw.close?.[i] })).filter(p => p.c != null);
       intradayTimestamps = pairs.map(p => p.t);
       intradayCloses     = pairs.map(p => p.c);
       if (currentRange === 'live') { renderChart('live'); updateRangePerf('live'); }
@@ -1555,8 +1557,9 @@
   async function loadExtended(yahooRange, interval, key) {
     try {
       const result = await fetchYahoo(TICKER, yahooRange, interval);
-      const raw    = result.indicators.quote[0];
-      const pairs  = result.timestamp.map((t, i) => ({ t, c: raw.close[i] })).filter(p => p.c != null);
+      const raw    = result.indicators?.quote?.[0];
+      if (!raw) return;
+      const pairs  = (result.timestamp || []).map((t, i) => ({ t, c: raw.close?.[i] })).filter(p => p.c != null);
       extTimestamps[key] = pairs.map(p => p.t);
       extCloses[key]     = pairs.map(p => p.c);
       if (currentRange === key) { renderChart(key); updateRangePerf(key); }
@@ -1568,8 +1571,9 @@
     if (errBox) { errBox.style.display = 'none'; errBox.textContent = ''; }
     try {
       const result = await fetchYahoo(TICKER, '2y', '1d');
-      const raw    = result.indicators.quote[0];
-      const pairs  = result.timestamp.map((t, i) => ({ t, c: raw.close[i] })).filter(p => p.c != null);
+      const raw    = result.indicators?.quote?.[0];
+      if (!raw) throw new Error('Keine Kursdaten für ' + TICKER);
+      const pairs  = (result.timestamp || []).map((t, i) => ({ t, c: raw.close?.[i] })).filter(p => p.c != null);
       allTimestamps = pairs.map(p => p.t);
       allCloses     = pairs.map(p => p.c);
 
@@ -2111,6 +2115,13 @@
     // Save as favorite
     try { localStorage.setItem('last-etf', JSON.stringify({ ticker, name, fullName, isin: isin || null })); } catch {}
 
+    // Update URL with ISIN
+    if (isin) {
+      history.replaceState({}, '', '?isin=' + isin);
+    } else {
+      history.replaceState({}, '', location.pathname);
+    }
+
     // Reset and reload
     resetForSwitch();
     load();
@@ -2180,18 +2191,29 @@
   if (savedAvg    > 0) document.getElementById('pt-avgprice').value = savedAvg;
   calcSparplan();
 
-  // Restore last-used ETF — switchETF calls load() internally, so skip manual load() below
+  // Restore ETF from URL (?isin=...) or localStorage — switchETF calls load() internally
   let _etfRestored = false;
   try {
-    const saved = JSON.parse(localStorage.getItem('last-etf'));
-    if (saved && saved.ticker && saved.ticker !== VWCE_TICKER) {
-      switchETF(saved.ticker, saved.name || saved.ticker.split('.')[0], saved.fullName || saved.ticker.split('.')[0], saved.isin || null);
+    const urlIsin = new URLSearchParams(location.search).get('isin');
+    const fromUrl = urlIsin && ETF_DB.find(e => e.i === urlIsin);
+    if (fromUrl) {
+      switchETF(fromUrl.t, fromUrl.t.split('.')[0], fromUrl.n, fromUrl.i);
       _etfRestored = true;
+    } else {
+      const saved = JSON.parse(localStorage.getItem('last-etf'));
+      if (saved && saved.ticker && saved.ticker !== VWCE_TICKER) {
+        switchETF(saved.ticker, saved.name || saved.ticker.split('.')[0], saved.fullName || saved.ticker.split('.')[0], saved.isin || null);
+        _etfRestored = true;
+      }
     }
   } catch {}
 
   // Initial loads (staggered to avoid simultaneous proxy requests)
-  if (!_etfRestored) load();
+  if (!_etfRestored) {
+    // Set VWCE ISIN in URL if no other ETF loaded
+    if (!location.search) history.replaceState({}, '', '?isin=IE00BK5BQT80');
+    load();
+  }
   setTimeout(loadWeeklyRSI,  500);
   setTimeout(loadFearGreed,  1000);
   setTimeout(loadValuation,  1500);
