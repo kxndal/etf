@@ -34,32 +34,38 @@
 
     /* ── Top Search Bar ──────────────────────────────────────── */
     #top-search-bar {
-      position: fixed; top: 0; left: 0; right: 0; height: 52px; z-index: 300;
-      background: #fff; border-bottom: 1px solid #f0f0ec;
-      display: flex; align-items: center; padding: 0 16px; gap: 10px;
+      position: fixed; top: 0; left: 0; right: 0; height: 56px; z-index: 300;
+      background: #fff; border-bottom: 1px solid #E5E7EB;
+      display: flex; align-items: center; padding: 0 16px;
     }
-    #top-search-bar .ts-icon { font-size: 16px; color: #9ca3af; flex-shrink: 0; line-height: 1; }
+    #top-search-inner {
+      flex: 1; max-width: 680px; margin: 0 auto;
+      display: flex; align-items: center; gap: 8px;
+      background: #F3F4F6; border-radius: 12px;
+      padding: 0 14px; height: 38px;
+    }
+    #top-search-bar .ts-icon { font-size: 15px; color: #9CA3AF; flex-shrink: 0; line-height: 1; }
     #top-search-input {
-      flex: 1; border: none; outline: none; font-size: 16px; font-family: inherit;
-      color: #0a0a0a; background: transparent;
+      flex: 1; border: none; outline: none; font-size: 15px; font-family: inherit;
+      color: #0B0C20; background: transparent;
     }
-    #top-search-input::placeholder { color: #c4c4c4; }
+    #top-search-input::placeholder { color: #9CA3AF; }
     #top-search-drop {
-      position: fixed; top: 52px; left: 0; right: 0; z-index: 299;
+      position: fixed; top: 56px; left: 0; right: 0; z-index: 299;
       background: #fff; display: none;
-      max-height: calc(100vh - 52px); overflow-y: auto;
+      max-height: calc(100vh - 56px); overflow-y: auto;
       box-shadow: 0 12px 32px rgba(0,0,0,0.12);
     }
 
     .pages {
-      height: calc(100vh - 52px);
-      margin-top: 52px;
+      height: calc(100vh - 56px);
+      margin-top: 56px;
       overflow-y: scroll;
       -webkit-overflow-scrolling: touch;
     }
 
     .page {
-      height: calc(100vh - 52px);
+      height: calc(100vh - 56px);
       display: flex;
       align-items: center;
       justify-content: center;
@@ -385,7 +391,7 @@
       /* Seiten stapeln sich — kein Snap auf Mobile */
       .page {
         height: auto;
-        min-height: calc(100svh - 52px);
+        min-height: calc(100svh - 56px);
         padding: 44px 22px 60px;
         align-items: flex-start;
         border-bottom: 1px solid #f0f0ec;
@@ -526,7 +532,7 @@
     .search-hint { padding: 20px 16px; font-size: 13px; color: #9ca3af; text-align: center; }
     .search-section-label { padding: 10px 16px 4px; font-size: 10px; font-weight: 700; color: #9ca3af; text-transform: uppercase; letter-spacing: 1px; background: #fafaf8; }
     .search-overlay {
-      position: fixed; inset: 52px 0 0 0; z-index: 298;
+      position: fixed; inset: 56px 0 0 0; z-index: 298;
       background: #fff; display: none;
     }
 
@@ -612,11 +618,6 @@
     .week52-marker { background: #585DFE; }
 
     /* Top bar */
-    #top-search-bar {
-      background: #fff;
-      box-shadow: 0 1px 0 #E5E7EB;
-      border-bottom: none;
-    }
     #top-search-drop { box-shadow: 0 8px 32px rgba(11,12,32,0.13); border-radius: 0 0 16px 16px; }
 
     /* Input focus: indigo */
@@ -663,12 +664,14 @@
 </nav>
 
 <div id="top-search-bar">
-  <span class="ts-icon">⌕</span>
-  <input id="top-search-input" type="text" placeholder="ETF suchen…" autocomplete="off" spellcheck="false"
-    oninput="onSearchInput(this.value)"
-    onfocus="if(this.value.trim()) openSearch()"
-    onkeydown="if(event.key==='Enter'){event.preventDefault();tryDirectTicker(this.value.trim());}">
-  <span id="top-search-clear" style="display:none;font-size:18px;color:#c4c4c4;cursor:pointer;padding:4px;line-height:1;" onclick="closeSearch()">✕</span>
+  <div id="top-search-inner">
+    <span class="ts-icon">⌕</span>
+    <input id="top-search-input" type="text" placeholder="ETF suchen…" autocomplete="off" spellcheck="false"
+      oninput="onSearchInput(this.value)"
+      onfocus="if(this.value.trim()) openSearch()"
+      onkeydown="if(event.key==='Enter'){event.preventDefault();tryDirectTicker(this.value.trim());}">
+    <span id="top-search-clear" style="display:none;font-size:16px;color:#9CA3AF;cursor:pointer;line-height:1;" onclick="closeSearch()">✕</span>
+  </div>
 </div>
 <div id="top-search-drop"></div>
 <div class="search-overlay" id="search-overlay" onclick="closeSearch()"></div>
@@ -694,7 +697,7 @@
       <div class="fund-facts">
         <div class="fund-fact"><div class="fund-fact-label" id="ffl-1">TER</div><div class="fund-fact-value" id="ff-ter">—</div></div>
         <div class="fund-fact"><div class="fund-fact-label" id="ffl-2">Ausschüttung</div><div class="fund-fact-value" id="ff-dist">—</div></div>
-        <div class="fund-fact"><div class="fund-fact-label" id="ffl-3">Replikation</div><div class="fund-fact-value" id="ff-rep">—</div></div>
+        <div class="fund-fact"><div class="fund-fact-label" id="ffl-3">1J-Rendite</div><div class="fund-fact-value" id="ff-rep">—</div></div>
         <div class="fund-fact"><div class="fund-fact-label">Fondsgröße</div><div class="fund-fact-value" id="ff-size">—</div></div>
         <div class="fund-fact"><div class="fund-fact-label">Aufgelegt</div><div class="fund-fact-value" id="ff-inception">—</div></div>
         <div class="fund-fact"><div class="fund-fact-label" id="ffl-6">Positionen</div><div class="fund-fact-value" id="ff-holdings">—</div></div>
@@ -1976,20 +1979,10 @@
         : '—';
     }
 
-    // Positionen / Volatilität
-    document.getElementById('ffl-6').textContent = _etfIsVWCE ? 'Positionen' : 'Volatilität';
-    if (_etfIsVWCE) {
-      document.getElementById('ff-holdings').textContent = '~3.700';
-    } else if (allCloses.length >= 50) {
-      const recent = allCloses.slice(-253);
-      const rets   = [];
-      for (let i = 1; i < recent.length; i++) rets.push((recent[i] - recent[i-1]) / recent[i-1]);
-      const mean   = rets.reduce((a,b) => a+b, 0) / rets.length;
-      const std    = Math.sqrt(rets.reduce((a,b) => a + (b-mean)**2, 0) / rets.length);
-      document.getElementById('ff-holdings').textContent = `${(std * Math.sqrt(252) * 100).toFixed(1)}%`;
-    } else {
-      document.getElementById('ff-holdings').textContent = '—';
-    }
+    // Positionen — always labeled "Positionen"
+    document.getElementById('ffl-6').textContent = 'Positionen';
+    document.getElementById('ff-holdings').textContent =
+      _etfIsVWCE ? '~3.700' : (db && db.holdings ? db.holdings : '—');
   }
 
   async function loadVIX() {
