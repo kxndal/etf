@@ -668,7 +668,7 @@
     <span class="ts-icon">⌕</span>
     <input id="top-search-input" type="text" placeholder="ETF suchen…" autocomplete="off" spellcheck="false"
       oninput="onSearchInput(this.value)"
-      onfocus="if(this.value.trim()) openSearch()"
+      onfocus="onSearchFocus(this.value)"
       onkeydown="if(event.key==='Enter'){event.preventDefault();tryDirectTicker(this.value.trim());}">
     <span id="top-search-clear" style="display:none;font-size:16px;color:#9CA3AF;cursor:pointer;line-height:1;" onclick="closeSearch()">✕</span>
   </div>
@@ -745,6 +745,7 @@
         <button class="range-btn" data-range="1j"   onclick="setRange('1j')">1J</button>
         <button class="range-btn" data-range="5j"   onclick="setRange('5j')">5J</button>
         <button class="range-btn" data-range="max"  onclick="setRange('max')">Max</button>
+        <span style="width:1px;height:16px;background:#E5E7EB;display:inline-block;margin:0 2px;flex-shrink:0;"></span>
         <button class="range-btn" data-range="drawdown" onclick="setRange('drawdown')">Drawdown</button>
         <span id="range-perf" class="range-perf"></span>
       </div>
@@ -1721,6 +1722,7 @@
       const changePct = (change / prevClose) * 100;
 
       document.getElementById('price').textContent = `€${price.toFixed(2)}`;
+      document.title = `${TICKER.split('.')[0]} · €${price.toFixed(2)}`;
       const changeEl = document.getElementById('price-change');
       changeEl.textContent = `${change >= 0 ? '+' : ''}${change.toFixed(2)} (${changePct >= 0 ? '+' : ''}${changePct.toFixed(2)}%) heute`;
       changeEl.className = 'price-change ' + (change >= 0 ? 'up' : 'down');
@@ -1956,13 +1958,16 @@
 
     // 1J-Rendite (live berechnet aus Kursen)
     document.getElementById('ffl-3').textContent = '1J-Rendite';
+    const repEl = document.getElementById('ff-rep');
     if (allCloses.length >= 2) {
       const end   = allCloses[allCloses.length - 1];
       const start = allCloses[Math.max(0, allCloses.length - 253)];
       const perf  = ((end - start) / start) * 100;
-      document.getElementById('ff-rep').textContent = `${perf >= 0 ? '+' : ''}${perf.toFixed(1)}%`;
+      repEl.textContent  = `${perf >= 0 ? '+' : ''}${perf.toFixed(1)}%`;
+      repEl.style.color  = perf >= 0 ? '#059669' : '#EF4444';
     } else {
-      document.getElementById('ff-rep').textContent = _etfIsVWCE ? 'Physisch' : '—';
+      repEl.textContent = '—';
+      repEl.style.color = '';
     }
 
     // Fondsgröße — DB > live berechnet > Yahoo meta
@@ -2099,12 +2104,45 @@
     document.getElementById('top-search-drop').innerHTML = '';
   }
 
+  const _POPULAR_TICKERS = ['VWCE.DE','EUNL.DE','SXR8.DE','XDWD.DE','VUSA.DE','MEUD.PA','EXS1.DE','IQQQ.DE'];
+
+  function showPopularEtfs() {
+    const drop = document.getElementById('top-search-drop');
+    const popular = _POPULAR_TICKERS.map(t => ETF_DB.find(e => e.t === t)).filter(Boolean);
+    if (!popular.length) return;
+    drop.innerHTML = `<div class="search-section-label">Beliebte ETFs</div>` +
+      popular.map(e => {
+        const short = e.t.split('.')[0];
+        const distClass = e.type === 'Acc' ? 'acc' : 'dist';
+        const distLabel = e.type === 'Acc' ? 'Thesaurierend' : 'Ausschüttend';
+        return `<div class="search-item" onclick="selectETF('${e.t}','${short}','${e.n.replace(/'/g,"\\'")}','${e.i}')">
+          <div class="search-item-logo">${_logoHtml(e.i, short, e.is, 36)}</div>
+          <div class="search-item-info">
+            <div class="search-item-name">${e.n}</div>
+            <div class="search-item-top">
+              <span class="search-item-ticker">${short}</span>
+              <span class="search-item-isin">${e.i}</span>
+            </div>
+            <div class="search-item-meta">
+              <span class="search-item-tag ter">${e.ter}</span>
+              <span class="search-item-tag ${distClass}">${distLabel}</span>
+            </div>
+          </div>
+        </div>`;
+      }).join('');
+    openSearch();
+  }
+
+  function onSearchFocus(val) {
+    if (val.trim()) { openSearch(); } else { showPopularEtfs(); }
+  }
+
   function onSearchInput(val) {
     const clr = document.getElementById('top-search-clear');
     if (clr) clr.style.display = val ? 'block' : 'none';
-    if (!val.trim()) { closeSearch(); return; }
+    if (!val.trim()) { showPopularEtfs(); return; }
     openSearch();
-    doSearch(val.trim()); // instant — no API, no delay
+    doSearch(val.trim());
   }
 
   function _searchScore(etf, q) {
@@ -2263,20 +2301,23 @@
     _etfIsVWCE     = isVWCE;
     _currentDbEtf  = ETF_DB.find(e => e.t === ticker || e.i === isin) || null;
 
-    // Update header
+    // Update header + title
     const shortName = name.length > 12 ? name.slice(0, 10) + '…' : name;
-    document.querySelector('.etf-name h1').textContent = ticker.split('.')[0];
+    const shortTick0 = ticker.split('.')[0];
+    document.querySelector('.etf-name h1').textContent = shortTick0;
     document.querySelector('.etf-name p').textContent  = fullName;
+    document.title = shortTick0;
 
     // Update logo — use issuer-accurate logo from DB, elbstream for online-search ETFs
     const logoEl = document.querySelector('.etf-icon');
-    const shortTick = ticker.split('.')[0];
+    const shortTick = shortTick0;
     const issuerName = _currentDbEtf?.is || '';
     logoEl.innerHTML = _logoHtml(isin, shortTick, issuerName, 52);
 
-    // Reset fund facts to shimmer while loading
+    // Reset fund facts while loading
     ['ff-ter','ff-dist','ff-rep','ff-size','ff-inception','ff-holdings'].forEach(id => {
-      const el = document.getElementById(id); if (el) el.textContent = '—';
+      const el = document.getElementById(id);
+      if (el) { el.textContent = '—'; el.style.color = ''; }
     });
 
     // Show active ticker chip in top bar
