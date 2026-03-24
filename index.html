@@ -7,7 +7,14 @@
   <meta http-equiv="Pragma" content="no-cache" />
   <meta http-equiv="Expires" content="0" />
   <title>VWCE ETF Dashboard</title>
-  <meta name="description" content="VWCE ETF Dashboard – Kurs, Indikatoren &amp; Kaufmoment-Analyse für den Vanguard FTSE All-World">
+  <meta name="description" content="ETF Check: Vanguard FTSE All-World – Kurs, Indikatoren &amp; Kaufmoment-Analyse">
+  <meta property="og:type"        content="website" />
+  <meta property="og:title"       content="ETF Check: Vanguard FTSE All-World" />
+  <meta property="og:description" content="Kurs, Indikatoren &amp; Kaufmoment-Analyse für VWCE – Vanguard FTSE All-World UCITS ETF" />
+  <meta property="og:url"         content="https://kxndal.github.io/etf/" />
+  <meta name="twitter:card"        content="summary" />
+  <meta name="twitter:title"       content="ETF Check: Vanguard FTSE All-World" />
+  <meta name="twitter:description" content="Kurs, Indikatoren &amp; Kaufmoment-Analyse für VWCE" />
   <link rel="manifest" href="manifest.json">
   <meta name="theme-color" content="#585DFE">
   <meta name="apple-mobile-web-app-capable" content="yes">
@@ -477,12 +484,13 @@
       .calc-result-label { font-size: 11px; }
       .calc-result-value { font-size: 22px; }
 
-      /* Signal-Matrix */
-      .signal-matrix { margin-bottom: 28px; }
-      .signal-matrix td { padding: 15px 0; font-size: 13px; }
-      .sig-name { width: 38%; font-size: 13px; }
-      .sig-val  { width: 20%; font-size: 13px; }
-      .sig-status { width: 42%; font-size: 13px; }
+      /* Signal-Matrix — mobile: horizontal scrollbar, kein Brechen */
+      .signal-matrix { margin-bottom: 28px; overflow-x: auto; -webkit-overflow-scrolling: touch; }
+      .signal-matrix table { min-width: 360px; }
+      .signal-matrix td { padding: 13px 0; font-size: 12px; }
+      .sig-name { width: 36%; font-size: 12px; }
+      .sig-val  { width: 16%; font-size: 12px; }
+      .sig-status { width: 48%; font-size: 12px; }
 
       /* Kaufmoment-Karte */
       .buy-card    { padding: 32px 0 24px; }
@@ -981,8 +989,8 @@
 
   // ── Helpers ────────────────────────────────────────────────
 
-  const _CACHE_TTL  = 10 * 60 * 1000; // 10 Minuten (frisch genug)
-  const _CACHE_STALE = 60 * 60 * 1000; // 1 Stunde (stale aber zeigbar)
+  const _CACHE_TTL   = 20 * 60 * 1000; // 20 Minuten (frisch genug)
+  const _CACHE_STALE =  4 * 60 * 60 * 1000; // 4 Stunden (stale aber sofort zeigbar)
 
   function _cacheGet(key) {
     try {
@@ -2244,7 +2252,17 @@
 
   function tryDirectTicker(query) {
     if (!query) return;
-    let ticker = query.toUpperCase().trim();
+    const q = query.trim();
+    // ISIN eingegeben? → in DB suchen
+    if (/^[A-Z]{2}[A-Z0-9]{10}$/i.test(q)) {
+      const byIsin = ETF_DB.find(e => e.i.toUpperCase() === q.toUpperCase());
+      if (byIsin) {
+        closeSearch();
+        selectETF(byIsin.t, byIsin.t.split('.')[0], byIsin.n, byIsin.i);
+        return;
+      }
+    }
+    let ticker = q.toUpperCase();
     if (!ticker.includes('.')) ticker += '.DE';
     closeSearch();
     switchETF(ticker, ticker.split('.')[0], ticker.split('.')[0]);
@@ -2269,6 +2287,13 @@
     document.querySelector('.etf-name h1').textContent = shortTick0;
     document.querySelector('.etf-name p').textContent  = fullName;
     document.title = shortTick0;
+    const _ogTitle = `ETF Check: ${fullName}`;
+    const _ogDesc  = `Kurs, Indikatoren & Kaufmoment-Analyse für ${shortTick0} – ${fullName}`;
+    document.querySelector('meta[property="og:title"]')?.setAttribute('content', _ogTitle);
+    document.querySelector('meta[property="og:description"]')?.setAttribute('content', _ogDesc);
+    document.querySelector('meta[name="twitter:title"]')?.setAttribute('content', _ogTitle);
+    document.querySelector('meta[name="twitter:description"]')?.setAttribute('content', `${shortTick0} – ${fullName}`);
+    document.querySelector('meta[property="og:url"]')?.setAttribute('content', `https://kxndal.github.io/etf/?isin=${isin || ''}`);
 
     // Update logo — use issuer-accurate logo from DB, elbstream for online-search ETFs
     const logoEl = document.querySelector('.etf-icon');
