@@ -1073,6 +1073,8 @@
       changeEl.className   = 'price-change ' + (change >= 0 ? 'up' : 'down');
       calcPortfolio();
       updateFundSize();
+      const footer = document.getElementById('footer-update');
+      if (footer) footer.textContent = footer.textContent.replace('Lang & Schwarz', 'Yahoo Finance (L&S n.v.)');
     } catch (e) {
       console.warn('L&S Preis-Refresh fehlgeschlagen:', e.message);
     }
@@ -1411,9 +1413,10 @@
   let spRate = 7; // wird aus 10J-Monatsdaten automatisch berechnet
 
   function calcSparplan() {
-    const monthly = parseFloat(document.getElementById('sp-monthly').value) || 0;
-    const initial = parseFloat(document.getElementById('sp-initial').value) || 0;
-    const years   = parseFloat(document.getElementById('sp-years').value)   || 0;
+    const monthly = Math.max(0, parseFloat(document.getElementById('sp-monthly').value) || 0);
+    const initial = Math.max(0, parseFloat(document.getElementById('sp-initial').value) || 0);
+    const years   = Math.max(0, parseFloat(document.getElementById('sp-years').value)   || 0);
+    if (!monthly && !initial) { return; }
     const rate    = spRate;
     const n = years * 12, r = rate / 100 / 12;
     const invested  = monthly * n + initial;
@@ -1821,8 +1824,9 @@
   async function loadWeeklyRSI() {
     try {
       const result = await fetchYahoo(TICKER, '2y', '1wk');
-      const raw    = result.indicators.quote[0];
-      const pairs  = result.timestamp.map((t, i) => ({ t, c: raw.close[i] })).filter(p => p.c != null);
+      const raw    = result.indicators?.quote?.[0];
+      if (!raw || !result.timestamp?.length) return;
+      const pairs  = (result.timestamp || []).map((t, i) => ({ t, c: raw.close?.[i] })).filter(p => p.c != null);
       const closes = pairs.map(p => p.c);
       const wrsi   = calcRSI(closes, 14);
       if (wrsi !== null) {
@@ -2048,7 +2052,7 @@
     {t:'QDVE.DE', i:'IE00B3WJKG14', n:'iShares S&P 500 Info Tech',        ter:'0,15%', type:'Acc',  is:'iShares',   aum:'~€5 Mrd.',   k:'tech technologie sp500 it'},
     // ── Emerging Markets ──────────────────────────────────────────────────────
     {t:'EIMI.DE', i:'IE00BKM4GZ66', n:'iShares Core MSCI EM IMI',         ter:'0,18%', type:'Acc',  is:'iShares',   aum:'~€25 Mrd.',  k:'emerging markets em schwellenländer'},
-    {t:'IUSQ.DE', i:'IE00BKM4GZ66', n:'iShares Core MSCI EM IMI',         ter:'0,18%', type:'Acc',  is:'iShares',   aum:'~€25 Mrd.',  k:'emerging markets em'},
+    {t:'IUSQ.DE', i:'IE00B6R52259', n:'iShares MSCI ACWI',                ter:'0,20%', type:'Acc',  is:'iShares',   aum:'~€18 Mrd.',  k:'acwi world emerging markets all country'},
     {t:'XMME.DE', i:'IE00BTJRMP35', n:'Xtrackers MSCI EM Swap',           ter:'0,20%', type:'Acc',  is:'Xtrackers', aum:'~€3 Mrd.',   k:'emerging markets em swap'},
     {t:'AEEM.PA', i:'FR0010959676', n:'Amundi MSCI Emerging Markets',     ter:'0,20%', type:'Acc',  is:'Amundi',    aum:'~€5 Mrd.',   k:'emerging markets em'},
     {t:'VFEM.AS', i:'IE00B3VVMM84', n:'Vanguard FTSE Emerging Markets',   ter:'0,22%', type:'Dist', is:'Vanguard',  aum:'~€5 Mrd.',   k:'emerging markets em schwellenländer'},
@@ -2104,7 +2108,7 @@
     document.getElementById('top-search-drop').innerHTML = '';
   }
 
-  const _POPULAR_TICKERS = ['VWCE.DE','EUNL.DE','SXR8.DE','XDWD.DE','VUSA.DE','MEUD.PA','EXS1.DE','IQQQ.DE'];
+  const _POPULAR_TICKERS = ['VWCE.DE','EUNL.DE','SXR8.DE','XDWD.DE','VUSA.AS','MEUD.PA','EXS1.DE','VUAA.AS'];
 
   function showPopularEtfs() {
     const drop = document.getElementById('top-search-drop');
