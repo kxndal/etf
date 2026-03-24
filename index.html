@@ -703,13 +703,7 @@
         <div class="fund-fact"><div class="fund-fact-label" id="ffl-6">Positionen</div><div class="fund-fact-value" id="ff-holdings">—</div></div>
       </div>
       <div id="error-box" class="error-msg" style="display:none;"></div>
-      <div class="signal-box loading" id="signal-box">
-        <div class="signal-dot"></div>
-        <div class="signal-text">
-          <div class="signal-title" id="signal-title">Daten werden geladen...</div>
-          <div class="signal-desc"  id="signal-desc">Bitte warten</div>
-        </div>
-      </div>
+
       <div class="week52-section">
         <div class="week52-header">
           <span>52-Wochen-Tief</span>
@@ -825,13 +819,6 @@
           </div>
         </div>
       </div>
-      <div class="fg-box">
-        <div class="fg-top">
-          <div class="fg-score loading-shimmer" id="pe-value">--</div>
-          <div class="fg-meta">S&amp;P 500 CAPE (Shiller) · <span id="pe-source">wird geladen...</span></div>
-        </div>
-        <div id="pe-deviation" style="font-size:18px;font-weight:600;color:#555;margin-bottom:14px;">—</div>
-      </div>
     </div>
   </section>
 
@@ -910,7 +897,6 @@
           <tr><td class="sig-name">RSI wöchentlich <button class="tip" data-tip="Mittelfristiger RSI (14 Wochen). Für ETF-Langzeitanleger das verlässlichere Signal. Höher gewichtet.">?</button></td> <td class="sig-val" id="sm-wrsi-val">—</td>   <td class="sig-status" id="sm-wrsi-status">—</td></tr>
           <tr><td class="sig-name">ATH-Abstand <button class="tip" data-tip="Entfernung vom Allzeithoch. Neue ATHs sind beim FTSE All-World normal — kein Warnsignal für sich allein.">?</button></td>     <td class="sig-val" id="sm-ath-val">—</td>    <td class="sig-status" id="sm-ath-status">—</td></tr>
           <tr><td class="sig-name">US Fear &amp; Greed <button class="tip" data-tip="CNN-Sentiment-Index für US-Märkte (0–100). Misst Stimmung im S&P 500 — relevanter Frühindikator für globale ETFs.">?</button></td><td class="sig-val" id="sm-fg-val">—</td>     <td class="sig-status" id="sm-fg-status">—</td></tr>
-          <tr><td class="sig-name">S&amp;P 500 CAPE <button class="tip" data-tip="Shiller-KGV des S&P 500. Hohe Werte = US-Markt teuer. Für globale ETFs teilweise kompensiert durch günstigere EM/Europa-Anteile.">?</button></td>    <td class="sig-val" id="sm-cape-val">—</td>   <td class="sig-status" id="sm-cape-status">—</td></tr>
         </table>
       </div>
       <div class="buy-card" id="buy-card">
@@ -2399,10 +2385,10 @@
     document.getElementById('signal-box').className     = 'signal-box loading';
     document.getElementById('signal-title').textContent = 'Daten werden geladen...';
     document.getElementById('signal-desc').textContent  = 'Bitte warten';
-    ['sm-gd200-val','sm-rsi-val','sm-wrsi-val','sm-ath-val','sm-fg-val','sm-cape-val'].forEach(id => {
+    ['sm-gd200-val','sm-rsi-val','sm-wrsi-val','sm-ath-val','sm-fg-val'].forEach(id => {
       const el = document.getElementById(id); if (el) el.textContent = '—';
     });
-    ['sm-gd200-status','sm-rsi-status','sm-wrsi-status','sm-ath-status','sm-fg-status','sm-cape-status'].forEach(id => {
+    ['sm-gd200-status','sm-rsi-status','sm-wrsi-status','sm-ath-status','sm-fg-status'].forEach(id => {
       const el = document.getElementById(id); if (el) { el.innerHTML = '—'; el.className = 'sig-status'; }
     });
     document.getElementById('buy-verdict').textContent  = 'Wird berechnet…';
