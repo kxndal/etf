@@ -198,8 +198,11 @@
 
     /* Fund Facts */
     .fund-facts {
-      display: grid; grid-template-columns: repeat(6, 1fr);
+      display: grid; grid-template-columns: repeat(3, 1fr);
       padding: 12px 0; border-bottom: 1px solid #f0f0ec; margin-bottom: 18px;
+    }
+    @media (min-width: 900px) {
+      .fund-facts { grid-template-columns: repeat(6, 1fr); }
     }
     .fund-fact { display: flex; flex-direction: column; gap: 4px; }
     .fund-fact-label { font-size: 9px; color: #9ca3af; text-transform: uppercase; letter-spacing: 0.8px; }
@@ -400,7 +403,7 @@
       .page-dots { display: none; }
 
       /* Fund Facts */
-      .fund-facts { grid-template-columns: repeat(3, 1fr); row-gap: 12px; padding: 14px 0; margin-bottom: 20px; }
+      .fund-facts { row-gap: 12px; padding: 14px 0; margin-bottom: 20px; }
       .fund-fact-label { font-size: 10px; }
       .fund-fact-value { font-size: 12px; }
 
@@ -669,7 +672,7 @@
     <input id="top-search-input" type="text" placeholder="ETF suchen…" autocomplete="off" spellcheck="false"
       oninput="onSearchInput(this.value)"
       onfocus="onSearchFocus(this.value)"
-      onkeydown="if(event.key==='Enter'){event.preventDefault();tryDirectTicker(this.value.trim());}">
+      onkeydown="if(event.key==='Escape'){closeSearch();}else if(event.key==='Enter'){event.preventDefault();tryDirectTicker(this.value.trim());}">
     <span id="top-search-clear" style="display:none;font-size:16px;color:#9CA3AF;cursor:pointer;line-height:1;" onclick="closeSearch()">✕</span>
   </div>
 </div>
@@ -896,7 +899,6 @@
           <tr><td class="sig-name">RSI täglich <button class="tip" data-tip="Kurzfristiger Momentum-Indikator. Unter 40 = Abkühlung, unter 30 = Kaufzone. Weniger gewichtet.">?</button></td>     <td class="sig-val" id="sm-rsi-val">—</td>    <td class="sig-status" id="sm-rsi-status">—</td></tr>
           <tr><td class="sig-name">RSI wöchentlich <button class="tip" data-tip="Mittelfristiger RSI (14 Wochen). Für ETF-Langzeitanleger das verlässlichere Signal. Höher gewichtet.">?</button></td> <td class="sig-val" id="sm-wrsi-val">—</td>   <td class="sig-status" id="sm-wrsi-status">—</td></tr>
           <tr><td class="sig-name">ATH-Abstand <button class="tip" data-tip="Entfernung vom Allzeithoch. Neue ATHs sind beim FTSE All-World normal — kein Warnsignal für sich allein.">?</button></td>     <td class="sig-val" id="sm-ath-val">—</td>    <td class="sig-status" id="sm-ath-status">—</td></tr>
-          <tr><td class="sig-name">US Fear &amp; Greed <button class="tip" data-tip="CNN-Sentiment-Index für US-Märkte (0–100). Misst Stimmung im S&P 500 — relevanter Frühindikator für globale ETFs.">?</button></td><td class="sig-val" id="sm-fg-val">—</td>     <td class="sig-status" id="sm-fg-status">—</td></tr>
         </table>
       </div>
       <div class="buy-card" id="buy-card">
@@ -1974,10 +1976,9 @@
         : '—';
     }
 
-    // Positionen — always labeled "Positionen"
+    // Positionen
     document.getElementById('ffl-6').textContent = 'Positionen';
-    document.getElementById('ff-holdings').textContent =
-      _etfIsVWCE ? '~3.700' : (db && db.holdings ? db.holdings : '—');
+    document.getElementById('ff-holdings').textContent = (db && db.h) ? db.h : '—';
   }
 
   async function loadVIX() {
@@ -2014,69 +2015,69 @@
   // ── ETF Search & Switch ────────────────────────────────────
 
   // Kuratierte UCITS-ETF-Datenbank — sofortige Client-Side-Suche, kein API nötig
-  // Felder: ticker, isin, name, ter, type ('Acc'|'Dist'), issuer, tags (für Suche)
+  // Felder: ticker, isin, name, ter, type ('Acc'|'Dist'), issuer, aum, h=holdings, tags
   // aum = Fondsgröße ca. in Mrd. EUR (Stand 2025, gerundet)
   const ETF_DB = [
     // ── Welt ──────────────────────────────────────────────────────────────────
-    {t:'VWCE.DE', i:'IE00BK5BQT80', n:'Vanguard FTSE All-World',          ter:'0,22%', type:'Acc',  is:'Vanguard',  aum:'~€30 Mrd.',  k:'world acwi all world global'},
-    {t:'VWRL.AS', i:'IE00B3RBWM25', n:'Vanguard FTSE All-World',          ter:'0,22%', type:'Dist', is:'Vanguard',  aum:'~€14 Mrd.',  k:'world acwi all world global ausschüttend'},
-    {t:'EUNL.DE', i:'IE00B4L5Y983', n:'iShares Core MSCI World',          ter:'0,20%', type:'Acc',  is:'iShares',   aum:'~€75 Mrd.',  k:'msci world developed'},
-    {t:'XDWD.DE', i:'IE00BJ0KDQ92', n:'Xtrackers MSCI World Swap',        ter:'0,19%', type:'Acc',  is:'Xtrackers', aum:'~€15 Mrd.',  k:'msci world swap'},
-    {t:'HMWO.DE', i:'IE00B4X9L533', n:'HSBC MSCI World',                  ter:'0,15%', type:'Acc',  is:'HSBC',      aum:'~€4 Mrd.',   k:'msci world'},
-    {t:'LCWD.DE', i:'IE00BK5BQV03', n:'L&G Global Equity',                ter:'0,10%', type:'Acc',  is:'L&G',       aum:'~€3 Mrd.',   k:'world global equity'},
-    {t:'SPYW.DE', i:'IE00B5M1WJ87', n:'SPDR S&P Euro Div Aristocrats',    ter:'0,30%', type:'Dist', is:'SPDR',      aum:'~€1 Mrd.',   k:'dividende dividend euro aristocrats spdr'},
-    {t:'IQQW.DE', i:'IE00B0M62Q58', n:'iShares MSCI World',               ter:'0,50%', type:'Dist', is:'iShares',   aum:'~€12 Mrd.',  k:'msci world dist ausschüttend'},
+    {t:'VWCE.DE', i:'IE00BK5BQT80', n:'Vanguard FTSE All-World',          ter:'0,22%', type:'Acc',  is:'Vanguard',  aum:'~€42 Mrd.',  h:'~3.700', k:'world acwi all world global'},
+    {t:'VWRL.AS', i:'IE00B3RBWM25', n:'Vanguard FTSE All-World',          ter:'0,22%', type:'Dist', is:'Vanguard',  aum:'~€16 Mrd.',  h:'~3.700', k:'world acwi all world global ausschüttend'},
+    {t:'EUNL.DE', i:'IE00B4L5Y983', n:'iShares Core MSCI World',          ter:'0,20%', type:'Acc',  is:'iShares',   aum:'~€80 Mrd.',  h:'~1.400', k:'msci world developed'},
+    {t:'XDWD.DE', i:'IE00BJ0KDQ92', n:'Xtrackers MSCI World Swap',        ter:'0,19%', type:'Acc',  is:'Xtrackers', aum:'~€16 Mrd.',  h:'~500',   k:'msci world swap'},
+    {t:'HMWO.DE', i:'IE00B4X9L533', n:'HSBC MSCI World',                  ter:'0,15%', type:'Acc',  is:'HSBC',      aum:'~€5 Mrd.',   h:'~1.500', k:'msci world'},
+    {t:'LCWD.DE', i:'IE00BK5BQV03', n:'L&G Global Equity',                ter:'0,10%', type:'Acc',  is:'L&G',       aum:'~€4 Mrd.',   h:'~3.000', k:'world global equity'},
+    {t:'SPYW.DE', i:'IE00B5M1WJ87', n:'SPDR S&P Euro Div Aristocrats',    ter:'0,30%', type:'Dist', is:'SPDR',      aum:'~€1 Mrd.',   h:'~40',    k:'dividende dividend euro aristocrats spdr'},
+    {t:'IQQW.DE', i:'IE00B0M62Q58', n:'iShares MSCI World',               ter:'0,50%', type:'Dist', is:'iShares',   aum:'~€13 Mrd.',  h:'~1.400', k:'msci world dist ausschüttend'},
     // ── S&P 500 ───────────────────────────────────────────────────────────────
-    {t:'SXR8.DE', i:'IE00B5BMR087', n:'iShares Core S&P 500',             ter:'0,07%', type:'Acc',  is:'iShares',   aum:'~€85 Mrd.',  k:'sp500 s&p 500 usa'},
-    {t:'VUAA.AS', i:'IE00BFMXXD54', n:'Vanguard S&P 500',                 ter:'0,07%', type:'Acc',  is:'Vanguard',  aum:'~€45 Mrd.',  k:'sp500 s&p 500 usa'},
-    {t:'VUSA.AS', i:'IE00B3XXRP09', n:'Vanguard S&P 500 Dist',            ter:'0,07%', type:'Dist', is:'Vanguard',  aum:'~€40 Mrd.',  k:'sp500 s&p 500 usa ausschüttend'},
-    {t:'XSPX.DE', i:'LU0490618542', n:'Xtrackers S&P 500 Swap',           ter:'0,15%', type:'Acc',  is:'Xtrackers', aum:'~€5 Mrd.',   k:'sp500 s&p 500 swap usa'},
-    {t:'H4ZF.DE', i:'IE00B5KQNG97', n:'HSBC S&P 500',                    ter:'0,09%', type:'Acc',  is:'HSBC',      aum:'~€3 Mrd.',   k:'sp500 s&p 500 usa'},
-    {t:'CSPX.L',  i:'IE00B5BMR087', n:'iShares Core S&P 500 (LSE)',       ter:'0,07%', type:'Acc',  is:'iShares',   aum:'~€50 Mrd.',  k:'sp500 s&p 500 usa'},
+    {t:'SXR8.DE', i:'IE00B5BMR087', n:'iShares Core S&P 500',             ter:'0,07%', type:'Acc',  is:'iShares',   aum:'~€90 Mrd.',  h:'~503',   k:'sp500 s&p 500 usa'},
+    {t:'VUAA.AS', i:'IE00BFMXXD54', n:'Vanguard S&P 500',                 ter:'0,07%', type:'Acc',  is:'Vanguard',  aum:'~€52 Mrd.',  h:'~503',   k:'sp500 s&p 500 usa'},
+    {t:'VUSA.AS', i:'IE00B3XXRP09', n:'Vanguard S&P 500 Dist',            ter:'0,07%', type:'Dist', is:'Vanguard',  aum:'~€40 Mrd.',  h:'~503',   k:'sp500 s&p 500 usa ausschüttend'},
+    {t:'XSPX.DE', i:'LU0490618542', n:'Xtrackers S&P 500 Swap',           ter:'0,15%', type:'Acc',  is:'Xtrackers', aum:'~€5 Mrd.',   h:'~503',   k:'sp500 s&p 500 swap usa'},
+    {t:'H4ZF.DE', i:'IE00B5KQNG97', n:'HSBC S&P 500',                    ter:'0,09%', type:'Acc',  is:'HSBC',      aum:'~€3 Mrd.',   h:'~503',   k:'sp500 s&p 500 usa'},
+    {t:'CSPX.L',  i:'IE00B5BMR087', n:'iShares Core S&P 500 (LSE)',       ter:'0,07%', type:'Acc',  is:'iShares',   aum:'~€55 Mrd.',  h:'~503',   k:'sp500 s&p 500 usa'},
     // ── NASDAQ ────────────────────────────────────────────────────────────────
-    {t:'XNAS.DE', i:'IE00BMFKG444', n:'Xtrackers Nasdaq 100',             ter:'0,20%', type:'Acc',  is:'Xtrackers', aum:'~€3 Mrd.',   k:'nasdaq 100 tech usa xtrackers'},
-    {t:'QDVE.DE', i:'IE00B3WJKG14', n:'iShares S&P 500 Info Tech',        ter:'0,15%', type:'Acc',  is:'iShares',   aum:'~€5 Mrd.',   k:'tech technologie sp500 it'},
+    {t:'XNAS.DE', i:'IE00BMFKG444', n:'Xtrackers Nasdaq 100',             ter:'0,20%', type:'Acc',  is:'Xtrackers', aum:'~€4 Mrd.',   h:'~101',   k:'nasdaq 100 tech usa xtrackers'},
+    {t:'QDVE.DE', i:'IE00B3WJKG14', n:'iShares S&P 500 Info Tech',        ter:'0,15%', type:'Acc',  is:'iShares',   aum:'~€6 Mrd.',   h:'~68',    k:'tech technologie sp500 it'},
     // ── Emerging Markets ──────────────────────────────────────────────────────
-    {t:'EIMI.DE', i:'IE00BKM4GZ66', n:'iShares Core MSCI EM IMI',         ter:'0,18%', type:'Acc',  is:'iShares',   aum:'~€25 Mrd.',  k:'emerging markets em schwellenländer'},
-    {t:'IUSQ.DE', i:'IE00B6R52259', n:'iShares MSCI ACWI',                ter:'0,20%', type:'Acc',  is:'iShares',   aum:'~€18 Mrd.',  k:'acwi world emerging markets all country'},
-    {t:'XMME.DE', i:'IE00BTJRMP35', n:'Xtrackers MSCI EM Swap',           ter:'0,20%', type:'Acc',  is:'Xtrackers', aum:'~€3 Mrd.',   k:'emerging markets em swap'},
-    {t:'AEEM.PA', i:'FR0010959676', n:'Amundi MSCI Emerging Markets',     ter:'0,20%', type:'Acc',  is:'Amundi',    aum:'~€5 Mrd.',   k:'emerging markets em'},
-    {t:'VFEM.AS', i:'IE00B3VVMM84', n:'Vanguard FTSE Emerging Markets',   ter:'0,22%', type:'Dist', is:'Vanguard',  aum:'~€5 Mrd.',   k:'emerging markets em schwellenländer'},
+    {t:'EIMI.DE', i:'IE00BKM4GZ66', n:'iShares Core MSCI EM IMI',         ter:'0,18%', type:'Acc',  is:'iShares',   aum:'~€26 Mrd.',  h:'~3.200', k:'emerging markets em schwellenländer'},
+    {t:'IUSQ.DE', i:'IE00B6R52259', n:'iShares MSCI ACWI',                ter:'0,20%', type:'Acc',  is:'iShares',   aum:'~€20 Mrd.',  h:'~2.400', k:'acwi world emerging markets all country'},
+    {t:'XMME.DE', i:'IE00BTJRMP35', n:'Xtrackers MSCI EM Swap',           ter:'0,20%', type:'Acc',  is:'Xtrackers', aum:'~€3 Mrd.',   h:'~850',   k:'emerging markets em swap'},
+    {t:'AEEM.PA', i:'FR0010959676', n:'Amundi MSCI Emerging Markets',     ter:'0,20%', type:'Acc',  is:'Amundi',    aum:'~€5 Mrd.',   h:'~1.400', k:'emerging markets em'},
+    {t:'VFEM.AS', i:'IE00B3VVMM84', n:'Vanguard FTSE Emerging Markets',   ter:'0,22%', type:'Dist', is:'Vanguard',  aum:'~€5 Mrd.',   h:'~1.900', k:'emerging markets em schwellenländer'},
     // ── Europa ────────────────────────────────────────────────────────────────
-    {t:'EXW1.DE', i:'IE0008471009',  n:'iShares Core EURO STOXX 50',      ter:'0,10%', type:'Acc',  is:'iShares',   aum:'~€15 Mrd.',  k:'euro stoxx 50 europa europe'},
-    {t:'EXSA.DE', i:'DE0002635307',  n:'iShares STOXX Europe 600',        ter:'0,20%', type:'Dist', is:'iShares',   aum:'~€8 Mrd.',   k:'stoxx 600 europa europe'},
-    {t:'XESC.DE', i:'LU0322253906',  n:'Xtrackers Euro Stoxx 50 Swap',    ter:'0,09%', type:'Acc',  is:'Xtrackers', aum:'~€8 Mrd.',   k:'euro stoxx 50 europa swap'},
-    {t:'MEUD.PA', i:'LU0908500753',  n:'Amundi Core Stoxx Europe 600',    ter:'0,07%', type:'Acc',  is:'Amundi',    aum:'~€4 Mrd.',   k:'stoxx 600 europa europe amundi'},
+    {t:'EXW1.DE', i:'IE0008471009',  n:'iShares Core EURO STOXX 50',      ter:'0,10%', type:'Acc',  is:'iShares',   aum:'~€17 Mrd.',  h:'~50',    k:'euro stoxx 50 europa europe'},
+    {t:'EXSA.DE', i:'DE0002635307',  n:'iShares STOXX Europe 600',        ter:'0,20%', type:'Dist', is:'iShares',   aum:'~€9 Mrd.',   h:'~600',   k:'stoxx 600 europa europe'},
+    {t:'XESC.DE', i:'LU0322253906',  n:'Xtrackers Euro Stoxx 50 Swap',    ter:'0,09%', type:'Acc',  is:'Xtrackers', aum:'~€9 Mrd.',   h:'~50',    k:'euro stoxx 50 europa swap'},
+    {t:'MEUD.PA', i:'LU0908500753',  n:'Amundi Core Stoxx Europe 600',    ter:'0,07%', type:'Acc',  is:'Amundi',    aum:'~€5 Mrd.',   h:'~600',   k:'stoxx 600 europa europe amundi'},
     // ── DAX / Deutschland ─────────────────────────────────────────────────────
-    {t:'EXS1.DE', i:'DE0005933931',  n:'iShares Core DAX',                ter:'0,16%', type:'Acc',  is:'iShares',   aum:'~€8 Mrd.',   k:'dax deutschland germany'},
-    {t:'DBXD.DE', i:'LU0274211480',  n:'Xtrackers DAX Swap',              ter:'0,09%', type:'Acc',  is:'Xtrackers', aum:'~€5 Mrd.',   k:'dax deutschland germany swap'},
-    {t:'DXET.DE', i:'LU0252633754',  n:'Xtrackers DAX',                   ter:'0,09%', type:'Acc',  is:'Xtrackers', aum:'~€2 Mrd.',   k:'dax deutschland germany'},
+    {t:'EXS1.DE', i:'DE0005933931',  n:'iShares Core DAX',                ter:'0,16%', type:'Acc',  is:'iShares',   aum:'~€9 Mrd.',   h:'~40',    k:'dax deutschland germany'},
+    {t:'DBXD.DE', i:'LU0274211480',  n:'Xtrackers DAX Swap',              ter:'0,09%', type:'Acc',  is:'Xtrackers', aum:'~€5 Mrd.',   h:'~40',    k:'dax deutschland germany swap'},
+    {t:'DXET.DE', i:'LU0252633754',  n:'Xtrackers DAX',                   ter:'0,09%', type:'Acc',  is:'Xtrackers', aum:'~€2 Mrd.',   h:'~40',    k:'dax deutschland germany'},
     // ── Dividende ─────────────────────────────────────────────────────────────
-    {t:'VHYL.AS', i:'IE00B8GKDB10',  n:'Vanguard FTSE All-World High Div',ter:'0,29%', type:'Dist', is:'Vanguard',  aum:'~€6 Mrd.',   k:'dividende dividend high yield world'},
-    {t:'TDIV.DE', i:'IE00B3B8Q275',  n:'VanEck Morningstar Dev Div Leaders',ter:'0,38%',type:'Dist',is:'VanEck',    aum:'~€3 Mrd.',   k:'dividende dividend developed'},
-    {t:'ISPA.DE', i:'DE000A0F5UH1',  n:'iShares STOXX Global Dividend 100',ter:'0,46%', type:'Dist', is:'iShares',   aum:'~€2 Mrd.',   k:'dividende dividend global stoxx'},
-    {t:'DX2J.DE', i:'IE00B652H904',  n:'Xtrackers MSCI World High Div',   ter:'0,25%', type:'Dist', is:'Xtrackers', aum:'~€2 Mrd.',   k:'dividende dividend world'},
+    {t:'VHYL.AS', i:'IE00B8GKDB10',  n:'Vanguard FTSE All-World High Div',ter:'0,29%', type:'Dist', is:'Vanguard',  aum:'~€7 Mrd.',   h:'~1.800', k:'dividende dividend high yield world'},
+    {t:'TDIV.DE', i:'IE00B3B8Q275',  n:'VanEck Morningstar Dev Div Leaders',ter:'0,38%',type:'Dist',is:'VanEck',    aum:'~€3 Mrd.',   h:'~100',   k:'dividende dividend developed'},
+    {t:'ISPA.DE', i:'DE000A0F5UH1',  n:'iShares STOXX Global Dividend 100',ter:'0,46%', type:'Dist', is:'iShares',   aum:'~€2 Mrd.',   h:'~100',   k:'dividende dividend global stoxx'},
+    {t:'DX2J.DE', i:'IE00B652H904',  n:'Xtrackers MSCI World High Div',   ter:'0,25%', type:'Dist', is:'Xtrackers', aum:'~€2 Mrd.',   h:'~400',   k:'dividende dividend world'},
     // ── Anleihen ──────────────────────────────────────────────────────────────
-    {t:'IBCX.DE', i:'IE00B0M62X26',  n:'iShares Core EUR Govt Bond',      ter:'0,09%', type:'Acc',  is:'iShares',   aum:'~€4 Mrd.',   k:'anleihen bonds euro government'},
-    {t:'EXX5.DE', i:'DE000A0H0785',  n:'iShares eb.rexx Gov Germany',     ter:'0,09%', type:'Dist', is:'iShares',   aum:'~€2 Mrd.',   k:'anleihen bonds deutschland germany bundesanleihen'},
-    {t:'XGLE.DE', i:'LU0290357846',  n:'Xtrackers EUR Govt Bond',         ter:'0,15%', type:'Acc',  is:'Xtrackers', aum:'~€2 Mrd.',   k:'anleihen bonds euro government'},
-    {t:'IEGE.DE', i:'IE00B4WXJJ64',  n:'iShares Global Govt Bond',        ter:'0,20%', type:'Acc',  is:'iShares',   aum:'~€1 Mrd.',   k:'anleihen bonds global government'},
+    {t:'IBCX.DE', i:'IE00B0M62X26',  n:'iShares Core EUR Govt Bond',      ter:'0,09%', type:'Acc',  is:'iShares',   aum:'~€5 Mrd.',   h:'~240',   k:'anleihen bonds euro government'},
+    {t:'EXX5.DE', i:'DE000A0H0785',  n:'iShares eb.rexx Gov Germany',     ter:'0,09%', type:'Dist', is:'iShares',   aum:'~€2 Mrd.',   h:'~30',    k:'anleihen bonds deutschland germany bundesanleihen'},
+    {t:'XGLE.DE', i:'LU0290357846',  n:'Xtrackers EUR Govt Bond',         ter:'0,15%', type:'Acc',  is:'Xtrackers', aum:'~€2 Mrd.',   h:'~240',   k:'anleihen bonds euro government'},
+    {t:'IEGE.DE', i:'IE00B4WXJJ64',  n:'iShares Global Govt Bond',        ter:'0,20%', type:'Acc',  is:'iShares',   aum:'~€1 Mrd.',   h:'~700',   k:'anleihen bonds global government'},
     // ── Gold / Rohstoffe ──────────────────────────────────────────────────────
-    {t:'IGLN.DE', i:'IE00B8FHGS14',  n:'iShares Physical Gold',           ter:'0,12%', type:'Acc',  is:'iShares',   aum:'~€10 Mrd.',  k:'gold physisch rohstoffe'},
-    {t:'4GLD.DE', i:'DE000A0S9GB0',  n:'Xetra-Gold',                      ter:'0,00%', type:'Acc',  is:'Deutsche Börse', aum:'~€15 Mrd.', k:'gold physisch xetra'},
-    {t:'SGLD.L',  i:'JE00B588CD54',  n:'Invesco Physical Gold',           ter:'0,12%', type:'Acc',  is:'Invesco',   aum:'~€12 Mrd.',  k:'gold physisch'},
+    {t:'IGLN.DE', i:'IE00B8FHGS14',  n:'iShares Physical Gold',           ter:'0,12%', type:'Acc',  is:'iShares',   aum:'~€12 Mrd.',  h:'—',      k:'gold physisch rohstoffe'},
+    {t:'4GLD.DE', i:'DE000A0S9GB0',  n:'Xetra-Gold',                      ter:'0,00%', type:'Acc',  is:'Deutsche Börse', aum:'~€17 Mrd.', h:'—',   k:'gold physisch xetra'},
+    {t:'SGLD.L',  i:'JE00B588CD54',  n:'Invesco Physical Gold',           ter:'0,12%', type:'Acc',  is:'Invesco',   aum:'~€13 Mrd.',  h:'—',      k:'gold physisch'},
     // ── Nachhaltigkeit / ESG ──────────────────────────────────────────────────
-    {t:'SUSW.DE', i:'IE00BYX2JD69',  n:'iShares MSCI World SRI',          ter:'0,20%', type:'Acc',  is:'iShares',   aum:'~€3 Mrd.',   k:'esg sri nachhaltig world'},
-    {t:'IQQN.DE', i:'IE00BMVB5P51',  n:'iShares Nasdaq-100 ESG',          ter:'0,22%', type:'Acc',  is:'iShares',   aum:'~€1 Mrd.',   k:'nasdaq 100 esg tech nachhaltig'},
-    {t:'EUNN.DE', i:'IE00BYVJRP78',  n:'iShares MSCI EM SRI',             ter:'0,25%', type:'Acc',  is:'iShares',   aum:'~€1 Mrd.',   k:'esg sri nachhaltig emerging markets'},
+    {t:'SUSW.DE', i:'IE00BYX2JD69',  n:'iShares MSCI World SRI',          ter:'0,20%', type:'Acc',  is:'iShares',   aum:'~€3 Mrd.',   h:'~400',   k:'esg sri nachhaltig world'},
+    {t:'IQQN.DE', i:'IE00BMVB5P51',  n:'iShares Nasdaq-100 ESG',          ter:'0,22%', type:'Acc',  is:'iShares',   aum:'~€1 Mrd.',   h:'~100',   k:'nasdaq 100 esg tech nachhaltig'},
+    {t:'EUNN.DE', i:'IE00BYVJRP78',  n:'iShares MSCI EM SRI',             ter:'0,25%', type:'Acc',  is:'iShares',   aum:'~€1 Mrd.',   h:'~200',   k:'esg sri nachhaltig emerging markets'},
     // ── Faktor / Smart Beta ───────────────────────────────────────────────────
-    {t:'IWMO.DE', i:'IE00BP3QZ825',  n:'iShares MSCI World Momentum',     ter:'0,30%', type:'Acc',  is:'iShares',   aum:'~€4 Mrd.',   k:'faktor momentum world'},
-    {t:'IWQU.DE', i:'IE00BZ56RN96',  n:'iShares MSCI World Quality',      ter:'0,30%', type:'Acc',  is:'iShares',   aum:'~€8 Mrd.',   k:'faktor quality qualität world'},
-    {t:'IWVL.DE', i:'IE00BP3QZB59',  n:'iShares MSCI World Value',        ter:'0,30%', type:'Acc',  is:'iShares',   aum:'~€2 Mrd.',   k:'faktor value world'},
-    {t:'IFSW.DE', i:'IE00BD45HH21',  n:'iShares MSCI World Min Vol',      ter:'0,30%', type:'Acc',  is:'iShares',   aum:'~€3 Mrd.',   k:'faktor minimum volatility world'},
+    {t:'IWMO.DE', i:'IE00BP3QZ825',  n:'iShares MSCI World Momentum',     ter:'0,30%', type:'Acc',  is:'iShares',   aum:'~€5 Mrd.',   h:'~350',   k:'faktor momentum world'},
+    {t:'IWQU.DE', i:'IE00BZ56RN96',  n:'iShares MSCI World Quality',      ter:'0,30%', type:'Acc',  is:'iShares',   aum:'~€10 Mrd.',  h:'~300',   k:'faktor quality qualität world'},
+    {t:'IWVL.DE', i:'IE00BP3QZB59',  n:'iShares MSCI World Value',        ter:'0,30%', type:'Acc',  is:'iShares',   aum:'~€2 Mrd.',   h:'~400',   k:'faktor value world'},
+    {t:'IFSW.DE', i:'IE00BD45HH21',  n:'iShares MSCI World Min Vol',      ter:'0,30%', type:'Acc',  is:'iShares',   aum:'~€3 Mrd.',   h:'~300',   k:'faktor minimum volatility world'},
     // ── Immobilien ────────────────────────────────────────────────────────────
-    {t:'IQQP.DE', i:'IE00B1FZS350',  n:'iShares STOXX Europe 600 RE',     ter:'0,40%', type:'Dist', is:'iShares',   aum:'~€1 Mrd.',   k:'immobilien reit real estate europa'},
-    {t:'XREA.DE', i:'LU0489337005',  n:'Xtrackers FTSE Dev Europe RE',    ter:'0,33%', type:'Acc',  is:'Xtrackers', aum:'~€0,5 Mrd.', k:'immobilien reit real estate europa'},
+    {t:'IQQP.DE', i:'IE00B1FZS350',  n:'iShares STOXX Europe 600 RE',     ter:'0,40%', type:'Dist', is:'iShares',   aum:'~€1 Mrd.',   h:'~50',    k:'immobilien reit real estate europa'},
+    {t:'XREA.DE', i:'LU0489337005',  n:'Xtrackers FTSE Dev Europe RE',    ter:'0,33%', type:'Acc',  is:'Xtrackers', aum:'~€0,5 Mrd.', h:'~100',   k:'immobilien reit real estate europa'},
   ];
   _currentDbEtf = ETF_DB.find(e => e.t === VWCE_TICKER) || null;
 
@@ -2385,10 +2386,10 @@
     document.getElementById('signal-box').className     = 'signal-box loading';
     document.getElementById('signal-title').textContent = 'Daten werden geladen...';
     document.getElementById('signal-desc').textContent  = 'Bitte warten';
-    ['sm-gd200-val','sm-rsi-val','sm-wrsi-val','sm-ath-val','sm-fg-val'].forEach(id => {
+    ['sm-gd200-val','sm-rsi-val','sm-wrsi-val','sm-ath-val'].forEach(id => {
       const el = document.getElementById(id); if (el) el.textContent = '—';
     });
-    ['sm-gd200-status','sm-rsi-status','sm-wrsi-status','sm-ath-status','sm-fg-status'].forEach(id => {
+    ['sm-gd200-status','sm-rsi-status','sm-wrsi-status','sm-ath-status'].forEach(id => {
       const el = document.getElementById(id); if (el) { el.innerHTML = '—'; el.className = 'sig-status'; }
     });
     document.getElementById('buy-verdict').textContent  = 'Wird berechnet…';
