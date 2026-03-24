@@ -1563,71 +1563,61 @@
       total += setSigRow('sm-ath-val', 'sm-ath-status', v, s, c, l); avail += 2;
     }
 
-    if (sigValues.fg !== null) {
-      const f = sigValues.fg;
-      let s, c, l;
-      if      (f <  25) { s=2; c='green';  l='Extreme Angst – Kaufzone (US)'; }
-      else if (f <  45) { s=2; c='green';  l='Angst – Kaufsignal (US)'; }
-      else if (f <  55) { s=1; c='yellow'; l='Neutral (US)'; }
-      else if (f <  75) { s=0; c='orange'; l='Gier – Vorsicht (US)'; }
-      else              { s=0; c='red';    l='Extreme Gier – Vorsicht (US)'; }
-      total += setSigRow('sm-fg-val', 'sm-fg-status', Math.round(f).toString(), s, c, l); avail += 2;
-    }
-
-    if (sigValues.capeDev !== null) {
-      const d = sigValues.capeDev;
-      const v = `${d >= 0 ? '+' : ''}${d.toFixed(1)} %`;
-      // Adapt label to current ETF category
-      const kw = ((_currentDbEtf ? _currentDbEtf.k : '') + ' ' + (_currentDbEtf ? _currentDbEtf.n : '')).toLowerCase();
-      const isUS  = /sp500|nasdaq|s&p 500/.test(kw) && !/world|global|emerging/.test(kw);
-      const isEM  = /emerging|schwellen/.test(kw);
-      const isBondGold = /anleihen|bond|gold/.test(kw);
-      let highLabel, veryHighLabel;
-      if (isUS) {
-        highLabel     = 'Erhöht – US-Markt überdurchschnittlich';
-        veryHighLabel = 'Hoch – US-Markt stark überbewertet';
-      } else if (isEM) {
-        highLabel     = 'Erhöht – EM günstiger als S&P 500';
-        veryHighLabel = 'Hoch – aber EM oft günstiger';
-      } else if (isBondGold) {
-        highLabel     = 'Hoch (S&P 500 Referenz)';
-        veryHighLabel = 'Sehr hoch (S&P 500 Referenz)';
-      } else {
-        highLabel     = 'Erhöht – globale Märkte teils günstiger';
-        veryHighLabel = 'Hoch – Diversifikation vorteilhaft';
-      }
-      let s, c, l;
-      if      (d < -10) { s=1; c='green';  l='Günstig (S&P 500 Referenz)'; }
-      else if (d <   0) { s=1; c='yellow'; l='Fair (S&P 500 Referenz)'; }
-      else if (d <  25) { s=0; c='orange'; l=highLabel; }
-      else              { s=0; c='red';    l=veryHighLabel; }
-      total += setSigRow('sm-cape-val', 'sm-cape-status', v, s, c, l); avail += 1;
-    }
-
     if (avail > 0) updateKaufmoment(total, avail);
   }
 
   function updateKaufmoment(score, max) {
-    const card    = document.getElementById('buy-card');
+    const card   = document.getElementById('buy-card');
     const verdict = document.getElementById('buy-verdict');
     const scorEl  = document.getElementById('buy-score-line');
     const bullEl  = document.getElementById('buy-bullets');
     if (!card) return;
     const pct = score / max;
-    let cls, text, bullets;
-    if (pct >= 0.72) {
-      cls='green';  text='Guter Kaufmoment';
-      bullets = ['Mehrere Signale zeigen Kaufbereitschaft.', 'Sparplan normal weiterführen.', 'Zusatzkäufe sinnvoll.'];
-    } else if (pct >= 0.5) {
-      cls='yellow'; text='Neutraler Markt';
-      bullets = ['Markt weder günstig noch teuer.', 'Sparplan weiterlaufen lassen.', 'Keine Extrakäufe nötig.'];
-    } else if (pct >= 0.3) {
-      cls='orange'; text='Eher ungünstig';
-      bullets = ['Mehrere Warnsignale aktiv.', 'Nur Basis-Sparplan weiterführen.', 'Geduld zahlt sich aus.'];
-    } else {
-      cls='red';    text='Kein Kaufmoment';
-      bullets = ['Markt überhitzt oder überbewertet.', 'Nur Basis-Sparplan weiterlaufen lassen.', 'Auf Rücksetzer warten.'];
+
+    // Build specific bullets from actual signal values
+    const bullets = [];
+    if (sigValues.gd200Diff !== null) {
+      const d = sigValues.gd200Diff;
+      if (d < -5)       bullets.push(`Kurs ${Math.abs(d).toFixed(1)}% unter GD200 – günstige Zone.`);
+      else if (d < 5)   bullets.push(`Kurs nahe GD200 (${d >= 0 ? '+' : ''}${d.toFixed(1)}%) – neutral.`);
+      else if (d < 15)  bullets.push(`Kurs ${d.toFixed(1)}% über GD200 – leicht erhöht.`);
+      else              bullets.push(`Kurs ${d.toFixed(1)}% über GD200 – überhitzt, Vorsicht.`);
     }
+    if (sigValues.rsi !== null) {
+      const r = sigValues.rsi;
+      if      (r < 30) bullets.push(`RSI ${r.toFixed(0)} – überverkauft, historische Kaufzone.`);
+      else if (r < 45) bullets.push(`RSI ${r.toFixed(0)} – leicht gedrückt, günstig.`);
+      else if (r < 60) bullets.push(`RSI ${r.toFixed(0)} – neutraler Bereich.`);
+      else if (r < 70) bullets.push(`RSI ${r.toFixed(0)} – leicht überkauft.`);
+      else             bullets.push(`RSI ${r.toFixed(0)} – überkauft, kein idealer Einstieg.`);
+    }
+    if (sigValues.wrsi !== null) {
+      const r = sigValues.wrsi;
+      if      (r < 35) bullets.push(`Wöchentlicher RSI ${r.toFixed(0)} – mittelfristig überverkauft.`);
+      else if (r < 50) bullets.push(`Wöchentlicher RSI ${r.toFixed(0)} – mittelfristig neutral-positiv.`);
+      else if (r < 65) bullets.push(`Wöchentlicher RSI ${r.toFixed(0)} – mittelfristiger Aufwärtstrend.`);
+      else             bullets.push(`Wöchentlicher RSI ${r.toFixed(0)} – mittelfristig erhöht.`);
+    }
+    if (sigValues.athPct !== null) {
+      const a = Math.abs(sigValues.athPct);
+      if      (a >= 20) bullets.push(`${a.toFixed(1)}% vom ATH entfernt – historische Kaufchance.`);
+      else if (a >= 10) bullets.push(`${a.toFixed(1)}% unter ATH – guter Einstiegspunkt.`);
+      else if (a >=  3) bullets.push(`${a.toFixed(1)}% unter ATH – leichter Rücksetzer.`);
+      else              bullets.push(`Nahe Allzeithoch (${a.toFixed(1)}% darunter) – langfristig normal.`);
+    }
+
+    // Sparplan-Empfehlung basierend auf Score
+    if (pct >= 0.72)     bullets.push('Sparplan weiterführen, Zusatzkauf sinnvoll.');
+    else if (pct >= 0.5) bullets.push('Sparplan normal weiterführen.');
+    else if (pct >= 0.3) bullets.push('Nur Basis-Sparplan weiterführen, abwarten.');
+    else                 bullets.push('Sparplan weiterlaufen lassen, keine Extrakäufe.');
+
+    let cls, text;
+    if      (pct >= 0.72) { cls='green';  text='Guter Kaufmoment'; }
+    else if (pct >= 0.5)  { cls='yellow'; text='Neutraler Markt'; }
+    else if (pct >= 0.3)  { cls='orange'; text='Eher ungünstig'; }
+    else                  { cls='red';    text='Kein Kaufmoment'; }
+
     card.className = `buy-card ${cls}`;
     verdict.textContent = text;
     scorEl.textContent  = `${score} / ${max} Punkte`;
