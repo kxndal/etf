@@ -1782,11 +1782,6 @@
       }
 
       if (ma200 !== null && rsi !== null) {
-        const sig = getSignal(price, ma200, rsi);
-        const box = document.getElementById('signal-box');
-        box.className = `signal-box ${sig.level}`;
-        document.getElementById('signal-title').textContent = sig.title;
-        document.getElementById('signal-desc').textContent  = sig.desc;
         sigValues.gd200Diff = ((price - ma200) / ma200) * 100;
         sigValues.rsi = rsi;
       }
@@ -1876,11 +1871,9 @@
   const PE_AVG = 17;
   async function loadValuation() {
     const cached = _extCacheGet('cape');
-    // Show cached value immediately if available
     if (cached) {
-      _applyValuation(cached.data.pe, cached.data.dev);
-      document.getElementById('pe-source').textContent =
-        'S&P 500 Shiller CAPE' + (Date.now() - cached.ts > 3_600_000 ? ` · Stand: ${_cacheAgeLabel(cached.ts)}` : '');
+      sigValues.capeDev = cached.data.dev;
+      updateSignalMatrix();
       if (Date.now() - cached.ts < _EXT_CACHE_TTL) return;
     }
     try {
@@ -1893,24 +1886,12 @@
       if (isNaN(pe) || pe < 5 || pe > 100) throw new Error('ungültiger Wert');
       const dev = ((pe - PE_AVG) / PE_AVG) * 100;
       _extCacheSet('cape', { pe, dev });
-      _applyValuation(pe, dev);
-      document.getElementById('pe-source').textContent = 'S&P 500 Shiller CAPE · multpl.com';
-    } catch {
-      if (!cached) {
-        document.getElementById('pe-value').textContent = '—';
-        document.getElementById('pe-value').classList.remove('loading-shimmer');
-        document.getElementById('pe-source').textContent = 'Nicht verfügbar';
-      }
-    }
+      sigValues.capeDev = dev;
+      updateSignalMatrix();
+    } catch { /* CAPE widget removed, only used for signal matrix */ }
   }
 
   function _applyValuation(pe, dev) {
-    const peEl = document.getElementById('pe-value');
-    peEl.textContent = pe.toFixed(1);
-    peEl.classList.remove('loading-shimmer');
-    const devEl = document.getElementById('pe-deviation');
-    devEl.textContent = `${dev >= 0 ? '+' : ''}${dev.toFixed(1)}% vs. Ø ${PE_AVG}`;
-    devEl.style.color = dev > 25 ? '#ef4444' : dev >= 0 ? '#f97316' : dev >= -10 ? '#86efac' : '#22c55e';
     sigValues.capeDev = dev;
     updateSignalMatrix();
   }
@@ -2383,9 +2364,6 @@
     document.getElementById('ath-drawdown').textContent = '-0.0%';
     document.getElementById('ath-drawdown').className   = 'ath-drawdown loading-shimmer';
     document.getElementById('ath-value').textContent    = '€—';
-    document.getElementById('signal-box').className     = 'signal-box loading';
-    document.getElementById('signal-title').textContent = 'Daten werden geladen...';
-    document.getElementById('signal-desc').textContent  = 'Bitte warten';
     ['sm-gd200-val','sm-rsi-val','sm-wrsi-val','sm-ath-val'].forEach(id => {
       const el = document.getElementById(id); if (el) el.textContent = '—';
     });
