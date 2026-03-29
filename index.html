@@ -1317,10 +1317,6 @@
       return;
     }
 
-    // Reuse already-computed benchmark values from the update-path above
-    const benchActive2 = benchActive;
-    const plotPrices2  = plotPrices;
-    const benchPlot2   = benchPlot;
     const yTickCb  = benchActive ? v => `${v >= 100 ? '+' : ''}${(v-100).toFixed(0)}%` : v => `€${v.toFixed(0)}`;
     const ttipCb   = benchActive
       ? ctx => `${ctx.dataset.label}: ${ctx.parsed.y >= 100 ? '+' : ''}${(ctx.parsed.y - 100).toFixed(1)}%`
@@ -1331,11 +1327,11 @@
       data: {
         labels,
         datasets: [
-          { label: benchTicker, data: plotPrices2, borderColor: '#0a0a0a', borderWidth: 2, pointRadius: 0, tension: 0.4, fill: benchActive ? false : { target: 'origin', above: 'rgba(10,10,10,0.04)' } },
-          { label: 'MA 200',   data: benchActive ? plotPrices2.map(() => null) : maLine,   borderColor: 'rgba(107,114,128,0.6)', borderWidth: 1.2, borderDash: [4,3], pointRadius: 0, tension: 0.3, fill: false },
-          { label: 'BB Oben',  data: benchActive ? plotPrices2.map(() => null) : bbUpper,  borderColor: 'rgba(209,213,219,0.8)', borderWidth: 1, borderDash: [2,2], pointRadius: 0, tension: 0.3, fill: '+1', backgroundColor: 'rgba(209,213,219,0.12)' },
-          { label: 'BB Unten', data: benchActive ? plotPrices2.map(() => null) : bbLower,  borderColor: 'rgba(148,163,184,0.2)', borderWidth: 1, borderDash: [2,2], pointRadius: 0, tension: 0.3, fill: false },
-          { label: _benchName, data: benchPlot2 || [], borderColor: '#585DFE', borderWidth: 1.5, borderDash: [5,3], pointRadius: 0, tension: 0.4, fill: false },
+          { label: benchTicker, data: plotPrices, borderColor: '#0a0a0a', borderWidth: 2, pointRadius: 0, tension: 0.4, fill: benchActive ? false : { target: 'origin', above: 'rgba(10,10,10,0.04)' } },
+          { label: 'MA 200',   data: benchActive ? plotPrices.map(() => null) : maLine,   borderColor: 'rgba(107,114,128,0.6)', borderWidth: 1.2, borderDash: [4,3], pointRadius: 0, tension: 0.3, fill: false },
+          { label: 'BB Oben',  data: benchActive ? plotPrices.map(() => null) : bbUpper,  borderColor: 'rgba(209,213,219,0.8)', borderWidth: 1, borderDash: [2,2], pointRadius: 0, tension: 0.3, fill: '+1', backgroundColor: 'rgba(209,213,219,0.12)' },
+          { label: 'BB Unten', data: benchActive ? plotPrices.map(() => null) : bbLower,  borderColor: 'rgba(148,163,184,0.2)', borderWidth: 1, borderDash: [2,2], pointRadius: 0, tension: 0.3, fill: false },
+          { label: _benchName, data: benchPlot || [], borderColor: '#585DFE', borderWidth: 1.5, borderDash: [5,3], pointRadius: 0, tension: 0.4, fill: false },
         ]
       },
       options: {
@@ -1433,11 +1429,13 @@
   }
 
   function _normalizeTo100(prices) {
-    const base = prices[0] || 1;
+    const base = prices.find(p => p != null && p !== 0) || 1;
     return prices.map(p => (p / base) * 100);
   }
 
   function _alignBench(etfTs, benchTs, benchCloses) {
+    // Guard: empty benchmark data
+    if (!benchTs || !benchTs.length) return etfTs.map(() => null);
     // For each ETF timestamp find the closest bench value via binary search
     return etfTs.map(t => {
       let lo = 0, hi = benchTs.length - 1;
@@ -1447,7 +1445,7 @@
       }
       // Check neighbour to find true closest
       if (lo > 0 && Math.abs(benchTs[lo - 1] - t) < Math.abs(benchTs[lo] - t)) lo--;
-      return benchCloses[lo];
+      return benchCloses[lo] ?? null;
     });
   }
 
@@ -1495,8 +1493,7 @@
     el.classList.remove('loading-shimmer');
     const cls = score >= 75 ? 'greed-extreme' : score >= 55 ? 'greed' : score >= 45 ? 'neutral' : score >= 25 ? 'fear' : 'fear-extreme';
     el.className = `fg-score ${cls}`;
-    const map = { 'extreme fear': 'Extreme Angst', 'fear': 'Angst', 'neutral': 'Neutral', 'greed': 'Gier', 'extreme greed': 'Extreme Gier' };
-    document.getElementById('fg-label').textContent = map[rating.toLowerCase()] || rating;
+    document.getElementById('fg-label').textContent = _FG_LABEL_MAP[rating?.toLowerCase()] || rating;
     document.getElementById('fg-marker').style.left = `${score}%`;
     sigValues.fg = score;
     updateSignalMatrix();
@@ -1926,7 +1923,11 @@
   const _EXT_CACHE_TTL = 24 * 60 * 60 * 1000; // 24 Stunden für externe Sentiment-Daten
 
   function _extCacheGet(key) {
-    try { const r = JSON.parse(localStorage.getItem('ext_' + key)); return r || null; } catch { return null; }
+    try {
+      const r = JSON.parse(localStorage.getItem('ext_' + key));
+      if (!r || typeof r.ts !== 'number' || !r.data) return null;
+      return r;
+    } catch { return null; }
   }
   function _extCacheSet(key, data) {
     try { localStorage.setItem('ext_' + key, JSON.stringify({ ts: Date.now(), data })); } catch {}
@@ -1938,13 +1939,18 @@
     return `vor ${h} Std.`;
   }
 
+  // Translation map used in both updateFearGreed and loadFearGreed
+  const _FG_LABEL_MAP = { 'extreme fear': 'Extreme Angst', 'fear': 'Angst', 'neutral': 'Neutral', 'greed': 'Gier', 'extreme greed': 'Extreme Gier' };
+
   async function loadFearGreed() {
     const cached = _extCacheGet('fg');
     // Show cached value immediately if available
-    if (cached) {
+    if (cached && cached.ts) {
       updateFearGreed(cached.data.score, cached.data.rating);
+      // Use translated label (not raw English) and append staleness hint
+      const translated = _FG_LABEL_MAP[cached.data.rating?.toLowerCase()] || cached.data.rating;
       document.getElementById('fg-label').textContent =
-        cached.data.rating + (Date.now() - cached.ts > 3_600_000 ? ` · Stand: ${_cacheAgeLabel(cached.ts)}` : '');
+        translated + (Date.now() - cached.ts > 3_600_000 ? ` · Stand: ${_cacheAgeLabel(cached.ts)}` : '');
       if (Date.now() - cached.ts < _EXT_CACHE_TTL) return; // Fresh enough
     }
     try {
@@ -2506,11 +2512,16 @@
 
   // ── Init ───────────────────────────────────────────────────
 
+  // _ltrLoaded must be declared before resetForSwitch() can reference it
+  let _ltrLoaded = false;
+
   // Restore saved values (nur wenn > 0)
   const savedShares = parseFloat(localStorage.getItem('pt-shares'));
   const savedAvg    = parseFloat(localStorage.getItem('pt-avgprice'));
   if (savedShares > 0) document.getElementById('pt-shares').value   = savedShares;
   if (savedAvg    > 0) document.getElementById('pt-avgprice').value = savedAvg;
+  // Show default rate (7%) immediately so calc results and rate label are in sync
+  document.getElementById('sp-rate-display').textContent = '7,0 %';
   calcSparplan();
 
   // Restore ETF from URL (?isin=...) or localStorage — switchETF calls load() internally
@@ -2534,7 +2545,7 @@
   if (!_etfRestored) {
     switchETF(VWCE_TICKER, 'VWCE', 'Vanguard FTSE All-World UCITS ETF · Acc', LS_ISIN);
   }
-  setTimeout(loadWeeklyRSI,  500);
+  // loadWeeklyRSI is already fired by switchETF — skip duplicate here
   setTimeout(loadFearGreed,  1000);
   setTimeout(loadValuation,  1500);
   setTimeout(loadVIX,        2000);
@@ -2550,13 +2561,12 @@
   setInterval(loadEURUSD,      5 * 60 * 1000);
   setInterval(() => { if (currentRange === 'live') loadIntraday(); }, 30 * 1000);
   // LongTermReturn einmalig laden (kein setInterval — ändert sich selten)
-  let _ltrLoaded = false;
+  // Note: _ltrLoaded declared above (before resetForSwitch)
   setTimeout(async () => {
     if (_ltrLoaded) return;
     _ltrLoaded = true;
     await loadLongTermReturn();
   }, 3000);
-  // loadLongTermReturn läuft einmalig (oben per setTimeout)
 
   // ─── Snappy Page Navigation ──────────────────────────────────────────────
   const _pagesEl = document.getElementById('pages');
