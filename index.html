@@ -435,6 +435,8 @@
       /* Range-Buttons */
       .range-btns { flex-wrap: wrap; gap: 6px; padding-top: 12px; }
       .range-btn  { font-size: 12px; padding: 6px 14px; }
+      /* On mobile, range-perf sits on its own wrapped row and right-aligns */
+      .range-perf { order: 99; margin-left: auto; }
 
       /* Page-Label */
       .page-label { font-size: 11px; margin-bottom: 32px; }
@@ -1295,10 +1297,23 @@
     let benchPlot = null;
     if (benchActive) {
       const bd = _benchData[_benchTicker];
-      const aligned = _alignBench(
-        range === '5j' || range === 'max' ? extTimestamps[range] : allTimestamps.slice(allTimestamps.reduce((b, ts, i) => { const t = range === 'ytd' ? new Date(new Date().getFullYear(), 0, 1).getTime()/1000 : Date.now()/1000 - ({'1m':30,'3m':91,'6m':182,'1j':365}[range]||91)*86400; return ts <= t ? i : b; }, 0)),
-        bd.ts, bd.closes
-      );
+      let benchEtfTs;
+      if (range === '5j' || range === 'max') {
+        benchEtfTs = extTimestamps[range];
+      } else {
+        const calDayMap2 = { '1m': 30, '3m': 91, '6m': 182, '1j': 365 };
+        let bidx;
+        if (range === 'ytd') {
+          const jan1 = new Date(new Date().getFullYear(), 0, 1).getTime() / 1000;
+          bidx = allTimestamps.findIndex(ts => ts >= jan1);
+          if (bidx < 0) bidx = 0;
+        } else {
+          const targetTs = Date.now() / 1000 - (calDayMap2[range] || 91) * 86400;
+          bidx = allTimestamps.reduce((best, ts, i) => ts <= targetTs ? i : best, 0);
+        }
+        benchEtfTs = allTimestamps.slice(bidx);
+      }
+      const aligned = _alignBench(benchEtfTs, bd.ts, bd.closes);
       // slice to same length as prices
       benchPlot = _normalizeTo100(aligned.slice(0, prices.length));
     }
@@ -2439,11 +2454,13 @@
     document.title = shortTick0;
     const _ogTitle = `ETF Check: ${fullName}`;
     const _ogDesc  = `Kurs, Indikatoren & Kaufmoment-Analyse für ${shortTick0} – ${fullName}`;
+    document.querySelector('meta[name="description"]')?.setAttribute('content', _ogDesc);
     document.querySelector('meta[property="og:title"]')?.setAttribute('content', _ogTitle);
     document.querySelector('meta[property="og:description"]')?.setAttribute('content', _ogDesc);
     document.querySelector('meta[name="twitter:title"]')?.setAttribute('content', _ogTitle);
     document.querySelector('meta[name="twitter:description"]')?.setAttribute('content', `${shortTick0} – ${fullName}`);
-    document.querySelector('meta[property="og:url"]')?.setAttribute('content', `https://kxndal.github.io/etf/?isin=${isin || ''}`);
+    document.querySelector('meta[property="og:url"]')?.setAttribute('content', isin ? `https://kxndal.github.io/etf/?isin=${isin}` : 'https://kxndal.github.io/etf/');
+    document.querySelector('meta[name="apple-mobile-web-app-title"]')?.setAttribute('content', shortTick0);
 
     // Update logo — use issuer-accurate logo from DB, elbstream for online-search ETFs
     const logoEl = document.querySelector('.etf-icon');
