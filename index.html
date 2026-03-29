@@ -801,7 +801,7 @@
         <div class="indicator-box">
           <div class="ind-label">MACD <button class="tip" data-tip="Moving Average Convergence Divergence (12/26/9). Über Signallinie = bullisch, darunter = bärisch.">?</button></div>
           <div class="ind-value" id="macd-value"><span class="loading-shimmer">0.00</span></div>
-          <div class="ind-sub"   id="macd-sub">wird berechnet...</div>
+          <div class="ind-sub"   id="macd-sub">wird berechnet…</div>
         </div>
         <div class="indicator-box">
           <div class="ind-label">Sharpe Ratio <button class="tip" data-tip="Risikoadjustierte Rendite (1 Jahr, Rf=2.5%). Über 1 gut, über 2 sehr gut, unter 0 schlechter als risikolos.">?</button></div>
@@ -1039,7 +1039,7 @@
 
     const res = await proxyFetch(url);
     const data = await res.json();
-    const result = data.chart.result[0];
+    const result = data?.chart?.result?.[0];
     if (!result) throw new Error('Keine Daten');
     _cacheSet(cacheKey, result);
     return result;
@@ -1084,7 +1084,7 @@
       calcPortfolio();
       updateFundSize();
       const footer = document.getElementById('footer-update');
-      if (footer) footer.textContent = footer.textContent.replace(/Kurs: [^·]+/, 'Kurs: Lang & Schwarz');
+      if (footer) footer.textContent = footer.textContent.replace(/Kurs: [^·]+/, 'Kurs: Lang & Schwarz ');
     } catch (e) {
       console.warn('L&S Preis-Refresh fehlgeschlagen:', e.message);
     }
@@ -1200,7 +1200,7 @@
     document.getElementById('week52-high').textContent  = `€${high.toFixed(2)}`;
     document.getElementById('week52-fill').style.width  = `${c}%`;
     document.getElementById('week52-marker').style.left = `${c}%`;
-    document.getElementById('week52-pct').textContent   = range > 0 ? `${pct.toFixed(0)}% des Jahresbereichs` : '—';
+    document.getElementById('week52-pct').textContent   = range > 0 ? `${Math.min(100, Math.max(0, Math.round(pct))).toFixed(0)}% des Jahresbereichs` : '—';
   }
 
   // ── Chart ──────────────────────────────────────────────────
@@ -1408,6 +1408,9 @@
       btn.textContent = ticker ? `vs. ${name}` : 'vs. —';
       btn.classList.toggle('active', !!ticker);
     }
+    // Show/hide MA200+BB legend items when benchmark mode is toggled
+    const legendEl = document.getElementById('chart-legend-default');
+    if (legendEl) legendEl.style.display = ticker ? 'none' : '';
     // Update active state in dropdown
     document.querySelectorAll('.bench-drop-item').forEach(el => {
       el.classList.toggle('active', el.dataset.ticker === ticker);
@@ -1421,6 +1424,9 @@
         _benchData[ticker] = { ts: pairs.map(p => p.t), closes: pairs.map(p => p.c) };
       } catch {
         _benchTicker = '';
+        _benchName   = '';
+        if (btn) { btn.textContent = 'vs. —'; btn.classList.remove('active'); }
+        document.querySelectorAll('.bench-drop-item').forEach(el => el.classList.remove('active'));
       }
     }
     if (chartInstance) { chartInstance.destroy(); chartInstance = null; }
@@ -1508,6 +1514,7 @@
     const initial = Math.max(0, parseFloat(document.getElementById('sp-initial').value) || 0);
     const years   = Math.max(0, parseFloat(document.getElementById('sp-years').value)   || 0);
     if (!monthly && !initial) return;
+    if (years <= 0) return;
     const rate    = spRate;
     const n = years * 12, r = rate / 100 / 12;
     const invested  = monthly * n + initial;
@@ -1594,7 +1601,7 @@
             x: { display: false },
             y: { display: true, position: 'right', grid: { color: '#f0f0ec' },
               ticks: { font: { size: 10 }, color: '#9ca3af',
-                callback: v => `€${(v/1000).toFixed(0)}k` } }
+                callback: v => v >= 1000 ? `€${(v/1000).toFixed(0)}k` : `€${v.toFixed(0)}` } }
           }
         }
       });
@@ -1604,7 +1611,10 @@
 
   // ── Kaufmoment ─────────────────────────────────────────────
 
-  const sigValues = { gd200Diff: null, rsi: null, wrsi: null, athPct: null, fg: null, capeDev: null };
+  // Declared early so resetForSwitch() can reference it without TDZ
+  let _ltrLoaded = false;
+
+  const sigValues = { gd200Diff: null, rsi: null, wrsi: null, athPct: null, fg: null };
 
   function setSigRow(valId, statusId, valText, score, color, label) {
     const dotColor = { green: '#22c55e', yellow: '#eab308', orange: '#f97316', red: '#ef4444' }[color] || '#555';
@@ -1732,6 +1742,7 @@
   // ── API Fetches ────────────────────────────────────────────
 
   async function loadLongTermReturn() {
+    _ltrLoaded = true; // prevent duplicate calls from the init guard
     try {
       const result = await fetchYahoo(TICKER, '10y', '1mo');
       const raw    = result.indicators?.quote?.[0];
@@ -1837,6 +1848,10 @@
         const bull = macd.lastMacd > (macd.lastSignal ?? 0);
         el.style.color = bull ? '#22c55e' : '#ef4444';
         document.getElementById('macd-sub').textContent = bull ? '↑ Bullisch' : '↓ Bärisch';
+      } else {
+        const el = document.getElementById('macd-value');
+        el.textContent = '—'; el.classList.remove('loading-shimmer');
+        document.getElementById('macd-sub').textContent = 'Nicht verfügbar';
       }
 
       // Sharpe Ratio (annualized, last 252 days, Rf=2.5%)
@@ -1855,6 +1870,10 @@
         else if (sharpe >= 1)  { shEl.style.color = '#86efac'; shSub.textContent = 'Gut'; }
         else if (sharpe >= 0)  { shEl.style.color = '#d97706'; shSub.textContent = 'Mäßig'; }
         else                   { shEl.style.color = '#ef4444'; shSub.textContent = 'Schlecht'; }
+      } else {
+        const shEl = document.getElementById('sharpe-value');
+        shEl.textContent = '—'; shEl.classList.remove('loading-shimmer');
+        document.getElementById('sharpe-sub').textContent = 'Nicht verfügbar';
       }
 
       // Historische Volatilität (annualisiert)
@@ -1872,6 +1891,10 @@
         else if (hvol < 18) { hEl.style.color = '#86efac'; hSub.textContent = 'Ruhig'; }
         else if (hvol < 25) { hEl.style.color = '#d97706'; hSub.textContent = 'Normal'; }
         else                { hEl.style.color = '#ef4444'; hSub.textContent = 'Turbulent'; }
+      } else {
+        const hEl = document.getElementById('hvol-value');
+        hEl.textContent = '—'; hEl.classList.remove('loading-shimmer');
+        document.getElementById('hvol-sub').textContent = 'Nicht verfügbar';
       }
 
       if (ma200 !== null && rsi !== null) {
@@ -1968,29 +1991,6 @@
         document.getElementById('fg-label').textContent = 'Nicht verfügbar';
       }
     }
-  }
-
-  const PE_AVG = 17;
-  async function loadValuation() {
-    const cached = _extCacheGet('cape');
-    if (cached) {
-      sigValues.capeDev = cached.data.dev;
-      updateSignalMatrix();
-      if (Date.now() - cached.ts < _EXT_CACHE_TTL) return;
-    }
-    try {
-      const res  = await proxyFetch('https://www.multpl.com/shiller-pe/');
-      if (!res.ok) throw new Error(`HTTP ${res.status}`);
-      const html  = await res.text();
-      const match = html.match(/Current Shiller PE Ratio is ([\d.]+)/);
-      if (!match) throw new Error('Wert nicht gefunden');
-      const pe  = parseFloat(match[1]);
-      if (isNaN(pe) || pe < 5 || pe > 100) throw new Error('ungültiger Wert');
-      const dev = ((pe - PE_AVG) / PE_AVG) * 100;
-      _extCacheSet('cape', { pe, dev });
-      sigValues.capeDev = dev;
-      updateSignalMatrix();
-    } catch { /* CAPE widget removed, only used for signal matrix */ }
   }
 
   // VWCE.DE Anteile im Umlauf — ändert sich langsam (±5% p.a. durch ETF-Flows)
@@ -2278,15 +2278,13 @@
   }
 
   function _buildSearchItem(ticker, short, name, isin, ter, typeAcc, issuer) {
-    const typeClass = typeAcc ? 'acc' : 'dist';
-    const typeLabel = typeAcc ? 'Thesaurierend' : 'Ausschüttend';
     const safeTicker = ticker.replace(/'/g,"\\'");
     const safeName   = name.replace(/'/g,"\\'");
     const logoSrc = isin
       ? `https://api.elbstream.com/logos/isin/${isin}`
       : `https://api.elbstream.com/logos/ticker/${short}`;
     const terTag  = ter ? `<span class="search-item-tag ter">TER ${ter}</span>` : '';
-    const typeTag = `<span class="search-item-tag ${typeClass}">${typeLabel}</span>`;
+    const typeTag = typeAcc === null ? '' : `<span class="search-item-tag ${typeAcc ? 'acc' : 'dist'}">${typeAcc ? 'Thesaurierend' : 'Ausschüttend'}</span>`;
     return `<div class="search-item" onclick="selectETF('${safeTicker}','${short}','${safeName}','${isin||''}')">
       <div class="search-item-logo">${_logoHtml(isin, short, issuer, 36)}</div>
       <div class="search-item-info">
@@ -2350,7 +2348,7 @@
         const sym   = r.symbol;
         const short = sym.split('.')[0];
         const name  = r.longname || r.shortname || short;
-        return _buildSearchItem(sym, short, name, '', '', false, '');
+        return _buildSearchItem(sym, short, name, '', '', null, '');
       }).join('');
       const label = `<div class="search-section-label">${localResults.length ? 'Weitere ETFs' : 'Online-Suche'}</div>`;
       dd.innerHTML = (localResults.length ? dd.innerHTML : '') + label + extraHtml;
@@ -2410,10 +2408,10 @@
     const issuerName = _currentDbEtf?.is || '';
     logoEl.innerHTML = _logoHtml(isin, shortTick0, issuerName, 52);
 
-    // Reset fund facts while loading
+    // Reset fund facts while loading (also clear innerHTML for elements that use it)
     ['ff-ter','ff-dist','ff-rep','ff-size','ff-inception','ff-holdings'].forEach(id => {
       const el = document.getElementById(id);
-      if (el) { el.textContent = '—'; el.style.color = ''; }
+      if (el) { el.innerHTML = '—'; el.style.color = ''; }
     });
 
     // Show active ticker chip in top bar
@@ -2464,9 +2462,12 @@
     _chartIsDrawdown = false;
     _benchTicker = '';
     _benchName   = '';
+    _benchData   = {};
     const benchBtn = document.getElementById('bench-btn');
     if (benchBtn) { benchBtn.textContent = 'vs. —'; benchBtn.classList.remove('active'); }
     document.querySelectorAll('.bench-drop-item').forEach(el => el.classList.remove('active'));
+    const legendEl2 = document.getElementById('chart-legend-default');
+    if (legendEl2) legendEl2.style.display = '';
     Object.keys(sigValues).forEach(k => sigValues[k] = null);
     spRate = 7;
 
@@ -2475,14 +2476,19 @@
     document.getElementById('price-change').textContent = '';
     document.getElementById('price-change').className   = 'price-change';
     document.getElementById('ma200').innerHTML          = shimmer('€000');
-    document.getElementById('ma200-sub').textContent    = '';
-    document.getElementById('rsi').innerHTML            = shimmer('00.0');
+    const ma200Sub = document.getElementById('ma200-sub');
+    if (ma200Sub) { ma200Sub.textContent = ''; ma200Sub.style.color = ''; }
+    const rsiEl2 = document.getElementById('rsi');
+    if (rsiEl2) { rsiEl2.innerHTML = shimmer('00.0'); rsiEl2.style.color = ''; }
     document.getElementById('rsi-sub').textContent      = '';
-    document.getElementById('wrsi').innerHTML           = shimmer('00.0');
+    const wrsiEl2 = document.getElementById('wrsi');
+    if (wrsiEl2) { wrsiEl2.innerHTML = shimmer('00.0'); wrsiEl2.style.color = ''; }
     document.getElementById('wrsi-sub').textContent     = '';
-    document.getElementById('macd-value').innerHTML     = shimmer('0.00');
-    document.getElementById('macd-sub').textContent     = 'wird berechnet...';
-    document.getElementById('sharpe-value').innerHTML   = shimmer('0.00');
+    const macdEl = document.getElementById('macd-value');
+    if (macdEl) { macdEl.innerHTML = shimmer('0.00'); macdEl.style.color = ''; }
+    document.getElementById('macd-sub').textContent     = 'wird berechnet…';
+    const shEl2 = document.getElementById('sharpe-value');
+    if (shEl2) { shEl2.innerHTML = shimmer('0.00'); shEl2.style.color = ''; }
     document.getElementById('sharpe-sub').textContent   = 'wird berechnet…';
     const hvolEl = document.getElementById('hvol-value');
     if (hvolEl) { hvolEl.innerHTML = shimmer('00.0'); hvolEl.style.color = ''; }
@@ -2491,6 +2497,11 @@
     if (_ptChart) { _ptChart.destroy(); _ptChart = null; }
     const ptWrap = document.getElementById('pt-chart-wrap');
     if (ptWrap) ptWrap.style.display = 'none';
+    document.getElementById('week52-low').textContent   = '—';
+    document.getElementById('week52-high').textContent  = '—';
+    document.getElementById('week52-pct').textContent   = '—';
+    document.getElementById('week52-fill').style.width  = '0%';
+    document.getElementById('week52-marker').style.left = '0%';
     document.getElementById('ath-drawdown').textContent = '-0.0%';
     document.getElementById('ath-drawdown').className   = 'ath-drawdown loading-shimmer';
     document.getElementById('ath-value').textContent    = '€—';
@@ -2505,15 +2516,17 @@
     document.getElementById('buy-bullets').innerHTML    = '';
     document.getElementById('buy-score-bar').style.width = '0%';
     document.getElementById('buy-card').className       = 'buy-card';
-    document.getElementById('range-perf').textContent   = '';
+    const rpEl = document.getElementById('range-perf');
+    if (rpEl) { rpEl.textContent = ''; rpEl.className = 'range-perf'; }
     document.getElementById('sp-rate-display').textContent = '—';
+    // Reset sparplan result fields so stale data from previous ETF doesn't linger
+    ['sp-invested','sp-endvalue','sp-gain','sp-gainpct'].forEach(id => {
+      const el = document.getElementById(id); if (el) el.textContent = '—';
+    });
     _ltrLoaded = false;
   }
 
   // ── Init ───────────────────────────────────────────────────
-
-  // _ltrLoaded must be declared before resetForSwitch() can reference it
-  let _ltrLoaded = false;
 
   // Restore saved values (nur wenn > 0)
   const savedShares = parseFloat(localStorage.getItem('pt-shares'));
@@ -2521,7 +2534,7 @@
   if (savedShares > 0) document.getElementById('pt-shares').value   = savedShares;
   if (savedAvg    > 0) document.getElementById('pt-avgprice').value = savedAvg;
   // Show default rate (7%) immediately so calc results and rate label are in sync
-  document.getElementById('sp-rate-display').textContent = '7,0 %';
+  document.getElementById('sp-rate-display').textContent = '7.0 %';
   calcSparplan();
 
   // Restore ETF from URL (?isin=...) or localStorage — switchETF calls load() internally
@@ -2547,7 +2560,6 @@
   }
   // loadWeeklyRSI is already fired by switchETF — skip duplicate here
   setTimeout(loadFearGreed,  1000);
-  setTimeout(loadValuation,  1500);
   setTimeout(loadVIX,        2000);
   setTimeout(loadEURUSD,     2500);
 
@@ -2556,17 +2568,11 @@
   setInterval(load,            5 * 60 * 1000);       // Indikatoren alle 5 Min
   setInterval(loadWeeklyRSI,   3 * 60 * 1000);
   setInterval(loadFearGreed,   2 * 60 * 1000);
-  setInterval(loadValuation,  10 * 60 * 1000);
   setInterval(loadVIX,         5 * 60 * 1000);
   setInterval(loadEURUSD,      5 * 60 * 1000);
   setInterval(() => { if (currentRange === 'live') loadIntraday(); }, 30 * 1000);
-  // LongTermReturn einmalig laden (kein setInterval — ändert sich selten)
-  // Note: _ltrLoaded declared above (before resetForSwitch)
-  setTimeout(async () => {
-    if (_ltrLoaded) return;
-    _ltrLoaded = true;
-    await loadLongTermReturn();
-  }, 3000);
+  // LongTermReturn: guard here prevents a redundant call if switchETF already fired one
+  setTimeout(() => { if (!_ltrLoaded) loadLongTermReturn(); }, 3000);
 
   // ─── Snappy Page Navigation ──────────────────────────────────────────────
   const _pagesEl = document.getElementById('pages');
@@ -2588,13 +2594,15 @@
     const targetY = idx * _pagesEl.clientHeight;
     const dist    = targetY - startY;
     const t0      = performance.now();
+    // Safety: clear the flag after dur+200ms even if rAF stalls (e.g. tab hidden)
+    const _animGuard = setTimeout(() => { _pagesEl.scrollTop = targetY; _isAnim = false; }, dur + 200);
     // easeOutExpo: startet mit voller Kraft, bremst exponentiell — 75% in 90ms
     function ease(t) { return t >= 1 ? 1 : 1 - Math.pow(2, -10 * t); }
     (function step(now) {
       const p = Math.min((now - t0) / dur, 1);
       _pagesEl.scrollTop = startY + dist * ease(p);
       if (p < 1) requestAnimationFrame(step);
-      else { _pagesEl.scrollTop = targetY; _isAnim = false; }
+      else { clearTimeout(_animGuard); _pagesEl.scrollTop = targetY; _isAnim = false; }
     })(performance.now());
   }
 
@@ -2618,9 +2626,10 @@
     if (Math.abs(d) > 40) scrollToPage(_curIdx + (d > 0 ? 1 : -1));
   }, { passive: true });
 
-  // Tastatur: Pfeiltasten + PageUp/Down (nicht wenn Sucheingabe fokussiert)
+  // Tastatur: Pfeiltasten + PageUp/Down (nicht wenn Sucheingabe oder Rechner-Input fokussiert)
   document.addEventListener('keydown', e => {
-    if (document.activeElement === document.getElementById('top-search-input')) return;
+    const tag = document.activeElement?.tagName;
+    if (tag === 'INPUT' || tag === 'TEXTAREA') return;
     if (e.key === 'ArrowDown' || e.key === 'PageDown') { e.preventDefault(); scrollToPage(_curIdx + 1); }
     if (e.key === 'ArrowUp'   || e.key === 'PageUp')   { e.preventDefault(); scrollToPage(_curIdx - 1); }
   });
