@@ -678,13 +678,14 @@
   <div id="top-search-inner">
     <span class="ts-icon">⌕</span>
     <input id="top-search-input" type="text" placeholder="ETF suchen…" autocomplete="off" spellcheck="false"
+      role="combobox" aria-autocomplete="list" aria-expanded="false" aria-controls="top-search-drop" aria-haspopup="listbox"
       oninput="onSearchInput(this.value)"
       onfocus="onSearchFocus(this.value)"
-      onkeydown="if(event.key==='Escape'){closeSearch();}else if(event.key==='Enter'){event.preventDefault();tryDirectTicker(this.value.trim());}">
+      onkeydown="_searchKeyNav(event)">
     <span id="top-search-clear" style="display:none;font-size:16px;color:#9CA3AF;cursor:pointer;line-height:1;" onclick="closeSearch()">✕</span>
   </div>
 </div>
-<div id="top-search-drop"></div>
+<div id="top-search-drop" role="listbox"></div>
 <div class="search-overlay" id="search-overlay" onclick="closeSearch()"></div>
 
 <div class="pages" id="pages">
@@ -796,7 +797,7 @@
         <div class="indicator-box">
           <div class="ind-label">EUR / USD <button class="tip" data-tip="VWCE ist in USD denominiert. Starker USD = höherer VWCE-Kurs in EUR. Relevant für Renditeberechnung.">?</button></div>
           <div class="ind-value" id="eurusd-value" style="font-size:22px;"><span class="loading-shimmer">0.0000</span></div>
-          <div class="ind-sub"   id="eurusd-sub">Wechselkurs</div>
+          <div class="ind-sub"   id="eurusd-sub">EUR/USD</div>
         </div>
         <div class="indicator-box">
           <div class="ind-label">MACD <button class="tip" data-tip="Moving Average Convergence Divergence (12/26/9). Über Signallinie = bullisch, darunter = bärisch.">?</button></div>
@@ -1917,6 +1918,18 @@
       const box = document.getElementById('error-box');
       box.style.display = 'block';
       box.textContent = `Fehler beim Laden: ${err.message}`;
+      // Remove all loading shimmers so they don't spin forever on error
+      ['price','ma200','rsi','wrsi','macd-value','sharpe-value','hvol-value'].forEach(id => {
+        const el = document.getElementById(id);
+        if (!el) return;
+        // If still showing shimmer placeholder, replace with dash
+        if (el.querySelector('.loading-shimmer')) el.innerHTML = '—';
+        el.classList.remove('loading-shimmer');
+      });
+      const athDd = document.getElementById('ath-drawdown');
+      if (athDd) athDd.classList.remove('loading-shimmer');
+      const fgSc = document.getElementById('fg-score');
+      if (fgSc) fgSc.classList.remove('loading-shimmer');
     }
   }
 
@@ -2174,13 +2187,15 @@
   function openSearch() {
     document.getElementById('top-search-drop').style.display = 'block';
     document.getElementById('search-overlay').style.display = 'block';
+    const inp = document.getElementById('top-search-input');
+    if (inp) inp.setAttribute('aria-expanded', 'true');
   }
 
   function closeSearch() {
     document.getElementById('top-search-drop').style.display = 'none';
     document.getElementById('search-overlay').style.display = 'none';
     const inp = document.getElementById('top-search-input');
-    if (inp) { inp.value = ''; inp.blur(); }
+    if (inp) { inp.value = ''; inp.blur(); inp.setAttribute('aria-expanded', 'false'); inp.removeAttribute('aria-activedescendant'); }
     document.getElementById('top-search-clear').style.display = 'none';
     document.getElementById('top-search-drop').innerHTML = '';
   }
@@ -2196,7 +2211,7 @@
         const short = e.t.split('.')[0];
         const distClass = e.type === 'Acc' ? 'acc' : 'dist';
         const distLabel = e.type === 'Acc' ? 'Thesaurierend' : 'Ausschüttend';
-        return `<div class="search-item" onclick="selectETF('${e.t}','${short}','${e.n.replace(/'/g,"\\'")}','${e.i}')">
+        return `<div class="search-item" role="option" onclick="selectETF('${e.t}','${short}','${e.n.replace(/'/g,"\\'")}','${e.i}')">
           <div class="search-item-logo">${_logoHtml(e.i, short, e.is, 36)}</div>
           <div class="search-item-info">
             <div class="search-item-name">${e.n}</div>
@@ -2215,7 +2230,7 @@
   }
 
   function onSearchFocus(val) {
-    if (val.trim()) { openSearch(); } else { showPopularEtfs(); }
+    if (val.trim()) { openSearch(); doSearch(val.trim()); } else { showPopularEtfs(); }
   }
 
   function onSearchInput(val) {
@@ -2285,7 +2300,7 @@
       : `https://api.elbstream.com/logos/ticker/${short}`;
     const terTag  = ter ? `<span class="search-item-tag ter">TER ${ter}</span>` : '';
     const typeTag = typeAcc === null ? '' : `<span class="search-item-tag ${typeAcc ? 'acc' : 'dist'}">${typeAcc ? 'Thesaurierend' : 'Ausschüttend'}</span>`;
-    return `<div class="search-item" onclick="selectETF('${safeTicker}','${short}','${safeName}','${isin||''}')">
+    return `<div class="search-item" role="option" onclick="selectETF('${safeTicker}','${short}','${safeName}','${isin||''}')">
       <div class="search-item-logo">${_logoHtml(isin, short, issuer, 36)}</div>
       <div class="search-item-info">
         <div class="search-item-name">${name}</div>
@@ -2359,7 +2374,34 @@
     }
   }
 
+  function _searchKeyNav(e) {
+    if (e.key === 'Escape') { closeSearch(); return; }
+    if (e.key === 'Enter')  { e.preventDefault(); tryDirectTicker(e.target.value.trim()); return; }
+    const drop = document.getElementById('top-search-drop');
+    if (!drop || drop.style.display === 'none') return;
+    if (e.key !== 'ArrowDown' && e.key !== 'ArrowUp') return;
+    e.preventDefault();
+    const items = Array.from(drop.querySelectorAll('.search-item'));
+    if (!items.length) return;
+    const active = drop.querySelector('.search-item[aria-selected="true"]');
+    let idx = active ? items.indexOf(active) : -1;
+    if (active) active.removeAttribute('aria-selected');
+    idx = e.key === 'ArrowDown' ? Math.min(idx + 1, items.length - 1) : Math.max(idx - 1, 0);
+    items[idx].setAttribute('aria-selected', 'true');
+    items[idx].scrollIntoView({ block: 'nearest' });
+    document.getElementById('top-search-input').setAttribute('aria-activedescendant', items[idx].id || '');
+    // Highlight selected item
+    items.forEach(it => it.style.background = '');
+    items[idx].style.background = '#F5F6FF';
+  }
+
   function tryDirectTicker(query) {
+    // If an item is keyboard-selected in dropdown, activate it instead of direct-ticker
+    const drop = document.getElementById('top-search-drop');
+    if (drop && drop.style.display !== 'none') {
+      const selected = drop.querySelector('.search-item[aria-selected="true"]');
+      if (selected) { selected.click(); return; }
+    }
     if (!query) return;
     const q = query.trim();
     // ISIN eingegeben? → in DB suchen
@@ -2497,6 +2539,15 @@
     if (_ptChart) { _ptChart.destroy(); _ptChart = null; }
     const ptWrap = document.getElementById('pt-chart-wrap');
     if (ptWrap) ptWrap.style.display = 'none';
+    // Clear portfolio inputs so stale values from previous ETF don't mislead
+    const ptShares = document.getElementById('pt-shares');
+    const ptAvg    = document.getElementById('pt-avgprice');
+    if (ptShares) ptShares.value = '';
+    if (ptAvg)    ptAvg.value   = '';
+    ['pt-invested','pt-currentval','pt-gain','pt-gainpct'].forEach(id => {
+      const el = document.getElementById(id);
+      if (el) { el.textContent = '—'; el.className = el.className.replace(/\s*(green|red)\b/g, ''); }
+    });
     document.getElementById('week52-low').textContent   = '—';
     document.getElementById('week52-high').textContent  = '—';
     document.getElementById('week52-pct').textContent   = '—';
